@@ -32,10 +32,17 @@ que no estén especificadas aquí.
 
 ## 2. Stack tecnológico (decidido, no renegociable)
 
+> **Actualización (2026-07-10):** el frontend original (Soft UI Dashboard
+> React + MUI) fue reemplazado por decisión explícita del dueño del proyecto
+> por **MaterialM (React + Tailwind, versión gratuita de WrapPixel)**. La
+> carpeta `soft-ui-dashboard-react/` ya no existe en el repo; el frontend
+> vive ahora en `frontend/`. El resto de las decisiones de esta tabla
+> (backend, base de datos, mensajería) no cambiaron.
+
 | Capa | Tecnología | Notas |
 |---|---|---|
-| Frontend | React (Create React App) + MUI, template **Soft UI Dashboard React** de Creative Tim, ya incluido y limpiado en este repo | **No introduzcas otra librería de UI ni cambies el sistema de diseño existente.** Todo componente nuevo se construye componiendo `SoftBox`, `SoftTypography`, `SoftButton`, `SoftInput`, `Card` y los componentes de `examples/` que ya trae el template (Tables, Lists, Timeline, Cards). |
-| Backend | Node.js + Express | Capa de lógica de negocio, validación multi-tenant de segunda capa, webhooks de Twilio, integración de pagos. |
+| Frontend | React 19 + TypeScript + Vite, template **MaterialM** (versión gratuita de WrapPixel: `wrappixel/materialm-react-tailwind-free`), en `frontend/` | Sistema de diseño: **Tailwind CSS 4** + primitivos **shadcn/ui** (`src/components/ui/*`) + iconos **Iconify** (set `solar:*`, componente `<Icon icon="solar:..." />`). **No introduzcas otra librería de UI ni cambies el sistema de diseño existente.** Todo componente nuevo se construye componiendo los primitivos de `src/components/ui/`, `src/components/shared/` (`CardBox`, etc.) y los layouts de `src/layouts/full/`. **Importante:** el dashboard "CRM" del demo público de MaterialM (`materialm-react-tailwind-main.netlify.app/dashboards/crm`) es una vista **exclusiva de la versión Pro de pago** — no está en el código fuente disponible. El Dashboard de este proyecto (`src/views/dashboards/Dashboard.tsx`) es una construcción propia con la misma estética Material Design 3, usando componentes de la versión gratuita, con KPIs reales conectados a Supabase (no es un calco del demo). |
+| Backend | Node.js + Express, en `backend/` | Capa de lógica de negocio, validación multi-tenant de segunda capa, webhooks de Twilio, integración de pagos. |
 | Base de datos / Auth / Storage | Supabase (Postgres) | El esquema completo ya existe en `crm_schema.sql` — aplícalo tal cual contra el proyecto Supabase antes de escribir ninguna query. No lo regeneres desde cero. |
 | Mensajería WhatsApp | **Twilio** (decisión tomada tras comparar contra 360dialog; ver sección 8) | No propongas otro BSP salvo que se te pida explícitamente. |
 | Hosting previsto (no lo configures ahora, solo ten en cuenta la restricción) | Frontend en Vercel, backend en Railway | El frontend debe poder compilar como sitio estático (`npm run build`) sin depender de un servidor Node en el mismo proceso. |
@@ -92,28 +99,29 @@ nombres exactos de columnas y relaciones.
 
 ## 5. Pantallas a construir
 
-El frontend ya trae, en `src/layouts/`, las carpetas placeholder
-`contacts`, `properties`, `deals` e `inbox` con un layout mínimo (solo un
-`Card` con texto "Próximamente") usando el patrón correcto de
-`DashboardLayout` + `DashboardNavbar` + `Footer`. Tu trabajo es reemplazar
-ese contenido placeholder por la funcionalidad real, manteniendo el mismo
-patrón de layout.
+El frontend vive en `frontend/src/views/`. Cada pantalla usa el layout
+`FullLayout` (sidebar + header, en `src/layouts/full/`) vía las rutas
+protegidas definidas en `src/routes/Router.tsx` (envueltas en
+`ProtectedRoute`, que exige sesión de Supabase). El menú del sidebar está en
+`src/layouts/full/sidebar/Sidebaritems.ts`.
 
-| Pantalla | Carpeta | Qué debe hacer |
+| Pantalla | Carpeta | Estado / Qué debe hacer |
 |---|---|---|
-| Dashboard | `layouts/dashboard` (ya existe, con datos de ejemplo) | Reemplazar los datos de ejemplo por KPIs reales: leads nuevos (últimos 7 días), propiedades activas, negociaciones por etapa, próximas actividades pendientes. |
-| Contactos | `layouts/contacts` | Listado con el componente `Table` (mismo patrón que `layouts/tables`), columnas: nombre, teléfono, tipo, origen, agente asignado. Filtros por tipo/origen/agente. Vista de detalle con historial de actividades y conversaciones asociadas. |
-| Propiedades | `layouts/properties` | Listado con fotos, filtros por estatus/tipo/sector/agente. Formulario de creación/edición con carga de imágenes a Supabase Storage. Vista de detalle con galería. |
-| Negociaciones | `layouts/deals` | Vista kanban por `pipeline_stages` (columnas configurables por tenant), tarjetas arrastrables entre etapas, usando `Cards` + `Lists` del template. Al mover una tarjeta, el trigger de la base de datos ya registra el historial — no dupliques esa lógica en el frontend. |
-| Mensajes (bandeja unificada) | `layouts/inbox` | Lista de conversaciones ordenadas por `last_message_at`, filtrable por canal (WhatsApp/Instagram/Facebook) y por agente. Vista de conversación individual estilo chat, usando `Timeline` del template como base visual. Actualización en tiempo real vía Supabase Realtime. |
-| Perfil | `layouts/profile` (ya existe) | Adaptar a datos reales del agente autenticado. |
-| Facturación | `layouts/billing` (ya existe) | Adaptar a mostrar el plan real del tenant y su estado de suscripción (tabla `subscriptions`). |
-| Autenticación | `layouts/authentication/sign-in` y `sign-up` (ya existen) | El `sign-up` debe distinguir dos flujos: "crear una agencia nueva" (llama a `create_tenant_with_owner`) vs. "aceptar una invitación" (se une a un tenant existente vía un token de invitación — este segundo flujo aún no tiene backend, constrúyelo como parte de RF-02). |
+| Dashboard | `views/dashboards/Dashboard.tsx` | **Ya construido con datos reales**: 4 KPIs (leads últimos 7 días, propiedades activas, negociaciones abiertas, actividades pendientes), tabla de negociaciones por etapa y línea de tiempo de próximas actividades — todo consultado directo a Supabase filtrado por `tenant_id`. |
+| Contactos | `views/contacts/Contacts.tsx` | Placeholder ("Próximamente"). Construir: listado con `Table` de `src/components/ui/table.tsx`, columnas nombre/teléfono/tipo/origen/agente, filtros, vista de detalle con historial. |
+| Propiedades | `views/properties/Properties.tsx` | Placeholder. Construir: listado con fotos, filtros por estatus/tipo/sector/agente, formulario con carga a Supabase Storage, detalle con galería. |
+| Negociaciones | `views/deals/Deals.tsx` | Placeholder. Construir: vista kanban por `pipeline_stages`, tarjetas arrastrables. El trigger de la base de datos ya registra el historial de cambio de etapa — no dupliques esa lógica en el frontend. |
+| Mensajes (bandeja unificada) | `views/inbox/Inbox.tsx` | Placeholder. Construir: lista de conversaciones por `last_message_at`, filtrable por canal/agente, vista de conversación tipo chat, tiempo real vía Supabase Realtime. |
+| Perfil | `views/profile/Profile.tsx` | **Ya construido**: muestra nombre, email, agencia y rol reales del usuario autenticado (vía `useAuth()`). |
+| Facturación | `views/billing/Billing.tsx` | **Ya construido**: muestra plan y estado reales desde la tabla `subscriptions`. Falta RF-12 (restringir acciones si la suscripción está vencida). |
+| Autenticación | `views/auth/login/Login.tsx` y `views/auth/register/Register.tsx` (+ `authforms/AuthLogin.tsx`, `authforms/AuthRegister.tsx`) | **Ya construido**: login real y signup con flujo "crear agencia nueva" (llama a `create_tenant_with_owner` vía backend, con manejo de confirmación de email pendiente). El flujo de "aceptar invitación" (RF-02) aún no existe — constrúyelo como parte de esa tarea. |
 
-**No agregues páginas fuera de esta lista sin que se te pida.** No es necesario
-tocar `rtl` ni `virtual-reality`: ya fueron eliminadas del proyecto
-intencionalmente, junto con la infraestructura de tema RTL en `App.js` — no
-las vuelvas a agregar.
+**No agregues páginas fuera de esta lista sin que se te pida.** El template
+trae muchísimas vistas de demostración (`ui-components`, `charts`, `apps`,
+etc.) que son exclusivas de la versión Pro de pago — ya fueron eliminadas de
+este repo intencionalmente (código y entradas del sidebar). No las vuelvas a
+agregar ni reintroduzcas el marketing de WrapPixel (topbar, links "Get Pro",
+"Check Pro Template") que también se eliminó.
 
 ---
 
@@ -213,12 +221,14 @@ las vuelvas a agregar.
 
 ## 9. Reglas de diseño (estrictas)
 
-1. **No te salgas del sistema de diseño Soft UI Dashboard React.** Todo
-   componente nuevo se construye combinando los componentes ya existentes en
-   `src/components/` y `src/examples/`. No instales librerías de UI
-   alternativas (ni siquiera "solo para un componente").
-2. Sigue el patrón de layout ya establecido: cada pantalla usa
-   `DashboardLayout` + `DashboardNavbar` + `Footer` como wrapper.
+1. **No te salgas del sistema de diseño MaterialM (Tailwind + shadcn).** Todo
+   componente nuevo se construye combinando los primitivos ya existentes en
+   `frontend/src/components/ui/`, `frontend/src/components/shared/` y los
+   componentes de `frontend/src/layouts/full/`. No instales librerías de UI
+   alternativas (ni siquiera "solo para un componente"), y no uses
+   componentes de la versión Pro de MaterialM (no están en este repo).
+2. Sigue el patrón de layout ya establecido: cada pantalla protegida cuelga
+   de `FullLayout` (sidebar + header) vía las rutas en `src/routes/Router.tsx`.
 3. Todo el texto de la interfaz debe estar en **español**.
 4. Los nombres de tablas/columnas en el código (variables, tipos) pueden
    estar en inglés si es más natural para el código, pero cualquier texto
@@ -245,11 +255,12 @@ No implementes nada de lo siguiente salvo que se te pida explícitamente:
 
 ## 11. Orden de trabajo sugerido
 
-**Fase 0 — Setup**
-1. Aplicar `crm_schema.sql` en un proyecto Supabase nuevo.
-2. Configurar variables de entorno (ver sección 12) en frontend y backend.
-3. Conectar el frontend ya limpiado a Supabase Auth (login/signup reales,
-   reemplazando cualquier dato mock).
+**Fase 0 — Setup ✅ completa**
+1. ✅ Aplicar `crm_schema.sql` en un proyecto Supabase nuevo.
+2. ✅ Configurar variables de entorno (ver sección 12) en frontend y backend.
+3. ✅ Conectar el frontend a Supabase Auth (login/signup reales, incluyendo
+   creación de tenant vía `create_tenant_with_owner` y manejo del caso de
+   confirmación de email pendiente).
 
 **Fase 1 — CRUD interno (un solo tenant real)**
 4. Contactos, Propiedades, Actividades — CRUD completo.
@@ -261,7 +272,8 @@ No implementes nada de lo siguiente salvo que se te pida explícitamente:
 8. Integración de pagos (Stripe) y estados de `subscriptions`.
 
 **Fase 3 — Pulido**
-9. Dashboard con KPIs reales.
+9. ✅ Dashboard con KPIs reales — se adelantó durante la migración del
+   frontend a MaterialM (ver sección 5).
 10. Manejo de errores, estados de carga, validaciones de formularios en toda
     la app.
 
@@ -273,12 +285,13 @@ avances a la siguiente fase sin que la anterior esté funcional.
 ## 12. Variables de entorno necesarias (dejar como placeholders documentados)
 
 ```
-# Frontend
-REACT_APP_SUPABASE_URL=
-REACT_APP_SUPABASE_ANON_KEY=
-REACT_APP_API_BASE_URL=          # URL del backend Node.js
+# Frontend (frontend/.env — Vite exige el prefijo VITE_, no REACT_APP_)
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_API_BASE_URL=               # URL del backend Node.js
 
-# Backend
+# Backend (backend/.env)
+PORT=                            # 4000 puede estar ocupado por otra app local; usar 4001 si aplica
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=       # Nunca exponer al frontend
 TWILIO_ACCOUNT_SID=
