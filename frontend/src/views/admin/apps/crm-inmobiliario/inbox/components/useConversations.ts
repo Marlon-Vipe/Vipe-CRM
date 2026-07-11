@@ -1,0 +1,85 @@
+import { useEffect, useState } from 'react'
+
+import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/lib/supabaseClient'
+
+import type { ConversationItem } from './data'
+
+interface ConversationRow {
+  id: string
+  status: 'abierta' | 'cerrada'
+  last_message_at: string | null
+  contacts: { id: string; name: string } | null
+  channels: { type: 'whatsapp' | 'instagram' | 'messenger' } | null
+}
+
+export function useConversations() {
+  const { tenantId } = useAuth()
+  const [conversations, setConversations] = useState<ConversationItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!tenantId) return
+    let isMounted = true
+
+    async function loadConversations() {
+      setLoading(true)
+
+      const { data: conversationRows, error } = await supabase
+        .from('conversations')
+        .select('id, status, last_message_at, contacts ( id, name ), channels ( type )')
+        .eq('tenant_id', tenantId)
+        .order('last_message_at', { ascending: false, nullsFirst: false })
+
+      if (error || !conversationRows) {
+        // eslint-disable-next-line no-console
+        console.error('Error al cargar conversaciones:', error?.message)
+        if (isMounted) {
+          setConversations([])
+          setLoading(false)
+        }
+        return
+      }
+
+      const rows = conversationRows as unknown as ConversationRow[]
+      const conversationIds = rows.map((row) => row.id)
+
+      const { data: lastMessages } = conversationIds.length
+        ? await supabase
+            .from('messages')
+            .select('conversation_id, content, created_at')
+            .eq('tenant_id', tenantId)
+            .in('conversation_id', conversationIds)
+            .order('created_at', { ascending: false })
+        : { data: [] as { conversation_id: string; content: string | null }[] }
+
+      const lastMessageByConversation = new Map<string, string | null>()
+      for (const message of lastMessages || []) {
+        if (!lastMessageByConversation.has(message.conversation_id)) {
+          lastMessageByConversation.set(message.conversation_id, message.content)
+        }
+      }
+
+      if (!isMounted) return
+      setConversations(
+        rows.map((row) => ({
+          id: row.id,
+          contactId: row.contacts?.id || null,
+          contactName: row.contacts?.name || 'Contacto desconocido',
+          channelType: row.channels?.type || 'whatsapp',
+          lastMessage: lastMessageByConversation.get(row.id) || null,
+          lastMessageAt: row.last_message_at,
+          status: row.status,
+        }))
+      )
+      setLoading(false)
+    }
+
+    loadConversations()
+    return () => {
+      isMounted = false
+    }
+  }, [tenantId])
+
+  return { conversations, loading }
+}

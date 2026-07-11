@@ -1,12 +1,67 @@
 # Prompt para Claude Code — Construcción del CRM Inmobiliario
 
 > **Cómo usar este archivo:** colócalo en la raíz del repo junto con `crm_schema.sql`
-> y el contenido ya descomprimido de `soft-ui-dashboard-react-crm-base.zip` (el
-> frontend ya limpiado). Luego dile a Claude Code: *"Lee CRM_PROMPT.md y
-> constrúyeme el proyecto siguiendo esas instrucciones, empezando por la Fase 0"*.
-> Este documento es autosuficiente: contiene todo el contexto de negocio,
-> arquitectura, modelo de datos y decisiones ya tomadas para no tener que
-> repetirlas en el chat.
+> y el contenido ya descomprimido de `crm-frontend-ubold.zip` (el frontend ya
+> adaptado sobre el template UBold comprado en ThemeForest). Luego dile a
+> Claude Code: *"Lee CRM_PROMPT.md y constrúyeme el proyecto siguiendo esas
+> instrucciones, empezando por la Fase 0"*. Este documento es autosuficiente:
+> contiene todo el contexto de negocio, arquitectura, modelo de datos y
+> decisiones ya tomadas para no tener que repetirlas en el chat.
+
+---
+
+## 0. Contexto de esta ejecución: migración de frontend, backend existente
+
+**Importante — lee esto antes que cualquier otra sección.** Este NO es un
+proyecto desde cero. Ya existe un repositorio con:
+
+- Un **backend Node.js/Express funcional**, construido en una iteración
+  anterior de este mismo proyecto (siguiendo una versión previa de este
+  prompt, cuando el frontend todavía era Soft UI Dashboard React).
+- Un **frontend anterior** (Soft UI Dashboard React, MUI) que se está
+  **reemplazando por completo** por el nuevo frontend UBold ya incluido en
+  `crm-frontend-ubold.zip`.
+
+La tarea de esta ejecución es: **sustituir solo el frontend, dejando el
+backend intacto salvo que algo sea estrictamente necesario adaptar.**
+
+### Pasos obligatorios antes de escribir código
+
+1. **Inspecciona el backend existente primero.** Lee sus rutas/controladores
+   reales (probablemente en algo como `src/routes/`, `src/controllers/`, o
+   equivalente) y documenta mentalmente el contrato de API real: qué
+   endpoints existen, qué parámetros esperan, qué forma tiene cada respuesta
+   JSON. Ese contrato real es la **fuente de verdad** — no asumas que
+   coincide exactamente con lo descrito en la sección 6 de este prompt; esa
+   sección describe la intención funcional, no necesariamente los nombres
+   exactos de endpoints que se implementaron.
+2. **No reescribas ni reestructures el backend** (rutas, controladores,
+   modelos, nombres de tablas) solo por prolijidad o porque "se ve distinto"
+   a como lo describe este prompt. Backend estable > backend prolijo.
+3. **Conecta el nuevo frontend al backend tal como existe.** Si el backend
+   expone `/api/contacts`, el frontend nuevo consume `/api/contacts` — no
+   inventes un endpoint paralelo ni le pidas al backend que cambie su forma
+   de responder solo para que combine mejor con el nuevo frontend, salvo que
+   sea genuinamente imposible construir la pantalla sin ese cambio.
+4. **Adapta el backend solo cuando haga falta de verdad**, por ejemplo:
+   - El nuevo frontend necesita un dato que el backend no devuelve todavía
+     (ej. un campo nuevo en la respuesta de propiedades).
+   - Falta un endpoint completo que el frontend anterior no necesitaba pero
+     el nuevo sí (ej. el backend puede no tener aún el webhook de Twilio si
+     esa parte no se había construido).
+   En esos casos, el cambio debe ser **aditivo** (agregar campo/endpoint),
+   no un reemplazo de lo que ya funciona.
+5. Si encuentras una contradicción real entre lo que el backend ya hace y lo
+   que dice este prompt (por ejemplo, el backend ya resolvió
+   multi-tenancy de una forma distinta a `current_tenant_id()`), **detente y
+   pregunta antes de asumir cuál versión es la correcta** en vez de
+   sobrescribir silenciosamente.
+
+El resto de este documento (secciones 1 en adelante) describe la intención
+completa del producto — úsalo como contexto de negocio y como referencia
+para las partes que sí falten construir (frontend nuevo, y cualquier
+endpoint de backend genuinamente ausente), no como una plantilla que haya
+que aplicar de cero encima de lo ya construido.
 
 ---
 
@@ -32,18 +87,11 @@ que no estén especificadas aquí.
 
 ## 2. Stack tecnológico (decidido, no renegociable)
 
-> **Actualización (2026-07-10):** el frontend original (Soft UI Dashboard
-> React + MUI) fue reemplazado por decisión explícita del dueño del proyecto
-> por **MaterialM (React + Tailwind, versión gratuita de WrapPixel)**. La
-> carpeta `soft-ui-dashboard-react/` ya no existe en el repo; el frontend
-> vive ahora en `frontend/`. El resto de las decisiones de esta tabla
-> (backend, base de datos, mensajería) no cambiaron.
-
 | Capa | Tecnología | Notas |
 |---|---|---|
-| Frontend | React 19 + TypeScript + Vite, template **MaterialM** (versión gratuita de WrapPixel: `wrappixel/materialm-react-tailwind-free`), en `frontend/` | Sistema de diseño: **Tailwind CSS 4** + primitivos **shadcn/ui** (`src/components/ui/*`) + iconos **Iconify** (set `solar:*`, componente `<Icon icon="solar:..." />`). **No introduzcas otra librería de UI ni cambies el sistema de diseño existente.** Todo componente nuevo se construye componiendo los primitivos de `src/components/ui/`, `src/components/shared/` (`CardBox`, etc.) y los layouts de `src/layouts/full/`. **Importante:** el dashboard "CRM" del demo público de MaterialM (`materialm-react-tailwind-main.netlify.app/dashboards/crm`) es una vista **exclusiva de la versión Pro de pago** — no está en el código fuente disponible. El Dashboard de este proyecto (`src/views/dashboards/Dashboard.tsx`) es una construcción propia con la misma estética Material Design 3, usando componentes de la versión gratuita, con KPIs reales conectados a Supabase (no es un calco del demo). |
-| Backend | Node.js + Express, en `backend/` | Capa de lógica de negocio, validación multi-tenant de segunda capa, webhooks de Twilio, integración de pagos. |
-| Base de datos / Auth / Storage | Supabase (Postgres) | El esquema completo ya existe en `crm_schema.sql` — aplícalo tal cual contra el proyecto Supabase antes de escribir ninguna query. No lo regeneres desde cero. |
+| Frontend | React + TypeScript, compilado con **Vite**, template **UBold** de Coderthemes (Bootstrap 5.3 + `react-bootstrap`), ya incluido y adaptado en este repo | **No introduzcas otra librería de UI ni cambies el sistema de diseño existente.** Todo componente nuevo se construye componiendo los componentes de `react-bootstrap` (`Card`, `Button`, `Badge`, `FormControl`, etc.) y los wrappers propios del template en `src/components/wrappers/` (`Icon`, `SimpleBar`) y `src/components/` (`PageBreadcrumb`, etc.). No instales Material UI, Ant Design, ni Tailwind. |
+| Backend | Node.js + Express — **ya existe en este repo**, construido en una iteración anterior | No lo reescribas ni reestructures; ver sección 0. Capa de lógica de negocio, validación multi-tenant de segunda capa, webhooks de Twilio, integración de pagos. |
+| Base de datos / Auth / Storage | Supabase (Postgres) — **proyecto ya existe y ya tiene datos/schema aplicado** | `crm_schema.sql` documenta el diseño original; el estado real puede haber evolucionado (ver sección 4). No crear un proyecto Supabase nuevo ni reaplicar el schema a ciegas. |
 | Mensajería WhatsApp | **Twilio** (decisión tomada tras comparar contra 360dialog; ver sección 8) | No propongas otro BSP salvo que se te pida explícitamente. |
 | Hosting previsto (no lo configures ahora, solo ten en cuenta la restricción) | Frontend en Vercel, backend en Railway | El frontend debe poder compilar como sitio estático (`npm run build`) sin depender de un servidor Node en el mismo proceso. |
 
@@ -74,8 +122,8 @@ que no estén especificadas aquí.
 
 ## 4. Modelo de datos
 
-**No lo regeneres.** El archivo `crm_schema.sql` en la raíz del repo ya
-contiene, listo para aplicar en el SQL Editor de Supabase:
+**No lo regeneres.** El archivo `crm_schema.sql` en la raíz del repo
+documenta el diseño original:
 
 - Tipos (`enums`) para estados de propiedades, contactos, actividades,
   canales, mensajes, etc.
@@ -92,36 +140,47 @@ contiene, listo para aplicar en el SQL Editor de Supabase:
   la uses para invitar agentes a una agencia existente, eso es un flujo
   distinto).
 
-Antes de escribir cualquier query, lee el archivo completo para entender los
-nombres exactos de columnas y relaciones.
+**Como el backend ya existe, el esquema real en Supabase puede haber
+evolucionado respecto a este archivo** (columnas agregadas, ajustes durante
+el desarrollo inicial). Antes de escribir cualquier query desde el nuevo
+frontend, verifica el esquema real —vía el backend existente o el dashboard
+de Supabase— en vez de asumir que `crm_schema.sql` es 100% fiel al estado
+actual de la base de datos.
 
 ---
 
 ## 5. Pantallas a construir
 
-El frontend vive en `frontend/src/views/`. Cada pantalla usa el layout
-`FullLayout` (sidebar + header, en `src/layouts/full/`) vía las rutas
-protegidas definidas en `src/routes/Router.tsx` (envueltas en
-`ProtectedRoute`, que exige sesión de Supabase). El menú del sidebar está en
-`src/layouts/full/sidebar/Sidebaritems.ts`.
+El frontend ya trae, en `src/views/admin/apps/crm-inmobiliario/`, las
+carpetas `contacts`, `properties`, `deals` e `inbox` con contenido real
+**adaptado de las apps de ejemplo que trae UBold** (no son placeholders
+vacíos — ya tienen diseño y datos de ejemplo funcionando). Tu trabajo es
+reemplazar esos datos estáticos (`components/data.ts` en cada carpeta) por
+datos reales de Supabase, manteniendo los componentes visuales tal cual
+están.
 
-| Pantalla | Carpeta | Estado / Qué debe hacer |
-|---|---|---|
-| Dashboard | `views/dashboards/Dashboard.tsx` | **Ya construido con datos reales**: 4 KPIs (leads últimos 7 días, propiedades activas, negociaciones abiertas, actividades pendientes), tabla de negociaciones por etapa y línea de tiempo de próximas actividades — todo consultado directo a Supabase filtrado por `tenant_id`. |
-| Contactos | `views/contacts/Contacts.tsx` | Placeholder ("Próximamente"). Construir: listado con `Table` de `src/components/ui/table.tsx`, columnas nombre/teléfono/tipo/origen/agente, filtros, vista de detalle con historial. |
-| Propiedades | `views/properties/Properties.tsx` | Placeholder. Construir: listado con fotos, filtros por estatus/tipo/sector/agente, formulario con carga a Supabase Storage, detalle con galería. |
-| Negociaciones | `views/deals/Deals.tsx` | Placeholder. Construir: vista kanban por `pipeline_stages`, tarjetas arrastrables. El trigger de la base de datos ya registra el historial de cambio de etapa — no dupliques esa lógica en el frontend. |
-| Mensajes (bandeja unificada) | `views/inbox/Inbox.tsx` | Placeholder. Construir: lista de conversaciones por `last_message_at`, filtrable por canal/agente, vista de conversación tipo chat, tiempo real vía Supabase Realtime. |
-| Perfil | `views/profile/Profile.tsx` | **Ya construido**: muestra nombre, email, agencia y rol reales del usuario autenticado (vía `useAuth()`). |
-| Facturación | `views/billing/Billing.tsx` | **Ya construido**: muestra plan y estado reales desde la tabla `subscriptions`. Falta RF-12 (restringir acciones si la suscripción está vencida). |
-| Autenticación | `views/auth/login/Login.tsx` y `views/auth/register/Register.tsx` (+ `authforms/AuthLogin.tsx`, `authforms/AuthRegister.tsx`) | **Ya construido**: login real y signup con flujo "crear agencia nueva" (llama a `create_tenant_with_owner` vía backend, con manejo de confirmación de email pendiente). El flujo de "aceptar invitación" (RF-02) aún no existe — constrúyelo como parte de esa tarea. |
+| Pantalla | Carpeta | Origen en UBold | Qué falta hacer |
+|---|---|---|---|
+| Dashboard | `views/admin/dashboard/ecommerce` (sin mover, ruta `/dashboard`) | Dashboard de ecommerce del StarterKit | Reemplazar los datos de ejemplo por KPIs reales: leads nuevos (últimos 7 días), propiedades activas, negociaciones por etapa, próximas actividades pendientes. |
+| Contactos | `views/admin/apps/crm-inmobiliario/contacts` | `apps/crm/contacts` (grid de tarjetas) | El grid y las tarjetas ya están resueltos — solo reemplazar `components/data.ts` por datos reales de la tabla `contacts` (nombre, teléfono, tipo, origen, agente asignado). Agregar vista de detalle con historial de actividades y conversaciones asociadas (no existe todavía, construirla). |
+| Propiedades | `views/admin/apps/crm-inmobiliario/properties` | `apps/ecommerce/products/products-grid`, ya adaptada a campos inmobiliarios (`PropertyCard.tsx`, filtros de tipo/estatus/sector) | Reemplazar `components/data.ts` (10 propiedades de ejemplo) por datos reales de la tabla `properties`. Construir el formulario de creación/edición con carga de imágenes a Supabase Storage — usar `apps/ecommerce/products/product-add` de UBold como referencia de patrón (no está copiado en este repo, está en el paquete `Admin/TS` original si lo necesitas revisar). |
+| Negociaciones | `views/admin/apps/crm-inmobiliario/deals` | `apps/crm/pipeline` (kanban con `@hello-pangea/dnd`), copiada tal cual | El tablero, drag-and-drop y tarjetas ya funcionan visualmente. Reemplazar `components/data.ts` por `pipeline_stages` + `deals` reales. Al soltar una tarjeta en otra columna, hacer el `UPDATE` de `deals.stage_id` — el trigger de la base de datos ya registra el historial, no lo dupliques en el frontend. |
+| Mensajes (bandeja unificada) | `views/admin/apps/crm-inmobiliario/inbox` | `apps/chat`, copiada tal cual | La UI de chat (lista de conversaciones + panel de mensajes) ya existe. Reemplazar `components/data.ts` por `conversations`/`messages` reales, ordenados por `last_message_at`, con suscripción a Supabase Realtime para actualizarse sin recargar. |
+| Perfil / Facturación | Aún no migradas a este repo | — | Construir desde cero reutilizando `react-bootstrap` (`Card`, `Tabs`, `Form`) — no existe una vista de referencia ya copiada para esto, a diferencia de las demás pantallas. |
+| Autenticación | `views/auth/basic/sign-in` y `sign-up` (StarterKit, sin modificar) | — | El hook `src/hooks/useAuth.ts` actual es un **mock** (usuario fijo `admin@example.com` / `password`, guardado en `sessionStorage`). Reemplázalo por Supabase Auth real. El `sign-up` debe distinguir dos flujos: "crear una agencia nueva" (llama a `create_tenant_with_owner`) vs. "aceptar una invitación" (se une a un tenant existente vía un token de invitación — este segundo flujo aún no tiene backend, constrúyelo como parte de RF-02). |
 
-**No agregues páginas fuera de esta lista sin que se te pida.** El template
-trae muchísimas vistas de demostración (`ui-components`, `charts`, `apps`,
-etc.) que son exclusivas de la versión Pro de pago — ya fueron eliminadas de
-este repo intencionalmente (código y entradas del sidebar). No las vuelvas a
-agregar ni reintroduzcas el marketing de WrapPixel (topbar, links "Get Pro",
-"Check Pro Template") que también se eliminó.
+**Rutas ya configuradas** en `src/routes/index.tsx`: `/dashboard`,
+`/crm/contactos`, `/crm/propiedades`, `/crm/negociaciones`, `/crm/mensajes`,
+más las de auth y error ya existentes en el StarterKit. El menú lateral
+(`src/layouts/components/data.ts`) ya tiene las entradas correspondientes
+bajo el grupo "CRM Inmobiliario".
+
+**No agregues páginas fuera de esta lista sin que se te pida.** Las páginas
+de demostración del template (variantes de layout, íconos, página vacía) ya
+fueron eliminadas intencionalmente del proyecto — no las vuelvas a agregar.
+El skin visual activo es **`flat`** (definido en
+`src/context/useLayoutContext.tsx`, campo `INIT_STATE.skin`) — no lo cambies
+sin que se te pida.
 
 ---
 
@@ -221,18 +280,24 @@ agregar ni reintroduzcas el marketing de WrapPixel (topbar, links "Get Pro",
 
 ## 9. Reglas de diseño (estrictas)
 
-1. **No te salgas del sistema de diseño MaterialM (Tailwind + shadcn).** Todo
-   componente nuevo se construye combinando los primitivos ya existentes en
-   `frontend/src/components/ui/`, `frontend/src/components/shared/` y los
-   componentes de `frontend/src/layouts/full/`. No instales librerías de UI
-   alternativas (ni siquiera "solo para un componente"), y no uses
-   componentes de la versión Pro de MaterialM (no están en este repo).
-2. Sigue el patrón de layout ya establecido: cada pantalla protegida cuelga
-   de `FullLayout` (sidebar + header) vía las rutas en `src/routes/Router.tsx`.
+1. **No te salgas del sistema de diseño de UBold (Bootstrap 5).** Todo
+   componente nuevo se construye combinando los componentes ya existentes en
+   `src/components/` (incluyendo `src/components/wrappers/`) y reutilizando
+   el patrón de las vistas ya adaptadas en
+   `src/views/admin/apps/crm-inmobiliario/`. No instales librerías de UI
+   alternativas (ni siquiera "solo para un componente") — nada de Material
+   UI, Ant Design, Tailwind, ni CSS-in-JS.
+2. Sigue el patrón de layout ya establecido: cada pantalla vive dentro de
+   `MainLayout` (ver `src/routes/index.tsx`), con `PageBreadcrumb` al inicio
+   de cada página, igual que las vistas ya adaptadas.
 3. Todo el texto de la interfaz debe estar en **español**.
 4. Los nombres de tablas/columnas en el código (variables, tipos) pueden
    estar en inglés si es más natural para el código, pero cualquier texto
    visible al usuario va en español.
+5. Los íconos se usan a través del wrapper `Icon` (`src/components/wrappers/Icon.tsx`),
+   que antepone el prefijo `lucide:` automáticamente — usa nombres de
+   [Lucide](https://lucide.dev/icons) en minúsculas con guiones (ej.
+   `icon="bed-double"`, no `icon="lucide:bed-double"`).
 
 ---
 
@@ -255,43 +320,59 @@ No implementes nada de lo siguiente salvo que se te pida explícitamente:
 
 ## 11. Orden de trabajo sugerido
 
-**Fase 0 — Setup ✅ completa**
-1. ✅ Aplicar `crm_schema.sql` en un proyecto Supabase nuevo.
-2. ✅ Configurar variables de entorno (ver sección 12) en frontend y backend.
-3. ✅ Conectar el frontend a Supabase Auth (login/signup reales, incluyendo
-   creación de tenant vía `create_tenant_with_owner` y manejo del caso de
-   confirmación de email pendiente).
+**Fase 0 — Migración (backend ya existe, frontend es nuevo)**
+1. Inspeccionar el backend existente: rutas reales, forma de las respuestas,
+   cómo maneja auth/tenant hoy (ver sección 0).
+2. Reemplazar la carpeta del frontend anterior (Soft UI) por el contenido de
+   `crm-frontend-ubold.zip`.
+3. Configurar variables de entorno del nuevo frontend (sección 12) para que
+   apunten al backend y proyecto Supabase **ya existentes** (no crear un
+   proyecto Supabase nuevo).
+4. Conectar `useAuth.ts` (hoy un mock) al flujo de auth real que el backend
+   ya expone — no reinventar el flujo de login si el backend ya tiene uno
+   funcionando.
+5. Verificar que cada una de las 4 pantallas migradas (Contactos,
+   Propiedades, Negociaciones, Mensajes) pueda al menos listar datos reales
+   del backend existente antes de seguir. Si algún endpoint que la pantalla
+   necesita no existe todavía, créalo de forma aditiva (sección 0, paso 4).
 
-**Fase 1 — CRUD interno (un solo tenant real)**
-4. Contactos, Propiedades, Actividades — CRUD completo.
-5. Negociaciones — vista kanban conectada a `pipeline_stages` y `deals`.
+**Fase 1 — Paridad funcional completa**
+6. Contactos, Propiedades, Actividades — CRUD completo conectado al backend
+   real (crear/editar/eliminar, no solo listar).
+7. Negociaciones — confirmar que mover una tarjeta en el kanban persiste el
+   cambio de etapa contra el endpoint real de `deals`.
 
-**Fase 2 — Multi-tenant real + mensajería**
-6. Flujo de invitación de agentes (RF-02).
-7. Conexión de WhatsApp por tenant vía Twilio + webhook + bandeja unificada.
-8. Integración de pagos (Stripe) y estados de `subscriptions`.
+**Fase 2 — Lo que falte del backend (si aplica)**
+8. Si el backend anterior no llegó a construir el flujo de invitación de
+   agentes (RF-02), la conexión de WhatsApp vía Twilio (sección 8), o la
+   integración de Stripe, constrúyelos ahora — de forma aditiva, sin tocar
+   lo que ya funciona.
 
 **Fase 3 — Pulido**
-9. ✅ Dashboard con KPIs reales — se adelantó durante la migración del
-   frontend a MaterialM (ver sección 5).
+9. Dashboard con KPIs reales.
 10. Manejo de errores, estados de carga, validaciones de formularios en toda
     la app.
 
 Empieza siempre confirmando en qué fase estás antes de escribir código, y no
-avances a la siguiente fase sin que la anterior esté funcional.
+avances a la siguiente fase sin que la anterior esté funcional. Si en algún
+punto no es obvio si algo "ya existe en el backend" o "hay que construirlo
+desde cero", verifica primero — no lo des por hecho en ninguna dirección.
 
 ---
 
 ## 12. Variables de entorno necesarias (dejar como placeholders documentados)
 
+Este proyecto usa **Vite**, no Create React App: las variables de entorno del
+frontend se acceden con `import.meta.env.VITE_*`, no con `process.env.REACT_APP_*`,
+y van en un archivo `.env` en la raíz de `crm-frontend/`.
+
 ```
-# Frontend (frontend/.env — Vite exige el prefijo VITE_, no REACT_APP_)
+# Frontend
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 VITE_API_BASE_URL=               # URL del backend Node.js
 
-# Backend (backend/.env)
-PORT=                            # 4000 puede estar ocupado por otra app local; usar 4001 si aplica
+# Backend
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=       # Nunca exponer al frontend
 TWILIO_ACCOUNT_SID=
@@ -317,11 +398,15 @@ Antes de dar por terminada cualquier tarea de este prompt, verifica que:
       inserción en `deal_stage_history` (ya la hace el trigger).
 - [ ] Si la tarea toca mensajería, el número/canal usado es Twilio, no otro
       proveedor.
+- [ ] No se modificó ni eliminó ningún endpoint, ruta o respuesta del
+      backend existente que otra parte del sistema ya consumía — cualquier
+      cambio de backend fue aditivo (sección 0).
 
 ---
 
 *Este prompt refleja el estado del proyecto documentado en `CRM_Inmobiliario_ERS.md`
-(v0.3). Si hay una contradicción entre ambos documentos, este prompt prioriza
+(v0.4). Si hay una contradicción entre ambos documentos, este prompt prioriza
 lo accionable para desarrollo; el ERS tiene el razonamiento completo detrás de
 cada decisión (modelo de negocio, simulación de costos de Twilio vs.
-360dialog, registro de riesgos, casos de uso adicionales).*
+360dialog, registro de riesgos, casos de uso adicionales, y el motivo del
+cambio de frontend de Soft UI Dashboard React a UBold).*
