@@ -149,5 +149,63 @@ export function useDeals() {
     [tenantId, loadPipeline]
   )
 
-  return { sections, tasks, contactOptions, propertyOptions, loading, updateDealStage, createDeal, updateDeal, reload: loadPipeline }
+  const deleteDeal = useCallback(
+    async (dealId: string) => {
+      if (!tenantId) return { error: 'Falta el tenant.' }
+      const { error } = await supabase.from('deals').delete().eq('id', dealId).eq('tenant_id', tenantId)
+      if (!error) await loadPipeline()
+      return { error: error?.message }
+    },
+    [tenantId, loadPipeline]
+  )
+
+  const createStage = useCallback(
+    async (name: string) => {
+      if (!tenantId) return { error: 'Falta el tenant.' }
+      const { error } = await supabase.from('pipeline_stages').insert({ tenant_id: tenantId, name, sort_order: sections.length })
+      if (!error) await loadPipeline()
+      return { error: error?.message }
+    },
+    [tenantId, sections, loadPipeline]
+  )
+
+  const updateStage = useCallback(
+    async (stageId: string, name: string) => {
+      if (!tenantId) return { error: 'Falta el tenant.' }
+      const { error } = await supabase.from('pipeline_stages').update({ name }).eq('id', stageId).eq('tenant_id', tenantId)
+      if (!error) await loadPipeline()
+      return { error: error?.message }
+    },
+    [tenantId, loadPipeline]
+  )
+
+  const deleteStage = useCallback(
+    async (stageId: string) => {
+      if (!tenantId) return { error: 'Falta el tenant.' }
+      const hasDeals = tasks.some((task) => task.sectionId === stageId)
+      if (hasDeals) {
+        return { error: 'No puedes eliminar una etapa que todavía tiene negociaciones. Mueve o elimina esas negociaciones primero.' }
+      }
+      const { error } = await supabase.from('pipeline_stages').delete().eq('id', stageId).eq('tenant_id', tenantId)
+      if (!error) await loadPipeline()
+      return { error: error?.message }
+    },
+    [tenantId, tasks, loadPipeline]
+  )
+
+  return {
+    sections,
+    tasks,
+    contactOptions,
+    propertyOptions,
+    loading,
+    updateDealStage,
+    createDeal,
+    updateDeal,
+    deleteDeal,
+    createStage,
+    updateStage,
+    deleteStage,
+    reload: loadPipeline,
+  }
 }

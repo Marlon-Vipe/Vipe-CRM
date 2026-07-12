@@ -3,22 +3,17 @@ import { supabase } from '@/lib/supabaseClient'
 import { useState, type FormEvent } from 'react'
 import { Alert, Button, Form, FormControl, FormLabel, FormSelect, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from 'react-bootstrap'
 
-const ACTIVITY_TYPE_OPTIONS: Record<string, string> = {
-  llamada: 'Llamada',
-  visita: 'Visita',
-  email: 'Email',
-  whatsapp: 'WhatsApp',
-  tarea_general: 'Tarea general',
-}
+import { ACTIVITY_TYPE_LABELS } from './activityLabels'
 
 interface Props {
   show: boolean
   onHide: () => void
   onSaved: () => void
-  contactId: string
+  contactId?: string
+  dealId?: string
 }
 
-const ActivityFormModal = ({ show, onHide, onSaved, contactId }: Props) => {
+const ActivityFormModal = ({ show, onHide, onSaved, contactId, dealId }: Props) => {
   const { tenantId, user } = useAuth()
   const [type, setType] = useState('llamada')
   const [dueAt, setDueAt] = useState('')
@@ -35,7 +30,8 @@ const ActivityFormModal = ({ show, onHide, onSaved, contactId }: Props) => {
 
     const { error } = await supabase.from('activities').insert({
       tenant_id: tenantId,
-      contact_id: contactId,
+      contact_id: contactId || null,
+      deal_id: dealId || null,
       type,
       status: 'pendiente',
       due_at: dueAt ? new Date(dueAt).toISOString() : null,
@@ -68,7 +64,7 @@ const ActivityFormModal = ({ show, onHide, onSaved, contactId }: Props) => {
           <div className="mb-3">
             <FormLabel>Tipo</FormLabel>
             <FormSelect value={type} onChange={(e) => setType(e.target.value)}>
-              {Object.entries(ACTIVITY_TYPE_OPTIONS).map(([value, label]) => (
+              {Object.entries(ACTIVITY_TYPE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
                 </option>

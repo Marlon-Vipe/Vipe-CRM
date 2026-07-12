@@ -23,7 +23,8 @@ import {
 
 import { CONTACT_SOURCE_LABELS, CONTACT_TYPE_BADGE, CONTACT_TYPE_LABELS } from '../components/data'
 import ContactFormModal from '../components/ContactFormModal'
-import ActivityFormModal from './ActivityFormModal'
+import ActivityFormModal from '../../components/ActivityFormModal'
+import { ACTIVITY_STATUS_BADGE, ACTIVITY_STATUS_LABELS, ACTIVITY_TYPE_LABELS } from '../../components/activityLabels'
 
 interface ContactDetail {
   id: string
@@ -50,26 +51,6 @@ interface ConversationRow {
   status: string
   last_message_at: string | null
   channels: { type: string } | null
-}
-
-const ACTIVITY_TYPE_LABELS: Record<string, string> = {
-  llamada: 'Llamada',
-  visita: 'Visita',
-  email: 'Email',
-  whatsapp: 'WhatsApp',
-  tarea_general: 'Tarea general',
-}
-
-const ACTIVITY_STATUS_LABELS: Record<string, string> = {
-  pendiente: 'Pendiente',
-  completada: 'Completada',
-  cancelada: 'Cancelada',
-}
-
-const ACTIVITY_STATUS_BADGE: Record<string, string> = {
-  pendiente: 'text-bg-warning',
-  completada: 'text-bg-success',
-  cancelada: 'text-bg-secondary',
 }
 
 const CHANNEL_TYPE_LABELS: Record<string, string> = {

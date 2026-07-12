@@ -7,18 +7,35 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { Button, Card, CardBody, CardHeader, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Spinner } from 'react-bootstrap'
 
-import { type PipelineTaskType } from './data'
+import { type PipelineSectionType, type PipelineTaskType } from './data'
 import DealFormModal from './DealFormModal'
+import StageFormModal from './StageFormModal'
 import { PipelineProvider, usePipelineContext } from './usePipelineContext'
 import { useDeals } from './useDeals'
 
 export const variants = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'] as const
 
 const PipelinePage = () => {
-  const { sections, tasks, contactOptions, propertyOptions, loading, updateDealStage, createDeal, updateDeal, reload } = useDeals()
+  const {
+    sections,
+    tasks,
+    contactOptions,
+    propertyOptions,
+    loading,
+    updateDealStage,
+    createDeal,
+    updateDeal,
+    deleteDeal,
+    createStage,
+    updateStage,
+    deleteStage,
+    reload,
+  } = useDeals()
   const [showDealModal, setShowDealModal] = useState(false)
   const [editingDeal, setEditingDeal] = useState<PipelineTaskType | null>(null)
   const [createStageId, setCreateStageId] = useState<string | undefined>()
+  const [showStageModal, setShowStageModal] = useState(false)
+  const [editingStage, setEditingStage] = useState<PipelineSectionType | null>(null)
 
   const openCreate = (stageId?: string) => {
     setEditingDeal(null)
@@ -29,6 +46,32 @@ const PipelinePage = () => {
   const openEdit = (task: PipelineTaskType) => {
     setEditingDeal(task)
     setShowDealModal(true)
+  }
+
+  const handleDelete = async (task: PipelineTaskType) => {
+    if (!window.confirm(`¿Eliminar la negociación "${task.title}"? Esta acción no se puede deshacer.`)) return
+    const { error } = await deleteDeal(task.id)
+    if (error) {
+      window.alert(error)
+    }
+  }
+
+  const openCreateStage = () => {
+    setEditingStage(null)
+    setShowStageModal(true)
+  }
+
+  const openEditStage = (stage: PipelineSectionType) => {
+    setEditingStage(stage)
+    setShowStageModal(true)
+  }
+
+  const handleDeleteStage = async (stage: PipelineSectionType) => {
+    if (!window.confirm(`¿Eliminar la etapa "${stage.title}"?`)) return
+    const { error } = await deleteStage(stage.id)
+    if (error) {
+      window.alert(error)
+    }
   }
 
   if (loading) {
@@ -43,8 +86,8 @@ const PipelinePage = () => {
     <PipelineProvider sectionsData={sections} tasksData={tasks} onTaskMoved={updateDealStage}>
       <div className="outlook-box kanban-app">
         <Card className="h-100 mb-0 flex-grow-1">
-          <PipelineHeader onAddDeal={() => openCreate()} />
-          <Board onAddTask={openCreate} onEditTask={openEdit} />
+          <PipelineHeader onAddDeal={() => openCreate()} onAddStage={openCreateStage} />
+          <Board onAddTask={openCreate} onEditTask={openEdit} onDeleteTask={handleDelete} onEditStage={openEditStage} onDeleteStage={handleDeleteStage} />
         </Card>
       </div>
       <DealFormModal
@@ -59,27 +102,50 @@ const PipelinePage = () => {
         onCreate={createDeal}
         onUpdate={updateDeal}
       />
+      <StageFormModal
+        show={showStageModal}
+        onHide={() => setShowStageModal(false)}
+        onSaved={reload}
+        stage={editingStage}
+        onCreate={createStage}
+        onUpdate={updateStage}
+      />
     </PipelineProvider>
   )
 }
 
 export default PipelinePage
 
-const PipelineHeader = ({ onAddDeal }: { onAddDeal: () => void }) => {
+const PipelineHeader = ({ onAddDeal, onAddStage }: { onAddDeal: () => void; onAddStage: () => void }) => {
   return (
     <CardHeader className="d-flex border-light align-items-center gap-2">
       <div className="app-search d-none d-lg-block">
         <input type="search" className="form-control" placeholder="Buscar negociación..." />
         <Icon icon="search" className="app-search-icon text-muted" />
       </div>
-      <Button variant="primary" className="ms-auto" onClick={onAddDeal}>
+      <Button variant="light" className="ms-auto" onClick={onAddStage}>
+        <Icon icon="layout-grid" className="fs-sm me-2" /> Nueva etapa
+      </Button>
+      <Button variant="primary" onClick={onAddDeal}>
         <Icon icon="plus" className="fs-sm me-2" /> Nueva negociación
       </Button>
     </CardHeader>
   )
 }
 
-const Board = ({ onAddTask, onEditTask }: { onAddTask: (sectionId: string) => void; onEditTask: (task: PipelineTaskType) => void }) => {
+const Board = ({
+  onAddTask,
+  onEditTask,
+  onDeleteTask,
+  onEditStage,
+  onDeleteStage,
+}: {
+  onAddTask: (sectionId: string) => void
+  onEditTask: (task: PipelineTaskType) => void
+  onDeleteTask: (task: PipelineTaskType) => void
+  onEditStage: (stage: PipelineSectionType) => void
+  onDeleteStage: (stage: PipelineSectionType) => void
+}) => {
   const { onDragEnd, sections, getAllTasksPerSection } = usePipelineContext()
 
   return (
@@ -94,9 +160,26 @@ const Board = ({ onAddTask, onEditTask }: { onAddTask: (sectionId: string) => vo
                     <h5 className="m-0">
                       {section.title} ({getAllTasksPerSection(section.id).length})
                     </h5>
-                    <Button className="ms-auto btn btn-sm btn-icon rounded-circle btn-primary" onClick={() => onAddTask(section.id)}>
-                      <Icon icon="plus" />
-                    </Button>
+                    <div className="ms-auto d-flex align-items-center gap-1">
+                      <Button className="btn btn-sm btn-icon rounded-circle btn-primary" onClick={() => onAddTask(section.id)}>
+                        <Icon icon="plus" />
+                      </Button>
+                      <Dropdown align="end">
+                        <DropdownToggle className="btn btn-icon btn-sm drop-arrow-none btn-ghost-light text-muted content-none" type="button">
+                          <Icon icon="ellipsis-vertical" />
+                        </DropdownToggle>
+                        <DropdownMenu>
+                          <DropdownItem onClick={() => onEditStage(section)}>
+                            <Icon icon="square-pen" className="me-2" />
+                            Editar etapa
+                          </DropdownItem>
+                          <DropdownItem className="text-danger" onClick={() => onDeleteStage(section)}>
+                            <Icon icon="trash-2" className="me-2" />
+                            Eliminar etapa
+                          </DropdownItem>
+                        </DropdownMenu>
+                      </Dropdown>
+                    </div>
                   </div>
                   <SimpleBar className="kanban-board-group px-2">
                     <ul>
@@ -104,7 +187,7 @@ const Board = ({ onAddTask, onEditTask }: { onAddTask: (sectionId: string) => vo
                         <Draggable draggableId={task.id} index={idx} key={task.id}>
                           {(provided) => (
                             <li className="kanban-item" ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                              <TaskItem item={task} onEdit={onEditTask} />
+                              <TaskItem item={task} onEdit={onEditTask} onDelete={onDeleteTask} />
                             </li>
                           )}
                         </Draggable>
@@ -122,8 +205,15 @@ const Board = ({ onAddTask, onEditTask }: { onAddTask: (sectionId: string) => vo
   )
 }
 
-const TaskItem = ({ item, onEdit }: { item: PipelineTaskType; onEdit: (task: PipelineTaskType) => void }) => {
-  const { deleteTask } = usePipelineContext()
+const TaskItem = ({
+  item,
+  onEdit,
+  onDelete,
+}: {
+  item: PipelineTaskType
+  onEdit: (task: PipelineTaskType) => void
+  onDelete: (task: PipelineTaskType) => void
+}) => {
   return (
     <>
       <Card className="shadow mb-2">
@@ -146,7 +236,7 @@ const TaskItem = ({ item, onEdit }: { item: PipelineTaskType; onEdit: (task: Pip
                   <Icon icon="square-pen" className="me-2" />
                   Editar
                 </DropdownItem>
-                <DropdownItem className="text-danger" onClick={() => deleteTask(item.id)}>
+                <DropdownItem className="text-danger" onClick={() => onDelete(item)}>
                   <Icon icon="trash-2" className="me-2" />
                   Eliminar
                 </DropdownItem>

@@ -4,7 +4,25 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { Badge, Card, CardBody, CardHeader, Col, ListGroup, ListGroupItem, Row, Spinner } from 'react-bootstrap'
+import {
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Col,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+  ListGroup,
+  ListGroupItem,
+  Row,
+  Spinner,
+} from 'react-bootstrap'
+
+import ActivityFormModal from '../../components/ActivityFormModal'
+import { ACTIVITY_STATUS_BADGE, ACTIVITY_STATUS_LABELS, ACTIVITY_TYPE_LABELS } from '../../components/activityLabels'
 
 interface DealDetail {
   id: string
@@ -17,9 +35,27 @@ interface DealDetail {
   pipeline_stages: { id: string; name: string } | null
 }
 
-interface AgentProfile {
+interface ProfileRow {
+  id: string
   full_name: string | null
   email: string
+}
+
+interface ActivityRow {
+  id: string
+  type: string
+  status: string
+  due_at: string | null
+  notes: string | null
+  created_at: string
+}
+
+interface StageHistoryRow {
+  id: string
+  changed_at: string
+  changed_by: string | null
+  from_stage: { name: string } | null
+  to_stage: { name: string } | null
 }
 
 const formatCurrency = (value: number | null) => {
@@ -32,13 +68,20 @@ const formatDate = (value: string | null) => {
   return new Date(value).toLocaleDateString('es-DO', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
+const formatDateTime = (value: string) => {
+  return new Date(value).toLocaleString('es-DO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
 const Page = () => {
   const { id } = useParams<{ id: string }>()
   const { tenantId } = useAuth()
 
   const [deal, setDeal] = useState<DealDetail | null>(null)
-  const [agent, setAgent] = useState<AgentProfile | null>(null)
+  const [activities, setActivities] = useState<ActivityRow[]>([])
+  const [history, setHistory] = useState<StageHistoryRow[]>([])
+  const [profilesById, setProfilesById] = useState<Map<string, ProfileRow>>(new Map())
   const [loading, setLoading] = useState(true)
+  const [showNewActivity, setShowNewActivity] = useState(false)
 
   const loadDetail = useCallback(async () => {
     if (!tenantId || !id) return
@@ -56,16 +99,29 @@ const Page = () => {
     const typedDeal = dealRow as unknown as DealDetail | null
     setDeal(typedDeal)
 
-    if (typedDeal?.assigned_agent_id) {
-      const { data: profileRow } = await supabase
-        .from('profiles')
-        .select('full_name, email')
+    const [{ data: activityRows }, { data: historyRows }] = await Promise.all([
+      supabase.from('activities').select('id, type, status, due_at, notes, created_at').eq('tenant_id', tenantId).eq('deal_id', id).order('created_at', { ascending: false }),
+      supabase
+        .from('deal_stage_history')
+        .select('id, changed_at, changed_by, from_stage:pipeline_stages!from_stage_id ( name ), to_stage:pipeline_stages!to_stage_id ( name )')
         .eq('tenant_id', tenantId)
-        .eq('id', typedDeal.assigned_agent_id)
-        .maybeSingle()
-      setAgent(profileRow)
+        .eq('deal_id', id)
+        .order('changed_at', { ascending: false }),
+    ])
+
+    setActivities(activityRows || [])
+    const typedHistory = (historyRows as unknown as StageHistoryRow[]) || []
+    setHistory(typedHistory)
+
+    const profileIds = Array.from(
+      new Set([typedDeal?.assigned_agent_id, ...typedHistory.map((h) => h.changed_by)].filter((value): value is string => Boolean(value)))
+    )
+
+    if (profileIds.length) {
+      const { data: profileRows } = await supabase.from('profiles').select('id, full_name, email').eq('tenant_id', tenantId).in('id', profileIds)
+      setProfilesById(new Map((profileRows || []).map((row) => [row.id, row])))
     } else {
-      setAgent(null)
+      setProfilesById(new Map())
     }
 
     setLoading(false)
@@ -74,6 +130,27 @@ const Page = () => {
   useEffect(() => {
     loadDetail()
   }, [loadDetail])
+
+  const handleActivityStatusChange = async (activityId: string, status: string) => {
+    if (!tenantId) return
+    const { error } = await supabase.from('activities').update({ status }).eq('id', activityId).eq('tenant_id', tenantId)
+    if (error) {
+      window.alert(error.message)
+      return
+    }
+    loadDetail()
+  }
+
+  const handleDeleteActivity = async (activityId: string) => {
+    if (!tenantId) return
+    if (!window.confirm('¿Eliminar esta actividad?')) return
+    const { error } = await supabase.from('activities').delete().eq('id', activityId).eq('tenant_id', tenantId)
+    if (error) {
+      window.alert(error.message)
+      return
+    }
+    loadDetail()
+  }
 
   if (loading) {
     return (
@@ -142,7 +219,10 @@ const Page = () => {
                 </Col>
                 <Col md={6}>
                   <p className="text-muted fs-xs mb-1">Agente asignado</p>
-                  <p className="fw-medium mb-0">{agent?.full_name || agent?.email || 'Sin asignar'}</p>
+                  <p className="fw-medium mb-0">
+                    {(deal.assigned_agent_id && (profilesById.get(deal.assigned_agent_id)?.full_name || profilesById.get(deal.assigned_agent_id)?.email)) ||
+                      'Sin asignar'}
+                  </p>
                 </Col>
                 <Col md={6}>
                   <p className="text-muted fs-xs mb-1">Creada el</p>
@@ -173,6 +253,89 @@ const Page = () => {
           </Card>
         </Col>
       </Row>
+
+      <Row>
+        <Col lg={6}>
+          <Card>
+            <CardHeader className="d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">Actividades</h5>
+              <Button size="sm" variant="primary" onClick={() => setShowNewActivity(true)}>
+                <Icon icon="plus" className="fs-sm me-1" /> Nueva
+              </Button>
+            </CardHeader>
+            <ListGroup variant="flush">
+              {activities.length === 0 && <ListGroupItem className="text-muted">Sin actividades registradas.</ListGroupItem>}
+              {activities.map((activity) => (
+                <ListGroupItem key={activity.id} className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <p className="mb-1 fw-medium">{ACTIVITY_TYPE_LABELS[activity.type] || activity.type}</p>
+                    {activity.notes && <p className="mb-0 text-muted fs-xs">{activity.notes}</p>}
+                  </div>
+                  <div className="d-flex align-items-center gap-1">
+                    <Dropdown align="end">
+                      <DropdownToggle as="span" bsPrefix="badge-dropdown-toggle" style={{ cursor: 'pointer' }}>
+                        <Badge className={ACTIVITY_STATUS_BADGE[activity.status] || 'text-bg-secondary'}>
+                          {ACTIVITY_STATUS_LABELS[activity.status] || activity.status}
+                        </Badge>
+                      </DropdownToggle>
+                      <DropdownMenu>
+                        {Object.entries(ACTIVITY_STATUS_LABELS).map(([value, label]) => (
+                          <DropdownItem key={value} onClick={() => handleActivityStatusChange(activity.id, value)}>
+                            {label}
+                          </DropdownItem>
+                        ))}
+                      </DropdownMenu>
+                    </Dropdown>
+                    <button type="button" className="btn btn-icon btn-sm btn-ghost-light text-muted" onClick={() => handleDeleteActivity(activity.id)}>
+                      <Icon icon="trash-2" className="fs-sm" />
+                    </button>
+                  </div>
+                </ListGroupItem>
+              ))}
+            </ListGroup>
+          </Card>
+        </Col>
+
+        <Col lg={6}>
+          <Card>
+            <CardHeader>
+              <h5 className="mb-0">Historial de etapa</h5>
+            </CardHeader>
+            <ListGroup variant="flush">
+              {history.length === 0 && <ListGroupItem className="text-muted">Sin cambios de etapa registrados.</ListGroupItem>}
+              {history.map((entry) => {
+                const changedByProfile = entry.changed_by ? profilesById.get(entry.changed_by) : undefined
+                return (
+                  <ListGroupItem key={entry.id}>
+                    <p className="mb-1">
+                      {entry.from_stage ? (
+                        <>
+                          <span className="text-muted">{entry.from_stage.name}</span> <Icon icon="arrow-right" className="text-muted fs-sm mx-1" />{' '}
+                          <span className="fw-medium">{entry.to_stage?.name}</span>
+                        </>
+                      ) : (
+                        <span className="fw-medium">Creada en {entry.to_stage?.name}</span>
+                      )}
+                    </p>
+                    <p className="mb-0 text-muted fs-xs">
+                      {formatDateTime(entry.changed_at)}
+                      {changedByProfile && ` · ${changedByProfile.full_name || changedByProfile.email}`}
+                    </p>
+                  </ListGroupItem>
+                )
+              })}
+            </ListGroup>
+          </Card>
+        </Col>
+      </Row>
+
+      <ActivityFormModal
+        show={showNewActivity}
+        onHide={() => setShowNewActivity(false)}
+        onSaved={loadDetail}
+        dealId={deal.id}
+        contactId={deal.contacts?.id}
+      />
     </>
   )
 }
