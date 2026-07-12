@@ -1,23 +1,12 @@
-import user1 from '@/assets/images/users/user-1.jpg'
 import { VariantType } from '@/types'
 import type { DropResult } from '@hello-pangea/dnd'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { createContext, startTransition, use, useCallback, useMemo, useState } from 'react'
+import { createContext, startTransition, use, useCallback, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
-import { type PipelineDialogType, type PipelineProviderProps, type PipelineSectionType, type PipelineTaskType, type PipelineType } from './data'
+import { type PipelineProviderProps, type PipelineSectionType, type PipelineTaskType, type PipelineType } from './data'
 
 const PipelineContext = createContext<PipelineType | undefined>(undefined)
-
-export const PipelineTaskSchema = yup.object({
-  title: yup.string().required('Please enter project title'),
-  userName: yup.string().required('Please enter username'),
-  date: yup.string().required('Please enter project Date'),
-  amount: yup.number().required('Please enter amount'),
-  companyName: yup.mixed<PipelineTaskType['company']>().required('Please Enter Company Name'),
-})
-
-export type TaskFormFields = yup.InferType<typeof PipelineTaskSchema>
 
 export const PipelineSectionSchema = yup.object({
   sectionTitle: yup.string().required('Section title is required'),
@@ -38,21 +27,16 @@ const PipelineProvider = ({ children, tasksData, sectionsData, onTaskMoved }: Pi
   const [sections, setSections] = useState<PipelineSectionType[]>(sectionsData)
   const [tasks, setTasks] = useState<PipelineTaskType[]>(tasksData)
   const [activeSectionId, setActiveSectionId] = useState<PipelineSectionType['id']>()
-  const [activeTaskId, setActiveTaskId] = useState<PipelineTaskType['id']>()
-  const [taskFormData, setTaskFormData] = useState<PipelineTaskType>()
   const [sectionFormData, setSectionFormData] = useState<PipelineSectionType>()
-  const [dialogStates, setDialogStates] = useState<PipelineDialogType>({
-    showNewTaskModal: false,
-    showSectionModal: false,
-  })
+  const [showSectionModal, setShowSectionModal] = useState(false)
 
-  const {
-    control: newTaskControl,
-    handleSubmit: newTaskHandleSubmit,
-    reset: newTaskReset,
-  } = useForm({
-    resolver: yupResolver(PipelineTaskSchema),
-  })
+  useEffect(() => {
+    setSections(sectionsData)
+  }, [sectionsData])
+
+  useEffect(() => {
+    setTasks(tasksData)
+  }, [tasksData])
 
   const {
     control: sectionControl,
@@ -65,42 +49,6 @@ const PipelineProvider = ({ children, tasksData, sectionsData, onTaskMoved }: Pi
   const emptySectionForm = useCallback(() => {
     sectionReset({ sectionTitle: '' })
   }, [sectionReset])
-
-  const emptyTaskForm = useCallback(() => {
-    newTaskReset({
-      title: undefined,
-      userName: undefined,
-      companyName: undefined,
-      amount: undefined,
-      date: undefined,
-    })
-  }, [newTaskReset])
-
-  const toggleNewTaskModal = (sectionId?: PipelineSectionType['id'], taskId?: PipelineTaskType['id']) => {
-    if (sectionId) setActiveSectionId(sectionId)
-    if (taskId) {
-      const foundTask = tasks.find((task) => task.id === taskId)
-      if (foundTask) {
-        newTaskReset({
-          title: foundTask.title,
-          userName: foundTask.userName,
-          companyName: foundTask.company,
-          amount: foundTask.amount,
-          date: foundTask.date,
-        })
-        startTransition(() => {
-          setActiveTaskId(taskId)
-        })
-        startTransition(() => {
-          setTaskFormData(foundTask)
-        })
-      }
-    }
-    if (dialogStates.showNewTaskModal) emptyTaskForm()
-    startTransition(() => {
-      setDialogStates({ ...dialogStates, showNewTaskModal: !dialogStates.showNewTaskModal })
-    })
-  }
 
   const toggleSectionModal = (sectionId?: PipelineSectionType['id']) => {
     if (sectionId) {
@@ -117,9 +65,9 @@ const PipelineProvider = ({ children, tasksData, sectionsData, onTaskMoved }: Pi
         })
       }
     }
-    if (dialogStates.showSectionModal) emptySectionForm()
+    if (showSectionModal) emptySectionForm()
     startTransition(() => {
-      setDialogStates({ ...dialogStates, showSectionModal: !dialogStates.showSectionModal })
+      setShowSectionModal(!showSectionModal)
     })
   }
 
@@ -130,80 +78,7 @@ const PipelineProvider = ({ children, tasksData, sectionsData, onTaskMoved }: Pi
     [tasks]
   )
 
-  const handleNewTask = newTaskHandleSubmit((values: TaskFormFields) => {
-    const formData: TaskFormFields = {
-      title: values.title,
-      userName: values.userName,
-      amount: values.amount,
-      companyName: values.companyName,
-      date: values.date,
-    }
-
-    if (activeSectionId) {
-      const newTask: PipelineTaskType = {
-        ...formData,
-        title: formData.title,
-        user: user1,
-        userName: formData.userName,
-        company: formData.companyName,
-        date: formData.date,
-        messages: 4,
-        tasks: 3,
-        amount: formData.amount,
-        status: 'won',
-        sectionId: activeSectionId,
-        id: Number(tasks.slice(-1)[0].id) + 1 + '',
-      }
-      setTasks([...tasks, newTask])
-    }
-    startTransition(() => {
-      toggleNewTaskModal()
-    })
-    setActiveSectionId(undefined)
-    newTaskReset()
-  })
-
-  const handleEditTask = newTaskHandleSubmit((values: TaskFormFields) => {
-    const formData: TaskFormFields = {
-      title: values.title,
-      userName: values.userName,
-      amount: values.amount,
-      companyName: values.companyName,
-      date: values.date,
-    }
-
-    if (activeSectionId && activeTaskId) {
-      const newTask: PipelineTaskType = {
-        ...formData,
-        title: formData.title,
-        user: user1,
-        userName: formData.userName,
-        company: formData.companyName,
-        date: formData.date,
-        messages: 3,
-        tasks: 4,
-        amount: formData.amount,
-        status: 'won',
-        sectionId: activeSectionId,
-        id: activeTaskId,
-      }
-      setTasks(tasks.map((t) => (t.id === activeTaskId ? newTask : t)))
-    }
-    startTransition(() => {
-      toggleNewTaskModal()
-    })
-    startTransition(() => {
-      setActiveSectionId(undefined)
-    })
-    startTransition(() => {
-      newTaskReset()
-    })
-    startTransition(() => {
-      setTaskFormData(undefined)
-    })
-  })
-
-  const handleDeleteTask = (taskId: PipelineTaskType['id']) => {
+  const deleteTask = (taskId: PipelineTaskType['id']) => {
     setTasks(tasks.filter((task) => task.id !== taskId))
   }
 
@@ -287,21 +162,10 @@ const PipelineProvider = ({ children, tasksData, sectionsData, onTaskMoved }: Pi
         () => ({
           sections,
           activeSectionId,
-          taskFormData,
           sectionFormData,
-          newTaskModal: {
-            open: dialogStates.showNewTaskModal,
-            toggle: toggleNewTaskModal,
-          },
           sectionModal: {
-            open: dialogStates.showSectionModal,
+            open: showSectionModal,
             toggle: toggleSectionModal,
-          },
-          taskForm: {
-            control: newTaskControl,
-            newRecord: handleNewTask,
-            editRecord: handleEditTask,
-            deleteRecord: handleDeleteTask,
           },
           sectionForm: {
             control: sectionControl,
@@ -311,25 +175,21 @@ const PipelineProvider = ({ children, tasksData, sectionsData, onTaskMoved }: Pi
           },
           getAllTasksPerSection,
           onDragEnd,
+          deleteTask,
         }),
         [
           sections,
           activeSectionId,
-          taskFormData,
           sectionFormData,
-          dialogStates,
-          toggleNewTaskModal,
+          showSectionModal,
           toggleSectionModal,
-          newTaskControl,
-          handleNewTask,
-          handleEditTask,
-          handleDeleteTask,
           sectionControl,
           handleNewSection,
           handleEditSection,
           handleDeleteSection,
           getAllTasksPerSection,
           onDragEnd,
+          deleteTask,
         ]
       )}
     >

@@ -9,11 +9,6 @@ export type PipelineProviderProps = {
   onTaskMoved?: (taskId: PipelineTaskType['id'], newSectionId: PipelineSectionType['id']) => void
 } & ChildrenType
 
-export type PipelineDialogType = {
-  showNewTaskModal: boolean
-  showSectionModal: boolean
-}
-
 export type FormControlSubmitType = {
   control: Control<any>
   newRecord: (values: BaseSyntheticEvent) => void
@@ -24,20 +19,15 @@ export type FormControlSubmitType = {
 export type PipelineType = {
   sections: PipelineSectionType[]
   activeSectionId: PipelineSectionType['id'] | undefined
-  newTaskModal: {
-    open: boolean
-    toggle: (sectionId?: PipelineSectionType['id'], taskId?: PipelineTaskType['id']) => void
-  }
   sectionModal: {
     open: boolean
     toggle: (sectionId?: PipelineSectionType['id']) => void
   }
-  taskFormData: PipelineTaskType | undefined
   sectionFormData: PipelineSectionType | undefined
-  taskForm: FormControlSubmitType
   sectionForm: FormControlSubmitType
   getAllTasksPerSection: (sectionId: PipelineSectionType['id']) => PipelineTaskType[]
   onDragEnd: (result: DropResult) => void
+  deleteTask: (taskId: PipelineTaskType['id']) => void
 }
 
 export type PipelineTaskType = {
@@ -52,6 +42,10 @@ export type PipelineTaskType = {
   tasks?: number
   amount: number
   status?: 'won' | 'lost'
+  contactId: string
+  propertyId: string | null
+  valueEstimate: number | null
+  expectedCloseDate: string | null
 }
 
 export type PipelineSectionType = {

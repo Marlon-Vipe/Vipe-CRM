@@ -3,17 +3,33 @@ import { SimpleBar } from '@/components/wrappers/SimpleBar'
 import { toPascalCase } from '@/utils/helpers'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd'
 import clsx from 'clsx'
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { Button, Card, CardBody, CardHeader, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Spinner } from 'react-bootstrap'
 
 import { type PipelineTaskType } from './data'
+import DealFormModal from './DealFormModal'
 import { PipelineProvider, usePipelineContext } from './usePipelineContext'
 import { useDeals } from './useDeals'
 
 export const variants = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'] as const
 
 const PipelinePage = () => {
-  const { sections, tasks, loading, updateDealStage } = useDeals()
+  const { sections, tasks, contactOptions, propertyOptions, loading, updateDealStage, createDeal, updateDeal, reload } = useDeals()
+  const [showDealModal, setShowDealModal] = useState(false)
+  const [editingDeal, setEditingDeal] = useState<PipelineTaskType | null>(null)
+  const [createStageId, setCreateStageId] = useState<string | undefined>()
+
+  const openCreate = (stageId?: string) => {
+    setEditingDeal(null)
+    setCreateStageId(stageId)
+    setShowDealModal(true)
+  }
+
+  const openEdit = (task: PipelineTaskType) => {
+    setEditingDeal(task)
+    setShowDealModal(true)
+  }
 
   if (loading) {
     return (
@@ -27,28 +43,43 @@ const PipelinePage = () => {
     <PipelineProvider sectionsData={sections} tasksData={tasks} onTaskMoved={updateDealStage}>
       <div className="outlook-box kanban-app">
         <Card className="h-100 mb-0 flex-grow-1">
-          <PipelineHeader />
-          <Board />
+          <PipelineHeader onAddDeal={() => openCreate()} />
+          <Board onAddTask={openCreate} onEditTask={openEdit} />
         </Card>
       </div>
+      <DealFormModal
+        show={showDealModal}
+        onHide={() => setShowDealModal(false)}
+        onSaved={reload}
+        deal={editingDeal}
+        defaultStageId={createStageId}
+        stages={sections}
+        contactOptions={contactOptions}
+        propertyOptions={propertyOptions}
+        onCreate={createDeal}
+        onUpdate={updateDeal}
+      />
     </PipelineProvider>
   )
 }
 
 export default PipelinePage
 
-const PipelineHeader = () => {
+const PipelineHeader = ({ onAddDeal }: { onAddDeal: () => void }) => {
   return (
-    <CardHeader className=" d-none d-lg-flex border-light align-items-center gap-2">
-      <div className="app-search">
+    <CardHeader className="d-flex border-light align-items-center gap-2">
+      <div className="app-search d-none d-lg-block">
         <input type="search" className="form-control" placeholder="Buscar negociación..." />
         <Icon icon="search" className="app-search-icon text-muted" />
       </div>
+      <Button variant="primary" className="ms-auto" onClick={onAddDeal}>
+        <Icon icon="plus" className="fs-sm me-2" /> Nueva negociación
+      </Button>
     </CardHeader>
   )
 }
 
-const Board = () => {
+const Board = ({ onAddTask, onEditTask }: { onAddTask: (sectionId: string) => void; onEditTask: (task: PipelineTaskType) => void }) => {
   const { onDragEnd, sections, getAllTasksPerSection } = usePipelineContext()
 
   return (
@@ -63,7 +94,7 @@ const Board = () => {
                     <h5 className="m-0">
                       {section.title} ({getAllTasksPerSection(section.id).length})
                     </h5>
-                    <Button className="ms-auto btn btn-sm btn-icon rounded-circle btn-primary">
+                    <Button className="ms-auto btn btn-sm btn-icon rounded-circle btn-primary" onClick={() => onAddTask(section.id)}>
                       <Icon icon="plus" />
                     </Button>
                   </div>
@@ -73,7 +104,7 @@ const Board = () => {
                         <Draggable draggableId={task.id} index={idx} key={task.id}>
                           {(provided) => (
                             <li className="kanban-item" ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                              <TaskItem item={task} />
+                              <TaskItem item={task} onEdit={onEditTask} />
                             </li>
                           )}
                         </Draggable>
@@ -91,8 +122,8 @@ const Board = () => {
   )
 }
 
-const TaskItem = ({ item }: { item: PipelineTaskType }) => {
-  const { newTaskModal, taskForm } = usePipelineContext()
+const TaskItem = ({ item, onEdit }: { item: PipelineTaskType; onEdit: (task: PipelineTaskType) => void }) => {
+  const { deleteTask } = usePipelineContext()
   return (
     <>
       <Card className="shadow mb-2">
@@ -100,7 +131,7 @@ const TaskItem = ({ item }: { item: PipelineTaskType }) => {
           <div className="d-flex align-items-center mb-2">
             <div>
               <h5 className="mb-0 fw-semibold">
-                <Link to="" className="link-reset">
+                <Link to={`/crm/negociaciones/${item.id}`} className="link-reset">
                   {item.title}
                 </Link>
               </h5>
@@ -111,28 +142,20 @@ const TaskItem = ({ item }: { item: PipelineTaskType }) => {
                 <Icon icon="ellipsis-vertical" className="fs-xl" />
               </DropdownToggle>
               <DropdownMenu align="end">
-                <DropdownItem>
-                  <Icon icon="share-2" className="me-2" />
-                  Share
-                </DropdownItem>
-                <DropdownItem onClick={() => newTaskModal.toggle(item.sectionId, item.id)}>
+                <DropdownItem onClick={() => onEdit(item)}>
                   <Icon icon="square-pen" className="me-2" />
-                  Edit
+                  Editar
                 </DropdownItem>
-                <DropdownItem>
-                  <Icon icon="user" className="me-2" />
-                  Assign
-                </DropdownItem>
-                <DropdownItem className="text-danger" onClick={() => taskForm.deleteRecord(item.id)}>
+                <DropdownItem className="text-danger" onClick={() => deleteTask(item.id)}>
                   <Icon icon="trash-2" className="me-2" />
-                  Delete
+                  Eliminar
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>
           </div>
           <div className="d-flex justify-content-between align-items-center">
             <div className="d-flex align-items-center gap-1">
-              <img src={item.user} className="rounded-circle avatar-xs" alt="Mark Allen" />
+              <img src={item.user} className="rounded-circle avatar-xs" alt={item.userName} />
               <span className="fw-medium text-muted fs-sm">{item.userName}</span>
             </div>
             <div className="d-flex align-items-center gap-1">
