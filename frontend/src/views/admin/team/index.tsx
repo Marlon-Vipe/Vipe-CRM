@@ -1,0 +1,111 @@
+import PageBreadcrumb from '@/components/PageBreadcrumb'
+import Icon from '@/components/wrappers/Icon'
+import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/lib/supabaseClient'
+import { useState } from 'react'
+import { Badge, Button, Card, CardBody, CardHeader, Col, ListGroup, ListGroupItem, Row, Spinner } from 'react-bootstrap'
+
+import { ROLE_LABELS } from './components/data'
+import { useTeam } from './components/useTeam'
+import InviteFormModal from './components/InviteFormModal'
+
+const Page = () => {
+  const { role: myRole, tenantId } = useAuth()
+  const { members, invitations, loading, reload } = useTeam()
+  const [showInvite, setShowInvite] = useState(false)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const canManageTeam = myRole === 'owner' || myRole === 'admin'
+
+  const copyInviteLink = async (token: string, id: string) => {
+    const link = `${window.location.origin}/auth/sign-up?invite=${token}`
+    await navigator.clipboard.writeText(link)
+    setCopiedId(id)
+    setTimeout(() => setCopiedId((current) => (current === id ? null : current)), 2000)
+  }
+
+  const handleRevoke = async (invitationId: string) => {
+    if (!tenantId) return
+    if (!window.confirm('¿Revocar esta invitación?')) return
+    const { error } = await supabase.from('invitations').delete().eq('id', invitationId).eq('tenant_id', tenantId)
+    if (error) {
+      window.alert(error.message)
+      return
+    }
+    reload()
+  }
+
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <Spinner animation="border" variant="primary" />
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <PageBreadcrumb title="Equipo" subtitle="CRM Inmobiliario" />
+
+      <Row>
+        <Col lg={6}>
+          <Card>
+            <CardHeader>
+              <h5 className="mb-0">Miembros ({members.length})</h5>
+            </CardHeader>
+            <ListGroup variant="flush">
+              {members.map((member) => (
+                <ListGroupItem key={member.userId} className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <p className="mb-0 fw-medium">{member.fullName || member.email}</p>
+                    <p className="mb-0 text-muted fs-xs">{member.email}</p>
+                  </div>
+                  <Badge className="text-bg-light">{ROLE_LABELS[member.role]}</Badge>
+                </ListGroupItem>
+              ))}
+            </ListGroup>
+          </Card>
+        </Col>
+
+        <Col lg={6}>
+          <Card>
+            <CardHeader className="d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">Invitaciones pendientes ({invitations.length})</h5>
+              {canManageTeam && (
+                <Button size="sm" variant="primary" onClick={() => setShowInvite(true)}>
+                  <Icon icon="plus" className="fs-sm me-1" /> Invitar agente
+                </Button>
+              )}
+            </CardHeader>
+            <ListGroup variant="flush">
+              {invitations.length === 0 && <ListGroupItem className="text-muted">No hay invitaciones pendientes.</ListGroupItem>}
+              {invitations.map((invitation) => (
+                <ListGroupItem key={invitation.id} className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <p className="mb-0 fw-medium">{invitation.email}</p>
+                    <p className="mb-0 text-muted fs-xs">{ROLE_LABELS[invitation.role]}</p>
+                  </div>
+                  {canManageTeam && (
+                    <div className="d-flex gap-1">
+                      <Button size="sm" variant="light" onClick={() => copyInviteLink(invitation.token, invitation.id)}>
+                        <Icon icon={copiedId === invitation.id ? 'check' : 'link'} className="fs-sm me-1" />
+                        {copiedId === invitation.id ? 'Copiado' : 'Copiar enlace'}
+                      </Button>
+                      <button type="button" className="btn btn-icon btn-sm btn-ghost-light text-muted" onClick={() => handleRevoke(invitation.id)}>
+                        <Icon icon="trash-2" className="fs-sm" />
+                      </button>
+                    </div>
+                  )}
+                </ListGroupItem>
+              ))}
+            </ListGroup>
+          </Card>
+        </Col>
+      </Row>
+
+      <InviteFormModal show={showInvite} onHide={() => setShowInvite(false)} onSaved={reload} />
+    </>
+  )
+}
+
+export default Page

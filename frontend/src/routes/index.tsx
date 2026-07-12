@@ -18,6 +18,9 @@ export const routes: RouteObject[] = [
       { path: '/crm/propiedades/:id/editar', Component: lazy(() => import('@/views/admin/apps/crm-inmobiliario/properties/form')) },
       { path: '/crm/negociaciones', Component: lazy(() => import('@/views/admin/apps/crm-inmobiliario/deals')) },
       { path: '/crm/mensajes', Component: lazy(() => import('@/views/admin/apps/crm-inmobiliario/inbox')) },
+
+      // Equipo (RF-02: invitar agentes)
+      { path: '/equipo', Component: lazy(() => import('@/views/admin/team')) },
     ],
   },
   { path: '/auth/delete-account', Component: lazy(() => import('@/views/auth/basic/delete-account')) },

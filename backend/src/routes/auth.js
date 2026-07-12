@@ -2,6 +2,7 @@ const express = require("express");
 
 const { supabaseAdmin } = require("../lib/supabaseAdmin");
 const { requireAuth } = require("../middleware/requireAuth");
+const { upsertProfile } = require("../lib/profiles");
 
 const router = express.Router();
 
@@ -52,6 +53,8 @@ router.post("/complete-signup", requireAuth, async (req, res) => {
     }
     return res.status(500).json({ error: rpcError.message });
   }
+
+  await upsertProfile(req.user, tenantId);
 
   return res.status(201).json({ tenant_id: tenantId });
 });

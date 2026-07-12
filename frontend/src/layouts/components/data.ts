@@ -61,6 +61,12 @@ export const menuItems: MenuItemType[] = [
     'isTitle': true,
     'children': [
       {
+        'url': '/equipo',
+        'slug': 'pages:equipo',
+        'label': 'Equipo',
+        'icon': 'users',
+      },
+      {
         'icon': 'user-lock',
         'slug': 'authentication',
         'label': 'Autenticación',

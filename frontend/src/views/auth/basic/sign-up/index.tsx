@@ -19,7 +19,7 @@ const Page = () => {
                 </div>
                 <div className="auth-brand text-center mb-4">
                   <AuthLogo />
-                  <p className="text-muted w-lg-75 mx-auto mt-3">Crea tu agencia en el CRM Inmobiliario completando los datos a continuación.</p>
+                  <p className="text-muted w-lg-75 mx-auto mt-3">Completa tus datos para continuar.</p>
                 </div>
                 <Forms />
                 <p className="text-muted text-center mt-4 mb-0">

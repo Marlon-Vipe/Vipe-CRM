@@ -1,15 +1,28 @@
 import PasswordInputWithStrength from '@/components/PasswordInputWithStrength'
 import { useAuth } from '@/hooks/useAuth'
-import { completeSignup } from '@/lib/api'
+import { acceptInvitation, completeSignup, getInvitation } from '@/lib/api'
+import { setPendingInvitationToken } from '@/lib/pendingInvitation'
 import { setPendingTenantName } from '@/lib/pendingTenant'
-import { useRef, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router'
-import { Alert, Button, Form, FormCheck, FormControl, FormLabel } from 'react-bootstrap'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useNavigate, useSearchParams } from 'react-router'
+import { Alert, Button, Form, FormCheck, FormControl, FormLabel, Spinner } from 'react-bootstrap'
+
+interface InvitationPreview {
+  email: string
+  role: string
+  tenant_name: string
+}
 
 const Forms = () => {
   const { signUp } = useAuth()
   const navigate = useNavigate()
   const isSubmittingRef = useRef(false)
+  const [searchParams] = useSearchParams()
+  const inviteToken = searchParams.get('invite')
+
+  const [invitation, setInvitation] = useState<InvitationPreview | null>(null)
+  const [invitationError, setInvitationError] = useState('')
+  const [loadingInvitation, setLoadingInvitation] = useState(!!inviteToken)
 
   const [fullName, setFullName] = useState('')
   const [agencyName, setAgencyName] = useState('')
@@ -19,6 +32,31 @@ const Forms = () => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [pendingConfirmationEmail, setPendingConfirmationEmail] = useState('')
+
+  useEffect(() => {
+    if (!inviteToken) return
+    let isMounted = true
+
+    getInvitation(inviteToken)
+      .then((data) => {
+        if (!isMounted) return
+        setInvitation(data)
+        setEmail(data.email)
+      })
+      .catch((error) => {
+        if (!isMounted) return
+        setInvitationError((error as Error).message)
+      })
+      .finally(() => {
+        if (isMounted) setLoadingInvitation(false)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [inviteToken])
+
+  const isInvitationFlow = !!inviteToken && !!invitation
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -32,7 +70,7 @@ const Forms = () => {
       setErrorMessage('Debes aceptar los Términos y Condiciones para continuar.')
       return
     }
-    if (!agencyName.trim()) {
+    if (!isInvitationFlow && !agencyName.trim()) {
       setErrorMessage('Ingresa el nombre de tu agencia.')
       return
     }
@@ -47,7 +85,15 @@ const Forms = () => {
         return
       }
 
-      if (data.session) {
+      if (isInvitationFlow) {
+        if (data.session) {
+          await acceptInvitation({ accessToken: data.session.access_token, token: inviteToken as string })
+          navigate('/')
+        } else {
+          setPendingInvitationToken(email, inviteToken as string)
+          setPendingConfirmationEmail(email)
+        }
+      } else if (data.session) {
         // Confirmación de email deshabilitada: ya hay sesión, terminamos el
         // signup creando el tenant de una vez.
         await completeSignup({ accessToken: data.session.access_token, tenantName: agencyName })
@@ -66,11 +112,19 @@ const Forms = () => {
     }
   }
 
+  if (loadingInvitation) {
+    return (
+      <div className="text-center py-4">
+        <Spinner animation="border" variant="primary" size="sm" />
+      </div>
+    )
+  }
+
   if (pendingConfirmationEmail) {
     return (
       <Alert variant="success">
         Te enviamos un correo de confirmación a <strong>{pendingConfirmationEmail}</strong>. Abre el enlace para
-        activar tu cuenta y completar la creación de tu agencia.
+        activar tu cuenta {isInvitationFlow ? 'y unirte a la agencia.' : 'y completar la creación de tu agencia.'}
       </Alert>
     )
   }
@@ -78,12 +132,22 @@ const Forms = () => {
   return (
     <Form onSubmit={handleSubmit}>
       {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
-      <div className="mb-3">
-        <FormLabel>
-          Nombre de la agencia <span className="text-danger">*</span>
-        </FormLabel>
-        <FormControl type="text" required value={agencyName} onChange={(e) => setAgencyName(e.target.value)} />
-      </div>
+      {inviteToken && invitationError && (
+        <Alert variant="warning">{invitationError} Puedes crear una agencia nueva completando el formulario.</Alert>
+      )}
+      {isInvitationFlow && invitation && (
+        <Alert variant="info">
+          Te invitaron a unirte a <strong>{invitation.tenant_name}</strong>.
+        </Alert>
+      )}
+      {!isInvitationFlow && (
+        <div className="mb-3">
+          <FormLabel>
+            Nombre de la agencia <span className="text-danger">*</span>
+          </FormLabel>
+          <FormControl type="text" required value={agencyName} onChange={(e) => setAgencyName(e.target.value)} />
+        </div>
+      )}
       <div className="mb-3">
         <FormLabel>
           Tu nombre completo <span className="text-danger">*</span>
@@ -94,7 +158,14 @@ const Forms = () => {
         <FormLabel>
           Correo electrónico <span className="text-danger">*</span>
         </FormLabel>
-        <FormControl type="email" placeholder="tu@agencia.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        <FormControl
+          type="email"
+          placeholder="tu@agencia.com"
+          required
+          readOnly={isInvitationFlow}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
       </div>
       <div className="mb-3" data-password="bar">
         <PasswordInputWithStrength id="password" label="Contraseña" name="password" password={password} setPassword={setPassword} showIcon placeholder="••••••••" />
@@ -113,7 +184,7 @@ const Forms = () => {
       </div>
       <div className="d-grid">
         <Button variant="primary" type="submit" className="fw-semibold py-2" disabled={submitting}>
-          {submitting ? 'Creando agencia...' : 'Crear agencia'}
+          {submitting ? 'Guardando...' : isInvitationFlow ? 'Unirme a la agencia' : 'Crear agencia'}
         </Button>
       </div>
     </Form>

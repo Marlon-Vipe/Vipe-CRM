@@ -8,8 +8,9 @@ import { createContext, use, useEffect, useMemo, useRef, useState, useCallback, 
 import type { Session, User, AuthError } from '@supabase/supabase-js'
 
 import { supabase } from '@/lib/supabaseClient'
-import { completeSignup } from '@/lib/api'
+import { completeSignup, acceptInvitation } from '@/lib/api'
 import { getPendingTenantName, clearPendingTenantName } from '@/lib/pendingTenant'
+import { getPendingInvitationToken, clearPendingInvitationToken } from '@/lib/pendingInvitation'
 
 export type MembershipRole = 'owner' | 'admin' | 'agent'
 
@@ -84,25 +85,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return typedData
   }, [])
 
-  // Si el signup quedó pendiente de confirmación de email, termina de crear
-  // el tenant (vía backend) en cuanto detecta una sesión real sin membresía.
+  // Si el signup (o la aceptación de una invitación) quedó pendiente de
+  // confirmación de email, termina el flujo correspondiente en cuanto
+  // detecta una sesión real sin membresía.
   const completePendingSignup = useCallback(
     async (currentSession: Session) => {
       const email = currentSession.user?.email
       if (!email) return
 
-      const pendingTenantName = getPendingTenantName(email)
-      if (!pendingTenantName) return
+      const pendingInvitationToken = getPendingInvitationToken(email)
+      const pendingTenantName = pendingInvitationToken ? null : getPendingTenantName(email)
+      if (!pendingInvitationToken && !pendingTenantName) return
 
       if (pendingSignupInFlight.current.has(email)) return
       pendingSignupInFlight.current.add(email)
 
       try {
-        await completeSignup({
-          accessToken: currentSession.access_token,
-          tenantName: pendingTenantName,
-        })
-        clearPendingTenantName(email)
+        if (pendingInvitationToken) {
+          await acceptInvitation({ accessToken: currentSession.access_token, token: pendingInvitationToken })
+          clearPendingInvitationToken(email)
+        } else if (pendingTenantName) {
+          await completeSignup({ accessToken: currentSession.access_token, tenantName: pendingTenantName })
+          clearPendingTenantName(email)
+        }
         await loadMembership(currentSession.user.id)
       } catch (error) {
         // eslint-disable-next-line no-console

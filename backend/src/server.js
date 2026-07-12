@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 
 const authRoutes = require("./routes/auth");
+const invitationsRoutes = require("./routes/invitations");
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 app.use("/auth", authRoutes);
+app.use("/invitations", invitationsRoutes);
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => {

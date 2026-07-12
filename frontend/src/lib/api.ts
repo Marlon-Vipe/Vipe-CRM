@@ -38,3 +38,14 @@ export function completeSignup({
     body: { tenant_name: tenantName },
   })
 }
+
+export function getInvitation(token: string): Promise<{ email: string; role: string; tenant_name: string }> {
+  return request(`/invitations/${token}`)
+}
+
+export function acceptInvitation({ accessToken, token }: { accessToken: string; token: string }): Promise<{ tenant_id: string }> {
+  return request(`/invitations/${token}/accept`, {
+    method: 'POST',
+    accessToken,
+  })
+}
