@@ -33,7 +33,9 @@ router.post("/:id/messages", requireAuth, requireMembership, async (req, res) =>
   if (conversationError) return res.status(500).json({ error: conversationError.message });
   if (!conversation) return res.status(404).json({ error: "Conversación no encontrada." });
   if (!conversation.contacts?.phone) return res.status(422).json({ error: "El contacto de esta conversación no tiene teléfono registrado." });
-  if (!conversation.channels?.external_id) return res.status(422).json({ error: "Esta conversación no tiene un canal de WhatsApp conectado." });
+  if (!conversation.channels?.external_id || conversation.channels.status !== "activo") {
+    return res.status(422).json({ error: "Esta conversación no tiene un canal de WhatsApp conectado." });
+  }
 
   const { data: lastInbound, error: lastInboundError } = await supabaseAdmin
     .from("messages")

@@ -56,13 +56,13 @@ router.post("/checkout", requireAuth, requireOwnerOrAdmin, async (req, res) => {
 
   const { data: subscription } = await supabaseAdmin
     .from("subscriptions")
-    .select("stripe_customer_id")
+    .select(provider.customerIdColumn)
     .eq("tenant_id", tenant.id)
     .maybeSingle();
 
   try {
     const { url } = await provider.createCheckoutSession({
-      tenant: { ...tenant, stripe_customer_id: subscription?.stripe_customer_id, ownerEmail: req.user.email },
+      tenant: { ...tenant, providerCustomerId: subscription?.[provider.customerIdColumn], ownerEmail: req.user.email },
       plan,
       successUrl: `${FRONTEND_URL}/perfil?checkout=success`,
       cancelUrl: `${FRONTEND_URL}/perfil?checkout=cancelled`,
@@ -81,14 +81,14 @@ router.post("/portal", requireAuth, requireOwnerOrAdmin, async (req, res) => {
 
   const { data: subscription, error: subscriptionError } = await supabaseAdmin
     .from("subscriptions")
-    .select("stripe_customer_id")
+    .select(provider.customerIdColumn)
     .eq("tenant_id", req.membership.tenant_id)
     .maybeSingle();
   if (subscriptionError) return res.status(500).json({ error: subscriptionError.message });
 
   try {
     const { url } = await provider.createPortalSession({
-      tenant: { stripe_customer_id: subscription?.stripe_customer_id },
+      tenant: { providerCustomerId: subscription?.[provider.customerIdColumn] },
       returnUrl: `${FRONTEND_URL}/perfil`,
     });
     return res.json({ url });

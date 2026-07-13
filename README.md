@@ -96,18 +96,19 @@ dashboard de Supabase (Table Editor / SQL Editor).
 | `001_unique_membership_per_user.sql` | Restricción única `memberships.user_id` (evita duplicados por condición de carrera en el signup) |
 | `002_property_images_storage.sql` | Políticas RLS de `storage.objects` para el bucket `property-images` (insert/update/delete por tenant) |
 | `003_invitations_and_profiles.sql` | Tablas `profiles` (perfil público mínimo por usuario) e `invitations` (invitación de agentes con token) |
-| `004_subscription_guard.sql` | Trigger que bloquea `INSERT` en `contacts`/`properties`/`deals` cuando `tenants.status = 'suspendido'` (RF-12) |
+| `004_subscription_guard.sql` | Versión inicial (defectuosa) del guard de RF-12 — **superada por 005, aplícala igual y luego 005** |
+| `005_subscription_guard_rls_fix.sql` | Corrige 004: el trigger no distinguía inserts del backend (service_role) de inserts de usuarios finales porque ambos pasan por PostgREST — reemplaza el trigger por políticas RLS `RESTRICTIVE` (service_role tiene `BYPASSRLS`, así que las políticas RLS sí lo eximen correctamente) |
+| `006_whatsapp_dedup_constraints.sql` | Constraints únicos en `contacts(tenant_id, phone)` y `conversations` (una conversación "abierta" por contacto+canal) — evita duplicados si Twilio entrega un webhook dos veces casi simultáneamente |
 
 Para aplicar una migración: Supabase Dashboard → **SQL Editor** → pegar el
 contenido del archivo → **Run**.
 
-**Verificado en 2026-07-12: las tablas `profiles` e `invitations` (migración
-003) todavía NO existen en la base de datos real** — `PostgREST` responde
-"Could not find the table". Esto significa que el flujo de invitaciones
-(incluso las partes que ya estaban en el código antes de esta sesión, como
-`GET /invitations/:token`) no puede funcionar todavía. Aplica **001, 002, 003
-y 004 en orden** antes de probar cualquier cosa relacionada a invitaciones o
-facturación.
+**Estado al 2026-07-13: 001-004 ya están aplicadas.** Aplica **005 y 006**
+antes de seguir probando WhatsApp/facturación — 005 corrige un bug real del
+guard de suscripción (bloqueaba también los inserts del propio backend) y
+006 evita contactos/conversaciones duplicados. Nota: `006` puede fallar si ya
+existen contactos con el mismo `(tenant_id, phone)` en la base — revisa eso
+primero si el `ALTER TABLE` da error de violación de constraint.
 
 ---
 

@@ -5,7 +5,11 @@
       "Bash(sed 's/=.*/=<set>/' frontend/.env)",
       "Bash(awk '/create table tenants/,/^\\\\\\);/' crm_schema.sql)",
       "Bash(awk '/create table contacts/,/^\\\\\\);/' crm_schema.sql)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Skill(code-review)",
+      "Skill(code-review:*)",
+      "Bash(lsof -ti:4001)",
+      "Bash(xargs kill)"
     ]
   }
 }

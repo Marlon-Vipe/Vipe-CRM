@@ -144,11 +144,11 @@ const ChatPage = () => {
                 placeholder="Escribe un mensaje..."
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                disabled={sending || !currentConversation}
+                disabled={sending || loadingMessages || !currentConversation}
               />
               <Icon icon="message-square-text" className="app-search-icon text-muted" />
             </div>
-            <Button variant="primary" type="submit" disabled={sending || !draft.trim() || !currentConversation}>
+            <Button variant="primary" type="submit" disabled={sending || loadingMessages || !draft.trim() || !currentConversation}>
               {sending ? 'Enviando...' : 'Enviar'} <Icon icon="send-horizontal" className="ms-1 fs-xl" />
             </Button>
           </Form>

@@ -27,7 +27,23 @@ async function findOrCreateContact(tenantId, phone) {
     .select("id")
     .single();
 
-  if (insertError) throw new Error(insertError.message);
+  if (insertError) {
+    // 23505 = unique_violation: otro webhook casi simultáneo (reintento de
+    // Twilio, o dos mensajes muy seguidos) ya creó este contacto primero —
+    // ver constraint contacts_tenant_phone_unique. No es un error real,
+    // devolvemos el que ganó la carrera (mismo patrón que invitations.js).
+    if (insertError.code === "23505") {
+      const { data: winner, error: refetchError } = await supabaseAdmin
+        .from("contacts")
+        .select("id")
+        .eq("tenant_id", tenantId)
+        .eq("phone", phone)
+        .single();
+      if (refetchError) throw new Error(refetchError.message);
+      return winner.id;
+    }
+    throw new Error(insertError.message);
+  }
   return created.id;
 }
 
@@ -50,7 +66,23 @@ async function findOrCreateConversation(tenantId, channelId, contactId) {
     .select("id")
     .single();
 
-  if (insertError) throw new Error(insertError.message);
+  if (insertError) {
+    // Ver comentario equivalente en findOrCreateContact — respaldado por
+    // conversations_tenant_channel_contact_open_unique.
+    if (insertError.code === "23505") {
+      const { data: winner, error: refetchError } = await supabaseAdmin
+        .from("conversations")
+        .select("id")
+        .eq("tenant_id", tenantId)
+        .eq("channel_id", channelId)
+        .eq("contact_id", contactId)
+        .eq("status", "abierta")
+        .single();
+      if (refetchError) throw new Error(refetchError.message);
+      return winner.id;
+    }
+    throw new Error(insertError.message);
+  }
   return created.id;
 }
 
@@ -75,6 +107,7 @@ router.post("/", async (req, res) => {
       .eq("type", "whatsapp")
       .eq("provider", "bsp_twilio")
       .eq("external_id", toNumber)
+      .eq("status", "activo")
       .maybeSingle();
 
     if (channelError) throw new Error(channelError.message);

@@ -1,7 +1,8 @@
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
+import { normalizePhoneE164 } from '@/utils/helpers'
 import { useEffect, useState, type FormEvent } from 'react'
-import { Alert, Button, Form, FormControl, FormLabel, FormSelect, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from 'react-bootstrap'
+import { Alert, Button, Form, FormControl, FormLabel, FormSelect, FormText, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from 'react-bootstrap'
 
 import { CONTACT_SOURCE_LABELS, CONTACT_TYPE_LABELS } from './data'
 
@@ -70,7 +71,7 @@ const ContactFormModal = ({ show, onHide, onSaved, contact }: Props) => {
 
     const payload = {
       name: form.name.trim(),
-      phone: form.phone.trim() || null,
+      phone: normalizePhoneE164(form.phone),
       email: form.email.trim() || null,
       type: form.type || null,
       source: form.source,
@@ -108,6 +109,7 @@ const ContactFormModal = ({ show, onHide, onSaved, contact }: Props) => {
           <div className="mb-3">
             <FormLabel>Teléfono</FormLabel>
             <FormControl value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+            <FormText>Se guarda en formato internacional (+1...) para que coincida con los mensajes de WhatsApp de este contacto.</FormText>
           </div>
           <div className="mb-3">
             <FormLabel>Correo electrónico</FormLabel>

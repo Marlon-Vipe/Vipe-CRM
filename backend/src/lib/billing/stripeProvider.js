@@ -2,6 +2,16 @@ const Stripe = require("stripe");
 
 const PLAN_PRICE_ENV = { starter: "STRIPE_PRICE_STARTER", pro: "STRIPE_PRICE_PRO" };
 
+// El route layer (billing.js, webhooksBilling.js) está pensado para ser
+// agnóstico de proveedor — no debe conocer nombres específicos de Stripe
+// como el header de firma del webhook o el nombre de columna donde se
+// guarda el ID de cliente. Cada proveedor expone esos dos datos aquí, y el
+// route layer los lee vía getProvider().signatureHeader /
+// getProvider().customerIdColumn en vez de tenerlos hardcodeados.
+const signatureHeader = "stripe-signature";
+const customerIdColumn = "stripe_customer_id";
+const subscriptionIdColumn = "stripe_subscription_id";
+
 let stripeClient = null;
 function getStripeClient() {
   if (!process.env.STRIPE_SECRET_KEY) return null;
@@ -11,6 +21,19 @@ function getStripeClient() {
 
 function isConfigured() {
   return Boolean(process.env.STRIPE_SECRET_KEY);
+}
+
+// El plan de una suscripción se deriva del Price actual (subscription.items),
+// no solo de subscription.metadata.plan: la metadata que se setea al crear
+// el checkout no se reescribe cuando el cliente cambia de plan desde el
+// Billing Portal de Stripe, así que confiar solo en ella deja el plan
+// mostrado desactualizado después de un upgrade/downgrade por el portal.
+function planFromPriceId(priceId) {
+  if (!priceId) return null;
+  for (const [plan, envKey] of Object.entries(PLAN_PRICE_ENV)) {
+    if (process.env[envKey] === priceId) return plan;
+  }
+  return null;
 }
 
 async function createCheckoutSession({ tenant, plan, successUrl, cancelUrl }) {
@@ -24,8 +47,8 @@ async function createCheckoutSession({ tenant, plan, successUrl, cancelUrl }) {
     mode: "subscription",
     line_items: [{ price: priceId, quantity: 1 }],
     client_reference_id: tenant.id,
-    customer: tenant.stripe_customer_id || undefined,
-    customer_email: tenant.stripe_customer_id ? undefined : tenant.ownerEmail,
+    customer: tenant.providerCustomerId || undefined,
+    customer_email: tenant.providerCustomerId ? undefined : tenant.ownerEmail,
     success_url: successUrl,
     cancel_url: cancelUrl,
     metadata: { tenant_id: tenant.id, plan },
@@ -38,10 +61,10 @@ async function createCheckoutSession({ tenant, plan, successUrl, cancelUrl }) {
 async function createPortalSession({ tenant, returnUrl }) {
   const stripe = getStripeClient();
   if (!stripe) throw new Error("Stripe no está configurado (falta STRIPE_SECRET_KEY).");
-  if (!tenant.stripe_customer_id) throw new Error("Esta agencia todavía no tiene un cliente de Stripe asociado.");
+  if (!tenant.providerCustomerId) throw new Error("Esta agencia todavía no tiene un cliente de Stripe asociado.");
 
   const session = await stripe.billingPortal.sessions.create({
-    customer: tenant.stripe_customer_id,
+    customer: tenant.providerCustomerId,
     return_url: returnUrl,
   });
 
@@ -70,12 +93,13 @@ function verifyAndParseWebhookEvent({ rawBody, signature }) {
 
   if (event.type.startsWith("customer.subscription.")) {
     const subscription = event.data.object;
+    const priceId = subscription.items?.data?.[0]?.price?.id;
     return {
       tenantId: subscription.metadata?.tenant_id || null,
-      stripeCustomerId: subscription.customer,
-      stripeSubscriptionId: subscription.id,
+      providerCustomerId: subscription.customer,
+      providerSubscriptionId: subscription.id,
       status: STATUS_MAP[subscription.status] || "vencida",
-      plan: subscription.metadata?.plan || null,
+      plan: planFromPriceId(priceId) || subscription.metadata?.plan || null,
       renewsAt: subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null,
     };
   }
@@ -84,8 +108,8 @@ function verifyAndParseWebhookEvent({ rawBody, signature }) {
     const session = event.data.object;
     return {
       tenantId: session.client_reference_id || session.metadata?.tenant_id || null,
-      stripeCustomerId: session.customer,
-      stripeSubscriptionId: session.subscription,
+      providerCustomerId: session.customer,
+      providerSubscriptionId: session.subscription,
       status: "activa",
       plan: session.metadata?.plan || null,
       renewsAt: null,
@@ -95,4 +119,12 @@ function verifyAndParseWebhookEvent({ rawBody, signature }) {
   return null;
 }
 
-module.exports = { isConfigured, createCheckoutSession, createPortalSession, verifyAndParseWebhookEvent };
+module.exports = {
+  isConfigured,
+  createCheckoutSession,
+  createPortalSession,
+  verifyAndParseWebhookEvent,
+  signatureHeader,
+  customerIdColumn,
+  subscriptionIdColumn,
+};

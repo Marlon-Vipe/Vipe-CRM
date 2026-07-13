@@ -79,7 +79,9 @@ export function useMessages(conversationId: string | null) {
   // igual que los mensajes entrantes.
   const sendMessage = useCallback(
     async (content: string) => {
-      if (!conversationId || !session) return
+      if (!conversationId || !session) {
+        throw new Error('No hay una conversación seleccionada o tu sesión expiró. Recarga la página e intenta de nuevo.')
+      }
       setSending(true)
       try {
         await sendConversationMessage({ accessToken: session.access_token, conversationId, content })

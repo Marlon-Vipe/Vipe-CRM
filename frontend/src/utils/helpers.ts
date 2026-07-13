@@ -1,3 +1,23 @@
+// Normaliza un teléfono a formato E.164 (ej. "+18095551234"). El webhook de
+// WhatsApp (backend/src/routes/webhooksWhatsapp.js) hace match exacto contra
+// el número que manda Twilio, que siempre viene en E.164 — si un contacto se
+// crea manualmente con el teléfono en otro formato ("809-555-1234"), el
+// match falla y se crea un contacto duplicado cuando esa persona escribe por
+// WhatsApp. Se asume código de país +1 (República Dominicana) cuando el
+// número tiene 10 dígitos y no trae "+".
+export const normalizePhoneE164 = (input: string, defaultCountryCode = '1'): string | null => {
+  const trimmed = input.trim()
+  if (!trimmed) return null
+
+  const hasPlus = trimmed.startsWith('+')
+  const digits = trimmed.replace(/\D/g, '')
+  if (!digits) return null
+
+  if (hasPlus) return `+${digits}`
+  if (digits.length === 10) return `+${defaultCountryCode}${digits}`
+  return `+${digits}`
+}
+
 export const generateInitials = (name = ''): string => {
   return name
     .split(' ')

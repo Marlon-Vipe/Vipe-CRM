@@ -11,9 +11,11 @@ const ACTIVE_STATUSES = ["trial", "activa"];
 // activar/suspender una agencia — nunca se actualiza `subscriptions`/
 // `tenants.status` desde ningún otro lugar del código.
 router.post("/", express.raw({ type: "application/json" }), async (req, res) => {
+  const provider = getProvider();
+
   let event;
   try {
-    event = getProvider().verifyAndParseWebhookEvent({ rawBody: req.body, signature: req.headers["stripe-signature"] });
+    event = provider.verifyAndParseWebhookEvent({ rawBody: req.body, signature: req.headers[provider.signatureHeader] });
   } catch (error) {
     return res.status(400).send(`Firma de webhook inválida: ${error.message}`);
   }
@@ -29,8 +31,8 @@ router.post("/", express.raw({ type: "application/json" }), async (req, res) => 
       tenant_id: event.tenantId,
       plan: event.plan || undefined,
       status: event.status,
-      stripe_customer_id: event.stripeCustomerId,
-      stripe_subscription_id: event.stripeSubscriptionId,
+      [provider.customerIdColumn]: event.providerCustomerId,
+      [provider.subscriptionIdColumn]: event.providerSubscriptionId,
       renews_at: event.renewsAt,
     },
     { onConflict: "tenant_id" }
