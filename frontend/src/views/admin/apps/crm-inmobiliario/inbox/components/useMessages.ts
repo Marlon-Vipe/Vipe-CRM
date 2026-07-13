@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
+import { sendConversationMessage } from '@/lib/api'
 
 import type { MessageItem } from './data'
 
 export function useMessages(conversationId: string | null) {
-  const { tenantId } = useAuth()
+  const { tenantId, session } = useAuth()
   const [messages, setMessages] = useState<MessageItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
 
   useEffect(() => {
     if (!tenantId || !conversationId) {
@@ -72,5 +74,21 @@ export function useMessages(conversationId: string | null) {
     }
   }, [tenantId, conversationId])
 
-  return { messages, loading }
+  // No se agrega el mensaje al estado local aquí: se inserta desde el
+  // backend y llega de vuelta por la suscripción de Realtime de arriba,
+  // igual que los mensajes entrantes.
+  const sendMessage = useCallback(
+    async (content: string) => {
+      if (!conversationId || !session) return
+      setSending(true)
+      try {
+        await sendConversationMessage({ accessToken: session.access_token, conversationId, content })
+      } finally {
+        setSending(false)
+      }
+    },
+    [conversationId, session]
+  )
+
+  return { messages, loading, sending, sendMessage }
 }

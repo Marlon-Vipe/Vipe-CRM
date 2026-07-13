@@ -96,9 +96,18 @@ dashboard de Supabase (Table Editor / SQL Editor).
 | `001_unique_membership_per_user.sql` | Restricción única `memberships.user_id` (evita duplicados por condición de carrera en el signup) |
 | `002_property_images_storage.sql` | Políticas RLS de `storage.objects` para el bucket `property-images` (insert/update/delete por tenant) |
 | `003_invitations_and_profiles.sql` | Tablas `profiles` (perfil público mínimo por usuario) e `invitations` (invitación de agentes con token) |
+| `004_subscription_guard.sql` | Trigger que bloquea `INSERT` en `contacts`/`properties`/`deals` cuando `tenants.status = 'suspendido'` (RF-12) |
 
 Para aplicar una migración: Supabase Dashboard → **SQL Editor** → pegar el
 contenido del archivo → **Run**.
+
+**Verificado en 2026-07-12: las tablas `profiles` e `invitations` (migración
+003) todavía NO existen en la base de datos real** — `PostgREST` responde
+"Could not find the table". Esto significa que el flujo de invitaciones
+(incluso las partes que ya estaban en el código antes de esta sesión, como
+`GET /invitations/:token`) no puede funcionar todavía. Aplica **001, 002, 003
+y 004 en orden** antes de probar cualquier cosa relacionada a invitaciones o
+facturación.
 
 ---
 

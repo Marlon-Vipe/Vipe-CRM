@@ -67,6 +67,12 @@ export const menuItems: MenuItemType[] = [
         'icon': 'users',
       },
       {
+        'url': '/perfil',
+        'slug': 'pages:perfil',
+        'label': 'Perfil y facturación',
+        'icon': 'credit-card',
+      },
+      {
         'icon': 'user-lock',
         'slug': 'authentication',
         'label': 'Autenticación',

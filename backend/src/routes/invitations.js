@@ -2,9 +2,60 @@ const express = require("express");
 
 const { supabaseAdmin } = require("../lib/supabaseAdmin");
 const { requireAuth } = require("../middleware/requireAuth");
+const { requireOwnerOrAdmin } = require("../lib/membership");
 const { upsertProfile } = require("../lib/profiles");
+const { sendInvitationEmail } = require("../lib/email");
 
 const router = express.Router();
+
+const VALID_ROLES = ["admin", "agent"];
+
+// RF-02: crea la invitación (antes se insertaba directo desde el frontend
+// contra Supabase, lo que dejaba el envío del email fuera del flujo). El
+// tenant_id se deriva siempre de la membership del que llama, nunca del
+// body, para que un owner/admin no pueda invitar a nombre de otro tenant.
+router.post("/", requireAuth, requireOwnerOrAdmin, async (req, res) => {
+  const email = (req.body?.email || "").trim().toLowerCase();
+  const role = req.body?.role || "agent";
+
+  if (!email) {
+    return res.status(400).json({ error: "El correo electrónico es requerido." });
+  }
+  if (!VALID_ROLES.includes(role)) {
+    return res.status(400).json({ error: "Rol inválido." });
+  }
+
+  const { tenant_id: tenantId } = req.membership;
+
+  const { data: tenant, error: tenantError } = await supabaseAdmin
+    .from("tenants")
+    .select("name")
+    .eq("id", tenantId)
+    .single();
+
+  if (tenantError) {
+    return res.status(500).json({ error: tenantError.message });
+  }
+
+  const { data: invitation, error: insertError } = await supabaseAdmin
+    .from("invitations")
+    .insert({ tenant_id: tenantId, email, role, invited_by: req.user.id })
+    .select("id, email, role, token, expires_at")
+    .single();
+
+  if (insertError) {
+    return res.status(500).json({ error: insertError.message });
+  }
+
+  const { sent } = await sendInvitationEmail({
+    to: invitation.email,
+    tenantName: tenant.name,
+    role: invitation.role,
+    token: invitation.token,
+  });
+
+  return res.status(201).json({ ...invitation, email_sent: sent });
+});
 
 async function findValidInvitation(token) {
   const { data: invitation, error } = await supabaseAdmin

@@ -22,6 +22,9 @@ export const routes: RouteObject[] = [
 
       // Equipo (RF-02: invitar agentes)
       { path: '/equipo', Component: lazy(() => import('@/views/admin/team')) },
+
+      // Perfil y facturación (RF-11/RF-12, RF-13 conexión de canal de WhatsApp)
+      { path: '/perfil', Component: lazy(() => import('@/views/admin/profile-billing')) },
     ],
   },
   { path: '/auth/delete-account', Component: lazy(() => import('@/views/auth/basic/delete-account')) },

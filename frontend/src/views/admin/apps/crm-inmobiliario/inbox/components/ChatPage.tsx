@@ -2,8 +2,8 @@ import Icon from '@/components/wrappers/Icon'
 import { SimpleBar } from '@/components/wrappers/SimpleBar'
 import { generateInitials } from '@/utils/helpers'
 import { Link } from 'react-router'
-import { useEffect, useState } from 'react'
-import { Button, Card, CardFooter, CardHeader, FormControl, ListGroup, ListGroupItem, Offcanvas, Spinner } from 'react-bootstrap'
+import { useEffect, useState, type FormEvent } from 'react'
+import { Alert, Button, Card, CardFooter, CardHeader, Form, FormControl, ListGroup, ListGroupItem, Offcanvas, Spinner } from 'react-bootstrap'
 import ChatToolbar from './ChatToolbar'
 import { CHANNEL_LABELS, type ConversationItem } from './data'
 import { useConversations } from './useConversations'
@@ -26,7 +26,28 @@ const ChatPage = () => {
   }, [conversations, selectedId])
 
   const currentConversation = conversations.find((c) => c.id === selectedId) || null
-  const { messages, loading: loadingMessages } = useMessages(selectedId)
+  const { messages, loading: loadingMessages, sending, sendMessage } = useMessages(selectedId)
+  const [draft, setDraft] = useState('')
+  const [sendError, setSendError] = useState('')
+
+  useEffect(() => {
+    setDraft('')
+    setSendError('')
+  }, [selectedId])
+
+  const handleSend = async (event: FormEvent) => {
+    event.preventDefault()
+    const content = draft.trim()
+    if (!content || sending) return
+
+    setSendError('')
+    try {
+      await sendMessage(content)
+      setDraft('')
+    } catch (error) {
+      setSendError((error as Error).message)
+    }
+  }
 
   if (loadingConversations) {
     return (
@@ -110,16 +131,27 @@ const ChatPage = () => {
         </SimpleBar>
 
         <CardFooter className="bg-body-secondary border-top border-dashed border-bottom-0 position-absolute bottom-0 w-100">
-          <div className="d-flex gap-2 align-items-center">
+          {sendError && (
+            <Alert variant="danger" className="py-1 px-2 fs-xs mb-2" onClose={() => setSendError('')} dismissible>
+              {sendError}
+            </Alert>
+          )}
+          <Form onSubmit={handleSend} className="d-flex gap-2 align-items-center">
             <div className="app-search flex-grow-1">
-              <FormControl type="text" className="py-2 bg-light-subtle border-light" placeholder="Escribe un mensaje..." disabled />
+              <FormControl
+                type="text"
+                className="py-2 bg-light-subtle border-light"
+                placeholder="Escribe un mensaje..."
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                disabled={sending || !currentConversation}
+              />
               <Icon icon="message-square-text" className="app-search-icon text-muted" />
             </div>
-            <Button variant="primary" disabled>
-              Enviar <Icon icon="send-horizontal" className="ms-1 fs-xl" />
+            <Button variant="primary" type="submit" disabled={sending || !draft.trim() || !currentConversation}>
+              {sending ? 'Enviando...' : 'Enviar'} <Icon icon="send-horizontal" className="ms-1 fs-xl" />
             </Button>
-          </div>
-          <p className="text-muted fs-xs mb-0 mt-1">El envío de mensajes por WhatsApp se conectará vía Twilio próximamente.</p>
+          </Form>
         </CardFooter>
       </Card>
     </div>
