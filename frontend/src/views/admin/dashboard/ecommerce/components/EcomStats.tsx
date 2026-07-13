@@ -3,9 +3,9 @@ import { Icon as IconifyIcon } from '@iconify/react'
 import clsx from 'clsx'
 import { Card, CardBody } from 'react-bootstrap'
 import CountUp from 'react-countup'
-import { stateData } from './data'
+import type { StateType } from './data'
 
-const EcomStats = ({ item }: { item: (typeof stateData)[0] }) => {
+const EcomStats = ({ item }: { item: StateType }) => {
   return (
     <Card>
       <CardBody>

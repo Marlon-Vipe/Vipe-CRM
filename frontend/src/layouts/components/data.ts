@@ -72,55 +72,6 @@ export const menuItems: MenuItemType[] = [
         'label': 'Perfil y facturación',
         'icon': 'credit-card',
       },
-      {
-        'icon': 'user-lock',
-        'slug': 'authentication',
-        'label': 'Autenticación',
-        'children': [
-          {
-            'url': '/auth/sign-in',
-            'slug': 'pages:auth-sign-in',
-            'label': 'Iniciar sesión',
-          },
-          {
-            'url': '/auth/sign-up',
-            'slug': 'pages:auth-sign-up',
-            'label': 'Registrarse',
-          },
-          {
-            'url': '/auth/reset-pass',
-            'slug': 'pages:auth-reset-pass',
-            'label': 'Restablecer contraseña',
-          },
-          {
-            'url': '/auth/new-pass',
-            'slug': 'pages:auth-new-pass',
-            'label': 'Nueva contraseña',
-          },
-        ],
-      },
-      {
-        'icon': 'alert-triangle',
-        'slug': 'error-pages',
-        'label': 'Páginas de error',
-        'children': [
-          {
-            'url': '/error/404',
-            'slug': 'pages:error-404',
-            'label': '404 No encontrado',
-          },
-          {
-            'url': '/error/500',
-            'slug': 'pages:error-500',
-            'label': '500 Error del servidor',
-          },
-          {
-            'url': '/error/maintenance',
-            'slug': 'pages:error-maintenance',
-            'label': 'Mantenimiento',
-          },
-        ],
-      },
     ],
   },
 ]

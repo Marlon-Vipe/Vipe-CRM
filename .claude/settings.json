@@ -9,7 +9,15 @@
       "Skill(code-review)",
       "Skill(code-review:*)",
       "Bash(lsof -ti:4001)",
-      "Bash(xargs kill)"
+      "Bash(xargs kill)",
+      "Bash(node -pe \"require\\('fs'\\).readFileSync\\('frontend/.env','utf8'\\).split\\('\\\\n'\\).filter\\(l=>l.startsWith\\('VITE_SUPABASE'\\)\\).map\\(l=>l.split\\('='\\)[0]\\).join\\(','\\)\")",
+      "Bash(node \"/private/tmp/claude-501/-Users-marlonvillalona-Documents-Vipe-CRM/f6ea875a-5a4b-4013-903c-09fbd00f3081/scratchpad/seed-dashboard-test.mjs\")",
+      "Bash(curl -sf http://localhost:5173)",
+      "Bash(break)",
+      "Bash(npx --yes playwright install chromium --with-deps)",
+      "Bash(node check-dashboard.mjs)",
+      "Bash(pkill -f \"node src/server.js\")",
+      "Bash(lsof -ti:4001,5173)"
     ]
   }
 }

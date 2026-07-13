@@ -1,17 +1,28 @@
 import PageBreadcrumb from '@/components/PageBreadcrumb'
-import { Card, CardBody, Col, Row } from 'react-bootstrap'
-import { stateData } from './components/data'
-import EcomStats from './components/EcomStats'
-import ProductInventory from './components/ProductInventory'
-import RecentOrders from './components/RecentOrders'
-import SalesAnalytics from './components/SalesAnalytics'
-import TotalSales from './components/TotalSales'
+import { Col, Row, Spinner } from 'react-bootstrap'
 
+import { buildStateData } from './components/data'
+import DealsByStageChart from './components/DealsByStageChart'
+import EcomStats from './components/EcomStats'
+import UpcomingActivities from './components/UpcomingActivities'
+import { useDashboardStats } from './components/useDashboardStats'
 
 const Page = () => {
+  const { newLeadsCount, activePropertiesCount, openDealsCount, pendingActivitiesCount, dealsByStage, upcomingActivities, loading } = useDashboardStats()
+
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <Spinner animation="border" variant="primary" />
+      </div>
+    )
+  }
+
+  const stateData = buildStateData({ newLeadsCount, activePropertiesCount, openDealsCount, pendingActivitiesCount })
+
   return (
     <>
-      <PageBreadcrumb title="eCommerce" subtitle="Dashboards" />
+      <PageBreadcrumb title="Dashboard" subtitle="CRM Inmobiliario" />
 
       <Row className="row-cols-xxl-4 row-cols-md-2 row-cols-1">
         {stateData.map((item, index) => (
@@ -22,30 +33,11 @@ const Page = () => {
       </Row>
 
       <Row>
-        <Col xs={12}>
-          <Card>
-            <CardBody className="p-0">
-              <Row className="g-0">
-                <Col xxl={3} xl={6} className="order-xl-1 order-xxl-0">
-                  <TotalSales />
-                  <hr className="d-xxl-none border-light m-0" />
-                </Col>
-
-                <Col xxl={9} className="order-xl-3 order-xxl-1">
-                  <SalesAnalytics />
-                </Col>
-              </Row>
-            </CardBody>
-          </Card>
+        <Col xxl={7}>
+          <DealsByStageChart data={dealsByStage} />
         </Col>
-      </Row>
-
-      <Row>
-        <Col xxl={6}>
-          <ProductInventory />
-        </Col>
-        <Col xxl={6}>
-          <RecentOrders />
+        <Col xxl={5}>
+          <UpcomingActivities activities={upcomingActivities} />
         </Col>
       </Row>
     </>
