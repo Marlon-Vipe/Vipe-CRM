@@ -19,13 +19,13 @@ const Page = () => {
                 </div>
                 <div className="auth-brand text-center mb-4">
                   <AuthLogo />
-                  <p className="text-muted w-lg-75 mx-auto mt-3">Enter your email address and we&apos;ll send you a link to reset your password.</p>
+                  <p className="text-muted w-lg-75 mx-auto mt-3">Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</p>
                 </div>
                 <ResetForm />
                 <p className="text-muted text-center mt-4 mb-0">
-                  Return to&nbsp;
+                  Volver a&nbsp;
                   <Link to="/auth/sign-in" className="text-decoration-underline link-offset-3 fw-semibold">
-                    Sign in
+                    Iniciar sesión
                   </Link>
                 </p>
               </Card>

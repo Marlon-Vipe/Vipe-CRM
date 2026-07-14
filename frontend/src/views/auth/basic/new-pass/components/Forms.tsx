@@ -1,47 +1,112 @@
-import OTPInput from '@/components/OTPInput'
 import PasswordInputWithStrength from '@/components/PasswordInputWithStrength'
-import { useState } from 'react'
-import { Button, Form, FormCheck, FormControl, FormLabel } from 'react-bootstrap'
+import { supabase } from '@/lib/supabaseClient'
+import { translateAuthError } from '@/utils/authErrors'
+import { useEffect, useState, type FormEvent } from 'react'
+import { useNavigate, Link } from 'react-router'
+import { Alert, Button, Form, FormControl, FormLabel, Spinner } from 'react-bootstrap'
 
 const NewPassForm = () => {
+  const navigate = useNavigate()
+  const [checkingSession, setCheckingSession] = useState(true)
+  const [hasRecoverySession, setHasRecoverySession] = useState(false)
+
   const [password, setPassword] = useState('')
-  const [code, setCode] = useState<string[]>(Array(6).fill(''))
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+
+  useEffect(() => {
+    let isMounted = true
+
+    // El enlace del correo de recuperación hace que supabase-js establezca
+    // una sesión temporal (evento PASSWORD_RECOVERY) al cargar la página —
+    // sin eso, no hay forma legítima de cambiar la contraseña acá.
+    supabase.auth.getSession().then(({ data }) => {
+      if (!isMounted) return
+      if (data.session) setHasRecoverySession(true)
+      setCheckingSession(false)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) setHasRecoverySession(true)
+    })
+
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setErrorMessage('')
+
+    if (password !== confirmPassword) {
+      setErrorMessage('Las contraseñas no coinciden.')
+      return
+    }
+    if (password.length < 6) {
+      setErrorMessage('La contraseña debe tener al menos 6 caracteres.')
+      return
+    }
+
+    setSubmitting(true)
+    const { error } = await supabase.auth.updateUser({ password })
+    setSubmitting(false)
+
+    if (error) {
+      setErrorMessage(translateAuthError(error.message))
+      return
+    }
+
+    navigate('/', { replace: true })
+  }
+
+  if (checkingSession) {
+    return (
+      <div className="text-center py-4">
+        <Spinner animation="border" variant="primary" size="sm" />
+      </div>
+    )
+  }
+
+  if (!hasRecoverySession) {
+    return (
+      <Alert variant="warning">
+        Este enlace no es válido o ya expiró.{' '}
+        <Link to="/auth/reset-pass" className="fw-semibold text-decoration-underline">
+          Solicita uno nuevo
+        </Link>
+        .
+      </Alert>
+    )
+  }
 
   return (
-    <Form>
-      <div className="mb-3">
-        <FormLabel>
-          Email address
-          <span className="text-danger ms-1">*</span>
-        </FormLabel>
-        <div className="input-group">
-          <FormControl type="email" placeholder="you@example.com" disabled />
-        </div>
-      </div>
-      <div className="mb-3">
-        <OTPInput code={code} setCode={setCode} label="Enter your 6-digit code" />
-      </div>
+    <Form onSubmit={handleSubmit}>
+      {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
       <div className="mb-3" data-password="bar">
-        <PasswordInputWithStrength id="userPassword" label="Password" name="user-password" password={password} setPassword={setPassword} showIcon placeholder="••••••••" />
+        <PasswordInputWithStrength
+          id="newPassword"
+          label="Nueva contraseña"
+          name="new-password"
+          password={password}
+          setPassword={setPassword}
+          showIcon
+          placeholder="••••••••"
+        />
       </div>
       <div className="mb-3">
         <FormLabel>
-          Confirm New Password
-          <span className="text-danger ms-1">*</span>
+          Confirmar contraseña <span className="text-danger">*</span>
         </FormLabel>
-        <div className="input-group">
-          <FormControl type="password" placeholder="••••••••" required />
-        </div>
-      </div>
-      <div className="mb-3">
-        <FormCheck className="form-check">
-          <Form.Check.Input className="form-check-input-light fs-14" type="checkbox" id="termAndPolicy" />
-          <FormCheck.Label htmlFor="termAndPolicy">Agree the Terms &amp; Policy</FormCheck.Label>
-        </FormCheck>
+        <FormControl type="password" placeholder="••••••••" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
       </div>
       <div className="d-grid">
-        <Button variant="primary" type="submit" className="fw-semibold py-2">
-          Update Password
+        <Button variant="primary" type="submit" className="fw-semibold py-2" disabled={submitting}>
+          {submitting ? 'Guardando...' : 'Actualizar contraseña'}
         </Button>
       </div>
     </Form>

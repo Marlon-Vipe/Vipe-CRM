@@ -45,7 +45,7 @@ const PasswordInputWithStrength = ({ password, setPassword, id, label, name, pla
         ))}
       </div>
 
-      <p className="text-muted fs-xs mb-0">Use 8+ characters with letters, numbers & symbols.</p>
+      <p className="text-muted fs-xs mb-0">Usa 8+ caracteres con letras, números y símbolos.</p>
     </>
   )
 }

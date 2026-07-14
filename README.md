@@ -99,16 +99,18 @@ dashboard de Supabase (Table Editor / SQL Editor).
 | `004_subscription_guard.sql` | Versión inicial (defectuosa) del guard de RF-12 — **superada por 005, aplícala igual y luego 005** |
 | `005_subscription_guard_rls_fix.sql` | Corrige 004: el trigger no distinguía inserts del backend (service_role) de inserts de usuarios finales porque ambos pasan por PostgREST — reemplaza el trigger por políticas RLS `RESTRICTIVE` (service_role tiene `BYPASSRLS`, así que las políticas RLS sí lo eximen correctamente) |
 | `006_whatsapp_dedup_constraints.sql` | Constraints únicos en `contacts(tenant_id, phone)` y `conversations` (una conversación "abierta" por contacto+canal) — evita duplicados si Twilio entrega un webhook dos veces casi simultáneamente |
+| `007_secure_create_tenant_rpc.sql` | **🔴 CRÍTICO — vulnerabilidad de seguridad confirmada.** `create_tenant_with_owner` era ejecutable por cualquiera sin sesión (rol `anon`) con un `p_user_id` arbitrario. Revoca el privilegio público y lo deja solo para `service_role`. |
 
 Para aplicar una migración: Supabase Dashboard → **SQL Editor** → pegar el
 contenido del archivo → **Run**.
 
-**Estado al 2026-07-13: 001-004 ya están aplicadas.** Aplica **005 y 006**
-antes de seguir probando WhatsApp/facturación — 005 corrige un bug real del
-guard de suscripción (bloqueaba también los inserts del propio backend) y
-006 evita contactos/conversaciones duplicados. Nota: `006` puede fallar si ya
-existen contactos con el mismo `(tenant_id, phone)` en la base — revisa eso
-primero si el `ALTER TABLE` da error de violación de constraint.
+**Estado al 2026-07-13: 001-004 ya están aplicadas.** Aplica **005, 006 y 007**
+— 005 corrige un bug real del guard de suscripción (bloqueaba también los
+inserts del propio backend), 006 evita contactos/conversaciones duplicados, y
+**007 es urgente**: cierra un hueco de seguridad real ya confirmado contra el
+proyecto en vivo. Nota: `006` puede fallar si ya existen contactos con el
+mismo `(tenant_id, phone)` en la base — revisa eso primero si el `ALTER TABLE`
+da error de violación de constraint.
 
 ---
 

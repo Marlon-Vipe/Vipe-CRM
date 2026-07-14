@@ -1,0 +1,21 @@
+-- VULNERABILIDAD CONFIRMADA (2026-07-13): `create_tenant_with_owner(text, uuid)`
+-- es SECURITY DEFINER pero nunca revocó el privilegio EXECUTE por defecto que
+-- Postgres otorga a PUBLIC al crear una función — eso significa que
+-- CUALQUIERA, incluso sin iniciar sesión (rol `anon`), puede llamar este RPC
+-- directamente vía PostgREST (`POST /rest/v1/rpc/create_tenant_with_owner`)
+-- con un `p_user_id` completamente arbitrario, porque la función nunca
+-- verifica que `p_user_id = auth.uid()`.
+--
+-- Se confirmó en vivo contra el proyecto real: una request sin ningún JWT de
+-- usuario (solo la anon key pública) ejecutó la función exitosamente (falló
+-- después, al insertar en `memberships`, solo porque el UUID de prueba no
+-- correspondía a un usuario real — con un UUID de un usuario real que todavía
+-- no tenga membership, la llamada habría creado un tenant nuevo y adjuntado a
+-- esa persona como "owner" de un tenant que nunca eligió, dejándola bloqueada
+-- para siempre de unirse a su agencia real (memberships.user_id es único).
+--
+-- El único llamador legítimo es el backend (`backend/src/routes/auth.js`,
+-- endpoint /auth/complete-signup), que usa la service_role key. Se revoca el
+-- privilegio público y se otorga explícitamente solo a service_role.
+revoke execute on function create_tenant_with_owner(text, uuid) from public;
+grant execute on function create_tenant_with_owner(text, uuid) to service_role;

@@ -18,7 +18,10 @@
       "Bash(node check-dashboard.mjs)",
       "Bash(pkill -f \"node src/server.js\")",
       "Bash(lsof -ti:4001,5173)",
-      "Bash(node check-phase3.mjs)"
+      "Bash(node check-phase3.mjs)",
+      "Bash(sort -u -t: -k2)",
+      "Bash(awk -F: '{print $2}')",
+      "Bash(node check-reset-flow.mjs \"https://vdzwgylbcptrjfyqgpfw.supabase.co/auth/v1/verify?token=155c3efd3bb426e7ca13cbc4ce244cb003142703c79b44654db99c24&type=recovery&redirect_to=http://localhost:3000\")"
     ]
   }
 }

@@ -19,23 +19,13 @@ const Page = () => {
                 </div>
                 <div className="auth-brand text-center mb-4">
                   <AuthLogo />
-                  <p className="text-muted w-lg-75 mx-auto mt-3">We&apos;ve emailed you a 6-digit verification code. Please enter it below to confirm your email address</p>
+                  <p className="text-muted w-lg-75 mx-auto mt-3">Elige tu nueva contraseña.</p>
                 </div>
                 <Forms />
-                <p className="mt-4 text-muted text-center mb-4">
-                  Don&apos;t have a code?&nbsp;
-                  <Link to="" className="text-decoration-underline link-offset-2 fw-semibold">
-                    Resend
-                  </Link>
-                  &nbsp;or&nbsp;
-                  <Link to="" className="text-decoration-underline link-offset-2 fw-semibold">
-                    Call Us
-                  </Link>
-                </p>
-                <p className="text-muted text-center mb-0">
-                  Return to&nbsp;
+                <p className="text-muted text-center mt-4 mb-0">
+                  Volver a&nbsp;
                   <Link to="/auth/sign-in" className="text-decoration-underline link-offset-3 fw-semibold">
-                    Sign in
+                    Iniciar sesión
                   </Link>
                 </p>
               </Card>

@@ -1,20 +1,29 @@
 import bgPattern from '@/assets/images/user-bg-pattern.svg'
 import user1 from '@/assets/images/users/user-1.jpg'
 import Icon from '@/components/wrappers/Icon'
-import { META_DATA } from '@/config/constants'
+import { useAuth } from '@/hooks/useAuth'
 import { Link } from 'react-router'
 import { Dropdown, DropdownHeader, DropdownItem, DropdownMenu, DropdownToggle } from 'react-bootstrap'
 
+const ROLE_LABELS: Record<string, string> = {
+  owner: 'Dueño',
+  admin: 'Administrador',
+  agent: 'Agente',
+}
+
 const UserProfileSettings = () => {
+  const { user, tenant, role, logout } = useAuth()
+  const displayName = (user?.user_metadata?.full_name as string | undefined) || user?.email || 'Usuario'
+
   return (
     <div id="user-profile-settings" className="sidenav-user" style={{ background: `url(${bgPattern})` }}>
       <div className="d-flex justify-content-between align-items-center">
         <div>
-          <Link to="" className="link-reset">
+          <Link to="/perfil" className="link-reset">
             <img src={user1} alt="user-image" className="rounded-circle mb-2 avatar-md" />
-            <span className="sidenav-user-name fw-bold">{META_DATA.username}</span>
+            <span className="sidenav-user-name fw-bold">{displayName}</span>
             <span className="fs-12 fw-semibold" data-lang="user-role">
-              Art Director
+              {role ? ROLE_LABELS[role] || role : ''}
             </span>
           </Link>
         </div>
@@ -25,23 +34,19 @@ const UserProfileSettings = () => {
             </DropdownToggle>
             <DropdownMenu>
               <DropdownHeader className="noti-title">
-                <h6 className="text-overflow m-0">Welcome back!</h6>
+                <h6 className="text-overflow m-0">{tenant?.name || 'Tu agencia'}</h6>
               </DropdownHeader>
-              <DropdownItem href="">
-                <Icon icon="circle-user-round" className="me-1 fs-lg align-middle" />
-                <span className="align-middle">Profile</span>
+              <DropdownItem href="/perfil">
+                <Icon icon="credit-card" className="me-1 fs-lg align-middle" />
+                <span className="align-middle">Perfil y facturación</span>
               </DropdownItem>
-              <DropdownItem href="">
-                <Icon icon="bolt" className="me-1 fs-lg align-middle" />
-                <span className="align-middle">Account Settings</span>
+              <DropdownItem href="/equipo">
+                <Icon icon="users" className="me-1 fs-lg align-middle" />
+                <span className="align-middle">Equipo</span>
               </DropdownItem>
-              <DropdownItem href="auth/lock-screen">
-                <Icon icon="lock-keyhole" className="me-1 fs-lg align-middle" />
-                <span className="align-middle">Lock Screen</span>
-              </DropdownItem>
-              <DropdownItem href="" className="text-danger fw-semibold">
+              <DropdownItem as="button" onClick={() => logout()} className="text-danger fw-semibold">
                 <Icon icon="log-out" className="me-1 fs-lg align-middle" />
-                <span className="align-middle">Log Out</span>
+                <span className="align-middle">Cerrar sesión</span>
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>

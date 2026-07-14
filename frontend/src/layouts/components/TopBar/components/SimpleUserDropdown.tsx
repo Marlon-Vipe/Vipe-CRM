@@ -31,9 +31,9 @@ const UserDropdown = () => {
             </h6>
           </DropdownHeader>
 
-          <DropdownItem href="/auth/lock-screen">
-            <Icon icon="lock-keyhole" className="me-1 fs-lg align-middle" />
-            <span className="align-middle">Bloquear pantalla</span>
+          <DropdownItem href="/perfil">
+            <Icon icon="credit-card" className="me-1 fs-lg align-middle" />
+            <span className="align-middle">Perfil y facturación</span>
           </DropdownItem>
 
           <DropdownDivider />
