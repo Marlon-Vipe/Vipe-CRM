@@ -1,5 +1,5 @@
 import PageBreadcrumb from '@/components/PageBreadcrumb'
-import { Col, Row, Spinner } from 'react-bootstrap'
+import { Button, Col, Row, Spinner } from 'react-bootstrap'
 
 import { buildStateData } from './components/data'
 import DealsByStageChart from './components/DealsByStageChart'
@@ -8,13 +8,27 @@ import UpcomingActivities from './components/UpcomingActivities'
 import { useDashboardStats } from './components/useDashboardStats'
 
 const Page = () => {
-  const { newLeadsCount, activePropertiesCount, openDealsCount, pendingActivitiesCount, dealsByStage, upcomingActivities, loading } = useDashboardStats()
+  const { newLeadsCount, activePropertiesCount, openDealsCount, pendingActivitiesCount, dealsByStage, upcomingActivities, loading, error, reload } = useDashboardStats()
 
   if (loading) {
     return (
       <div className="text-center py-5">
         <Spinner animation="border" variant="primary" />
       </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <>
+        <PageBreadcrumb title="Dashboard" subtitle="CRM Inmobiliario" />
+        <div className="text-center py-5">
+          <p className="text-danger mb-3">{error}</p>
+          <Button variant="primary" onClick={reload}>
+            Reintentar
+          </Button>
+        </div>
+      </>
     )
   }
 

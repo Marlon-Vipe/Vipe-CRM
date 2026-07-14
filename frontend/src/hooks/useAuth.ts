@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { useAuthContext } from '@/context/AuthContext'
+import { translateAuthError } from '@/utils/authErrors'
 
 export const useAuth = () => {
   const navigate = useNavigate()
@@ -18,7 +19,7 @@ export const useAuth = () => {
       setLoading(false)
 
       if (signInError) {
-        setError(signInError.message)
+        setError(translateAuthError(signInError.message))
         return
       }
       navigate('/', { replace: true })
@@ -42,6 +43,7 @@ export const useAuth = () => {
     tenantId: auth.tenantId,
     role: auth.role,
     tenant: auth.tenant,
+    membershipError: auth.membershipError,
     signUp: auth.signUp,
     refreshMembership: auth.refreshMembership,
   }

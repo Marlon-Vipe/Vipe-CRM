@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
@@ -17,69 +17,64 @@ export function useConversations() {
   const { tenantId } = useAuth()
   const [conversations, setConversations] = useState<ConversationItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const loadConversations = useCallback(async () => {
     if (!tenantId) return
-    let isMounted = true
+    setLoading(true)
 
-    async function loadConversations() {
-      setLoading(true)
+    const { data: conversationRows, error } = await supabase
+      .from('conversations')
+      .select('id, status, last_message_at, contacts ( id, name ), channels ( type )')
+      .eq('tenant_id', tenantId)
+      .order('last_message_at', { ascending: false, nullsFirst: false })
 
-      const { data: conversationRows, error } = await supabase
-        .from('conversations')
-        .select('id, status, last_message_at, contacts ( id, name ), channels ( type )')
-        .eq('tenant_id', tenantId)
-        .order('last_message_at', { ascending: false, nullsFirst: false })
-
-      if (error || !conversationRows) {
-        // eslint-disable-next-line no-console
-        console.error('Error al cargar conversaciones:', error?.message)
-        if (isMounted) {
-          setConversations([])
-          setLoading(false)
-        }
-        return
-      }
-
-      const rows = conversationRows as unknown as ConversationRow[]
-      const conversationIds = rows.map((row) => row.id)
-
-      const { data: lastMessages } = conversationIds.length
-        ? await supabase
-            .from('messages')
-            .select('conversation_id, content, created_at')
-            .eq('tenant_id', tenantId)
-            .in('conversation_id', conversationIds)
-            .order('created_at', { ascending: false })
-        : { data: [] as { conversation_id: string; content: string | null }[] }
-
-      const lastMessageByConversation = new Map<string, string | null>()
-      for (const message of lastMessages || []) {
-        if (!lastMessageByConversation.has(message.conversation_id)) {
-          lastMessageByConversation.set(message.conversation_id, message.content)
-        }
-      }
-
-      if (!isMounted) return
-      setConversations(
-        rows.map((row) => ({
-          id: row.id,
-          contactId: row.contacts?.id || null,
-          contactName: row.contacts?.name || 'Contacto desconocido',
-          channelType: row.channels?.type || 'whatsapp',
-          lastMessage: lastMessageByConversation.get(row.id) || null,
-          lastMessageAt: row.last_message_at,
-          status: row.status,
-        }))
-      )
+    if (error || !conversationRows) {
+      // eslint-disable-next-line no-console
+      console.error('Error al cargar conversaciones:', error?.message)
+      setConversations([])
+      setError('No se pudieron cargar las conversaciones. Intenta de nuevo.')
       setLoading(false)
+      return
+    }
+    setError(null)
+
+    const rows = conversationRows as unknown as ConversationRow[]
+    const conversationIds = rows.map((row) => row.id)
+
+    const { data: lastMessages } = conversationIds.length
+      ? await supabase
+          .from('messages')
+          .select('conversation_id, content, created_at')
+          .eq('tenant_id', tenantId)
+          .in('conversation_id', conversationIds)
+          .order('created_at', { ascending: false })
+      : { data: [] as { conversation_id: string; content: string | null }[] }
+
+    const lastMessageByConversation = new Map<string, string | null>()
+    for (const message of lastMessages || []) {
+      if (!lastMessageByConversation.has(message.conversation_id)) {
+        lastMessageByConversation.set(message.conversation_id, message.content)
+      }
     }
 
-    loadConversations()
-    return () => {
-      isMounted = false
-    }
+    setConversations(
+      rows.map((row) => ({
+        id: row.id,
+        contactId: row.contacts?.id || null,
+        contactName: row.contacts?.name || 'Contacto desconocido',
+        channelType: row.channels?.type || 'whatsapp',
+        lastMessage: lastMessageByConversation.get(row.id) || null,
+        lastMessageAt: row.last_message_at,
+        status: row.status,
+      }))
+    )
+    setLoading(false)
   }, [tenantId])
 
-  return { conversations, loading }
+  useEffect(() => {
+    loadConversations()
+  }, [loadConversations])
+
+  return { conversations, loading, error, reload: loadConversations }
 }

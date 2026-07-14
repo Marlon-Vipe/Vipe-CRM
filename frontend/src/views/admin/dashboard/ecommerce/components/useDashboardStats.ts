@@ -39,6 +39,7 @@ export function useDashboardStats() {
   const { tenantId } = useAuth()
   const [stats, setStats] = useState<DashboardStats>(EMPTY_STATS)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     if (!tenantId) return
@@ -46,21 +47,38 @@ export function useDashboardStats() {
 
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
-    const [{ count: newLeadsCount }, { count: activePropertiesCount }, { count: pendingActivitiesCount }, { data: stageRows }, { data: dealRows }, { data: activityRows }] =
-      await Promise.all([
-        supabase.from('contacts').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('created_at', sevenDaysAgo),
-        supabase.from('properties').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId).eq('status', 'disponible'),
-        supabase.from('activities').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId).eq('status', 'pendiente'),
-        supabase.from('pipeline_stages').select('id, name, sort_order').eq('tenant_id', tenantId).order('sort_order', { ascending: true }),
-        supabase.from('deals').select('id, stage_id').eq('tenant_id', tenantId),
-        supabase
-          .from('activities')
-          .select('id, type, status, due_at, contacts ( name )')
-          .eq('tenant_id', tenantId)
-          .eq('status', 'pendiente')
-          .order('due_at', { ascending: true, nullsFirst: false })
-          .limit(6),
-      ])
+    const [newLeadsResult, activePropertiesResult, pendingActivitiesResult, stagesResult, dealsResult, activitiesResult] = await Promise.all([
+      supabase.from('contacts').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('created_at', sevenDaysAgo),
+      supabase.from('properties').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId).eq('status', 'disponible'),
+      supabase.from('activities').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId).eq('status', 'pendiente'),
+      supabase.from('pipeline_stages').select('id, name, sort_order').eq('tenant_id', tenantId).order('sort_order', { ascending: true }),
+      supabase.from('deals').select('id, stage_id').eq('tenant_id', tenantId),
+      supabase
+        .from('activities')
+        .select('id, type, status, due_at, contacts ( name )')
+        .eq('tenant_id', tenantId)
+        .eq('status', 'pendiente')
+        .order('due_at', { ascending: true, nullsFirst: false })
+        .limit(6),
+    ])
+
+    const firstError =
+      newLeadsResult.error || activePropertiesResult.error || pendingActivitiesResult.error || stagesResult.error || dealsResult.error || activitiesResult.error
+    if (firstError) {
+      // eslint-disable-next-line no-console
+      console.error('Error al cargar las métricas del dashboard:', firstError.message)
+      setError('No se pudieron cargar las métricas del dashboard. Intenta de nuevo.')
+      setLoading(false)
+      return
+    }
+    setError(null)
+
+    const { count: newLeadsCount } = newLeadsResult
+    const { count: activePropertiesCount } = activePropertiesResult
+    const { count: pendingActivitiesCount } = pendingActivitiesResult
+    const { data: stageRows } = stagesResult
+    const { data: dealRows } = dealsResult
+    const { data: activityRows } = activitiesResult
 
     const dealCountByStage = new Map<string, number>()
     for (const deal of dealRows || []) {
@@ -98,5 +116,5 @@ export function useDashboardStats() {
     load()
   }, [load])
 
-  return { ...stats, loading, reload: load }
+  return { ...stats, loading, error, reload: load }
 }

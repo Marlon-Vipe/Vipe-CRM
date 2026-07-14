@@ -4,7 +4,8 @@ import { type DropResult } from '@hello-pangea/dnd'
 export type PipelineProviderProps = {
   sectionsData: PipelineSectionType[]
   tasksData: PipelineTaskType[]
-  onTaskMoved?: (taskId: PipelineTaskType['id'], newSectionId: PipelineSectionType['id']) => void
+  onTaskMoved?: (taskId: PipelineTaskType['id'], newSectionId: PipelineSectionType['id']) => Promise<{ error?: string } | void>
+  onTaskMoveError?: (message: string) => void
 } & ChildrenType
 
 export type PipelineType = {

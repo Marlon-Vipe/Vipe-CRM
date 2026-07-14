@@ -96,7 +96,7 @@ const Page = () => {
     if (!window.confirm('¿Eliminar esta foto?')) return
     const { error } = await supabase.from('property_images').delete().eq('id', image.id).eq('tenant_id', tenantId)
     if (error) {
-      window.alert(error.message)
+      setErrorMessage(error.message)
       return
     }
     setExistingImages((prev) => prev.filter((img) => img.id !== image.id))
@@ -107,6 +107,17 @@ const Page = () => {
     if (!tenantId) return
     if (!form.title.trim()) {
       setErrorMessage('El título es requerido.')
+      return
+    }
+    const numericFields: [string, string][] = [
+      ['Precio', form.price],
+      ['Habitaciones', form.bedrooms],
+      ['Baños', form.bathrooms],
+      ['Área', form.areaM2],
+    ]
+    const invalidField = numericFields.find(([, value]) => value && Number.isNaN(Number(value)))
+    if (invalidField) {
+      setErrorMessage(`"${invalidField[0]}" debe ser un número válido.`)
       return
     }
 

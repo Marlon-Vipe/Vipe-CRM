@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import {
+  Alert,
   Badge,
   Button,
   Card,
@@ -81,13 +82,15 @@ const Page = () => {
   const [history, setHistory] = useState<StageHistoryRow[]>([])
   const [profilesById, setProfilesById] = useState<Map<string, ProfileRow>>(new Map())
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState('')
   const [showNewActivity, setShowNewActivity] = useState(false)
 
   const loadDetail = useCallback(async () => {
     if (!tenantId || !id) return
     setLoading(true)
 
-    const { data: dealRow } = await supabase
+    const { data: dealRow, error: dealError } = await supabase
       .from('deals')
       .select(
         'id, value_estimate, expected_close_date, assigned_agent_id, created_at, contacts ( id, name, phone, email ), properties ( id, title, price, currency, sector, city ), pipeline_stages ( id, name )'
@@ -95,6 +98,16 @@ const Page = () => {
       .eq('tenant_id', tenantId)
       .eq('id', id)
       .maybeSingle()
+
+    if (dealError) {
+      // eslint-disable-next-line no-console
+      console.error('Error al cargar la negociación:', dealError.message)
+      setLoadError('No se pudo cargar la negociación. Intenta de nuevo.')
+      setDeal(null)
+      setLoading(false)
+      return
+    }
+    setLoadError(null)
 
     const typedDeal = dealRow as unknown as DealDetail | null
     setDeal(typedDeal)
@@ -135,7 +148,7 @@ const Page = () => {
     if (!tenantId) return
     const { error } = await supabase.from('activities').update({ status }).eq('id', activityId).eq('tenant_id', tenantId)
     if (error) {
-      window.alert(error.message)
+      setErrorMessage(error.message)
       return
     }
     loadDetail()
@@ -146,7 +159,7 @@ const Page = () => {
     if (!window.confirm('¿Eliminar esta actividad?')) return
     const { error } = await supabase.from('activities').delete().eq('id', activityId).eq('tenant_id', tenantId)
     if (error) {
-      window.alert(error.message)
+      setErrorMessage(error.message)
       return
     }
     loadDetail()
@@ -157,6 +170,20 @@ const Page = () => {
       <div className="text-center py-5">
         <Spinner animation="border" variant="primary" />
       </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <>
+        <PageBreadcrumb title="Negociación" subtitle="CRM Inmobiliario" />
+        <div className="text-center py-5">
+          <p className="text-danger mb-3">{loadError}</p>
+          <Button variant="primary" onClick={loadDetail}>
+            Reintentar
+          </Button>
+        </div>
+      </>
     )
   }
 
@@ -172,6 +199,12 @@ const Page = () => {
   return (
     <>
       <PageBreadcrumb title={deal.properties?.title || 'Negociación'} subtitle="Negociaciones" />
+
+      {errorMessage && (
+        <Alert variant="danger" dismissible onClose={() => setErrorMessage('')}>
+          {errorMessage}
+        </Alert>
+      )}
 
       <Row>
         <Col lg={8}>

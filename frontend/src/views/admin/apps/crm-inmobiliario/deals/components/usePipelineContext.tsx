@@ -12,7 +12,7 @@ const usePipelineContext = () => {
   return context
 }
 
-const PipelineProvider = ({ children, tasksData, sectionsData, onTaskMoved }: PipelineProviderProps) => {
+const PipelineProvider = ({ children, tasksData, sectionsData, onTaskMoved, onTaskMoveError }: PipelineProviderProps) => {
   const [sections, setSections] = useState<PipelineSectionType[]>(sectionsData)
   const [tasks, setTasks] = useState<PipelineTaskType[]>(tasksData)
 
@@ -31,13 +31,14 @@ const PipelineProvider = ({ children, tasksData, sectionsData, onTaskMoved }: Pi
     [tasks]
   )
 
-  const onDragEnd = (result: DropResult) => {
+  const onDragEnd = async (result: DropResult) => {
     const { destination, draggableId } = result
     if (!destination) return
 
     const taskIndex = tasks.findIndex((task) => String(task.id) === String(draggableId))
     if (taskIndex === -1) return
 
+    const previousTasks = tasks
     const task = tasks[taskIndex]
 
     let newTasks = tasks.filter((t) => String(t.id) !== String(draggableId))
@@ -64,7 +65,15 @@ const PipelineProvider = ({ children, tasksData, sectionsData, onTaskMoved }: Pi
     setTasks(newTasks)
 
     if (task.sectionId !== destination.droppableId) {
-      onTaskMoved?.(task.id, destination.droppableId)
+      // Actualización optimista: si la mutación falla (RLS, red, etc.),
+      // se revierte la tarjeta a su columna original en vez de dejarla
+      // visualmente movida mientras la base de datos sigue con el valor
+      // viejo.
+      const moveResult = await onTaskMoved?.(task.id, destination.droppableId)
+      if (moveResult?.error) {
+        setTasks(previousTasks)
+        onTaskMoveError?.(moveResult.error)
+      }
     }
   }
 

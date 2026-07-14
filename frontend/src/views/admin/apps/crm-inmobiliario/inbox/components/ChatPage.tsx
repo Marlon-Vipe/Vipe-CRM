@@ -16,8 +16,9 @@ const formatTimestamp = (value: string | null) => {
 
 const ChatPage = () => {
   const [show, setShow] = useState(false)
-  const { conversations, loading: loadingConversations } = useConversations()
+  const { conversations, loading: loadingConversations, error: loadError, reload } = useConversations()
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     if (!selectedId && conversations.length > 0) {
@@ -57,14 +58,29 @@ const ChatPage = () => {
     )
   }
 
+  if (loadError) {
+    return (
+      <div className="text-center py-5">
+        <p className="text-danger mb-3">{loadError}</p>
+        <Button variant="primary" onClick={reload}>
+          Reintentar
+        </Button>
+      </div>
+    )
+  }
+
   if (conversations.length === 0) {
     return <p className="text-muted text-center py-5">Todavía no hay conversaciones para tu agencia.</p>
   }
 
+  const filteredConversations = searchTerm.trim()
+    ? conversations.filter((conversation) => conversation.contactName.toLowerCase().includes(searchTerm.trim().toLowerCase()))
+    : conversations
+
   return (
     <div className="outlook-box gap-1">
       <Offcanvas responsive="lg" show={show} onHide={() => setShow(!show)} className="outlook-left-menu outlook-left-menu-lg">
-        <ConversationList conversations={conversations} selectedId={selectedId} onSelect={setSelectedId} />
+        <ConversationList conversations={filteredConversations} selectedId={selectedId} onSelect={setSelectedId} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
       </Offcanvas>
 
       <Card className="h-100 mb-0 rounded-start-0 flex-grow-1">
@@ -164,20 +180,31 @@ const ConversationList = ({
   conversations,
   selectedId,
   onSelect,
+  searchTerm,
+  onSearchChange,
 }: {
   conversations: ConversationItem[]
   selectedId: string | null
   onSelect: (id: string) => void
+  searchTerm: string
+  onSearchChange: (value: string) => void
 }) => {
   return (
     <Card className="h-100 mb-0 border-end-0 rounded-end-0">
       <CardHeader className="p-3 border-light card-bg d-block">
         <div className="app-search">
-          <FormControl type="text" className="bg-light-subtle border-light" placeholder="Buscar conversación..." />
+          <FormControl
+            type="text"
+            className="bg-light-subtle border-light"
+            placeholder="Buscar conversación..."
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
           <Icon icon="search" className="app-search-icon text-muted" />
         </div>
       </CardHeader>
       <SimpleBar className="card-body p-2" style={{ height: 'calc(100% - 100px)' }}>
+        {conversations.length === 0 && <p className="text-muted text-center py-4 mb-0 fs-sm">Ninguna conversación coincide con la búsqueda.</p>}
         <ListGroup variant="flush" className="chat-list">
           {conversations.map((conversation) => (
             <ListGroupItem

@@ -17,7 +17,8 @@
       "Bash(npx --yes playwright install chromium --with-deps)",
       "Bash(node check-dashboard.mjs)",
       "Bash(pkill -f \"node src/server.js\")",
-      "Bash(lsof -ti:4001,5173)"
+      "Bash(lsof -ti:4001,5173)",
+      "Bash(node check-phase3.mjs)"
     ]
   }
 }

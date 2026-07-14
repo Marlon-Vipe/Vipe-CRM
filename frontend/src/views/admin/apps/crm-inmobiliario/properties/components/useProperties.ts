@@ -9,6 +9,7 @@ export function useProperties() {
   const { tenantId } = useAuth()
   const [properties, setProperties] = useState<PropertyType[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const loadProperties = useCallback(async () => {
     if (!tenantId) return
@@ -24,9 +25,11 @@ export function useProperties() {
       // eslint-disable-next-line no-console
       console.error('Error al cargar propiedades:', error?.message)
       setProperties([])
+      setError('No se pudieron cargar las propiedades. Intenta de nuevo.')
       setLoading(false)
       return
     }
+    setError(null)
 
     const propertyIds = rows.map((row) => row.id)
     const { data: images } = propertyIds.length
@@ -68,5 +71,5 @@ export function useProperties() {
     loadProperties()
   }, [loadProperties])
 
-  return { properties, loading, reload: loadProperties }
+  return { properties, loading, error, reload: loadProperties }
 }

@@ -10,12 +10,13 @@ export function useTeam() {
   const [members, setMembers] = useState<TeamMember[]>([])
   const [invitations, setInvitations] = useState<PendingInvitation[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     if (!tenantId) return
     setLoading(true)
 
-    const [{ data: memberships }, { data: profiles }, { data: invitationRows }] = await Promise.all([
+    const [membershipsResult, profilesResult, invitationsResult] = await Promise.all([
       supabase.from('memberships').select('user_id, role').eq('tenant_id', tenantId),
       supabase.from('profiles').select('id, full_name, email').eq('tenant_id', tenantId),
       supabase
@@ -26,6 +27,20 @@ export function useTeam() {
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false }),
     ])
+
+    const firstError = membershipsResult.error || profilesResult.error || invitationsResult.error
+    if (firstError) {
+      // eslint-disable-next-line no-console
+      console.error('Error al cargar el equipo:', firstError.message)
+      setError('No se pudo cargar el equipo. Intenta de nuevo.')
+      setLoading(false)
+      return
+    }
+    setError(null)
+
+    const { data: memberships } = membershipsResult
+    const { data: profiles } = profilesResult
+    const { data: invitationRows } = invitationsResult
 
     const profileById = new Map((profiles || []).map((p) => [p.id, p]))
 
@@ -55,5 +70,5 @@ export function useTeam() {
     load()
   }, [load])
 
-  return { members, invitations, loading, reload: load }
+  return { members, invitations, loading, error, reload: load }
 }

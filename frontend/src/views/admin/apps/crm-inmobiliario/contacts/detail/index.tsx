@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import {
+  Alert,
   Badge,
   Button,
   Card,
@@ -68,6 +69,8 @@ const Page = () => {
   const [activities, setActivities] = useState<ActivityRow[]>([])
   const [conversations, setConversations] = useState<ConversationRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState('')
   const [showEditContact, setShowEditContact] = useState(false)
   const [showNewActivity, setShowNewActivity] = useState(false)
 
@@ -75,7 +78,7 @@ const Page = () => {
     if (!tenantId || !id) return
     setLoading(true)
 
-    const [{ data: contactRow }, { data: activityRows }, { data: conversationRows }] = await Promise.all([
+    const [contactResult, activityResult, conversationResult] = await Promise.all([
       supabase
         .from('contacts')
         .select('id, name, phone, email, type, source, notes, created_at')
@@ -96,9 +99,19 @@ const Page = () => {
         .order('last_message_at', { ascending: false }),
     ])
 
-    setContact(contactRow as ContactDetail | null)
-    setActivities(activityRows || [])
-    setConversations((conversationRows as unknown as ConversationRow[]) || [])
+    if (contactResult.error) {
+      // eslint-disable-next-line no-console
+      console.error('Error al cargar el contacto:', contactResult.error.message)
+      setLoadError('No se pudo cargar el contacto. Intenta de nuevo.')
+      setContact(null)
+      setLoading(false)
+      return
+    }
+    setLoadError(null)
+
+    setContact(contactResult.data as ContactDetail | null)
+    setActivities(activityResult.data || [])
+    setConversations((conversationResult.data as unknown as ConversationRow[]) || [])
     setLoading(false)
   }, [tenantId, id])
 
@@ -111,7 +124,7 @@ const Page = () => {
     if (!window.confirm(`¿Eliminar a ${contact.name}? Esta acción no se puede deshacer.`)) return
     const { error } = await supabase.from('contacts').delete().eq('id', contact.id).eq('tenant_id', tenantId)
     if (error) {
-      window.alert(error.message)
+      setErrorMessage(error.message)
       return
     }
     navigate('/crm/contactos', { replace: true })
@@ -121,7 +134,7 @@ const Page = () => {
     if (!tenantId) return
     const { error } = await supabase.from('activities').update({ status }).eq('id', activityId).eq('tenant_id', tenantId)
     if (error) {
-      window.alert(error.message)
+      setErrorMessage(error.message)
       return
     }
     loadDetail()
@@ -132,7 +145,7 @@ const Page = () => {
     if (!window.confirm('¿Eliminar esta actividad?')) return
     const { error } = await supabase.from('activities').delete().eq('id', activityId).eq('tenant_id', tenantId)
     if (error) {
-      window.alert(error.message)
+      setErrorMessage(error.message)
       return
     }
     loadDetail()
@@ -143,6 +156,20 @@ const Page = () => {
       <div className="text-center py-5">
         <Spinner animation="border" variant="primary" />
       </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <>
+        <PageBreadcrumb title="Contacto" subtitle="CRM Inmobiliario" />
+        <div className="text-center py-5">
+          <p className="text-danger mb-3">{loadError}</p>
+          <Button variant="primary" onClick={loadDetail}>
+            Reintentar
+          </Button>
+        </div>
+      </>
     )
   }
 
@@ -158,6 +185,12 @@ const Page = () => {
   return (
     <>
       <PageBreadcrumb title={contact.name} subtitle="Contactos" />
+
+      {errorMessage && (
+        <Alert variant="danger" dismissible onClose={() => setErrorMessage('')}>
+          {errorMessage}
+        </Alert>
+      )}
 
       <Row>
         <Col lg={4}>

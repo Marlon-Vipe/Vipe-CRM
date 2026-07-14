@@ -3,23 +3,24 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Button, Col, Row, Spinner } from 'react-bootstrap'
+import { Alert, Button, Col, Row, Spinner } from 'react-bootstrap'
 import PropertyCard from './PropertyCard'
 import ProductFilter from './ProductFilter'
 import { useProperties } from './useProperties'
 
 const ProductsPage = () => {
   const [isOffcanvasOpen, setIsOffcanvasOpen] = useState(false)
-  const { properties, loading, reload } = useProperties()
+  const { properties, loading, error: loadError, reload } = useProperties()
   const { tenantId } = useAuth()
   const navigate = useNavigate()
+  const [errorMessage, setErrorMessage] = useState('')
 
   const handleDelete = async (propertyId: string) => {
     if (!tenantId) return
     if (!window.confirm('¿Eliminar esta propiedad? Esta acción no se puede deshacer.')) return
     const { error } = await supabase.from('properties').delete().eq('id', propertyId).eq('tenant_id', tenantId)
     if (error) {
-      window.alert(error.message)
+      setErrorMessage(error.message)
       return
     }
     reload()
@@ -45,6 +46,12 @@ const ProductsPage = () => {
         </Col>
       </Row>
 
+      {errorMessage && (
+        <Alert variant="danger" dismissible onClose={() => setErrorMessage('')}>
+          {errorMessage}
+        </Alert>
+      )}
+
       <Row className="g-2">
         <ProductFilter properties={properties} isOffcanvasOpen={isOffcanvasOpen} setIsOffcanvasOpen={setIsOffcanvasOpen} />
 
@@ -52,6 +59,13 @@ const ProductsPage = () => {
           {loading ? (
             <div className="text-center py-5">
               <Spinner animation="border" variant="primary" />
+            </div>
+          ) : loadError ? (
+            <div className="text-center py-5">
+              <p className="text-danger mb-3">{loadError}</p>
+              <Button variant="primary" onClick={reload}>
+                Reintentar
+              </Button>
             </div>
           ) : properties.length === 0 ? (
             <p className="text-muted text-center py-5">Todavía no hay propiedades registradas para tu agencia.</p>

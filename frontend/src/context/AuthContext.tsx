@@ -33,6 +33,7 @@ export interface AuthContextValue {
   role: MembershipRole | null
   tenant: Tenant | null
   loading: boolean
+  membershipError: string | null
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>
   signUp: (
     email: string,
@@ -57,6 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null)
   const [membership, setMembership] = useState<Membership | null>(null)
   const [loading, setLoading] = useState(true)
+  const [membershipError, setMembershipError] = useState<string | null>(null)
   // getSession() y onAuthStateChange pueden disparar casi al mismo tiempo al
   // montar; este ref evita lanzar dos completeSignup en paralelo para el
   // mismo email (la constraint memberships_user_id_unique es el respaldo
@@ -66,6 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const loadMembership = useCallback(async (userId?: string): Promise<Membership | null> => {
     if (!userId) {
       setMembership(null)
+      setMembershipError(null)
       return null
     }
     const { data, error } = await supabase
@@ -78,8 +81,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // eslint-disable-next-line no-console
       console.error('Error al cargar la membresía del usuario:', error.message)
       setMembership(null)
+      // Sin esto, un fallo transitorio de red/RLS deja tenantId en null para
+      // siempre sin ninguna pista visible — cada pantalla protegida queda
+      // con su hook de datos esperando un tenantId que nunca llega (spinner
+      // infinito, ver MainLayout.tsx).
+      setMembershipError('No se pudo cargar la información de tu cuenta. Verifica tu conexión e intenta de nuevo.')
       return null
     }
+    setMembershipError(null)
     const typedData = data as unknown as Membership | null
     setMembership(typedData)
     return typedData
@@ -112,6 +121,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error al completar el signup pendiente:', (error as Error).message)
+        setMembershipError('No se pudo terminar de configurar tu cuenta. Intenta cerrar sesión y volver a entrar; si el problema sigue, contáctanos.')
       } finally {
         pendingSignupInFlight.current.delete(email)
       }
@@ -169,12 +179,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       role: membership?.role ?? null,
       tenant: membership?.tenants ?? null,
       loading,
+      membershipError,
       signIn,
       signUp,
       signOut,
       refreshMembership: () => loadMembership(session?.user?.id),
     }),
-    [session, membership, loading, signIn, signUp, signOut, loadMembership]
+    [session, membership, loading, membershipError, signIn, signUp, signOut, loadMembership]
   )
 
   return <AuthContext value={value}>{children}</AuthContext>

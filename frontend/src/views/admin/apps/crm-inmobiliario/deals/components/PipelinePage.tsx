@@ -5,7 +5,7 @@ import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd'
 import clsx from 'clsx'
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { Button, Card, CardBody, CardHeader, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Spinner } from 'react-bootstrap'
+import { Alert, Button, Card, CardBody, CardHeader, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Spinner } from 'react-bootstrap'
 
 import { type PipelineSectionType, type PipelineTaskType } from './data'
 import DealFormModal from './DealFormModal'
@@ -22,6 +22,7 @@ const PipelinePage = () => {
     contactOptions,
     propertyOptions,
     loading,
+    error: loadError,
     updateDealStage,
     createDeal,
     updateDeal,
@@ -36,6 +37,8 @@ const PipelinePage = () => {
   const [createStageId, setCreateStageId] = useState<string | undefined>()
   const [showStageModal, setShowStageModal] = useState(false)
   const [editingStage, setEditingStage] = useState<PipelineSectionType | null>(null)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const openCreate = (stageId?: string) => {
     setEditingDeal(null)
@@ -52,7 +55,7 @@ const PipelinePage = () => {
     if (!window.confirm(`¿Eliminar la negociación "${task.title}"? Esta acción no se puede deshacer.`)) return
     const { error } = await deleteDeal(task.id)
     if (error) {
-      window.alert(error)
+      setErrorMessage(error)
     }
   }
 
@@ -70,7 +73,7 @@ const PipelinePage = () => {
     if (!window.confirm(`¿Eliminar la etapa "${stage.title}"?`)) return
     const { error } = await deleteStage(stage.id)
     if (error) {
-      window.alert(error)
+      setErrorMessage(error)
     }
   }
 
@@ -82,12 +85,35 @@ const PipelinePage = () => {
     )
   }
 
+  if (loadError) {
+    return (
+      <div className="text-center py-5">
+        <p className="text-danger mb-3">{loadError}</p>
+        <Button variant="primary" onClick={reload}>
+          Reintentar
+        </Button>
+      </div>
+    )
+  }
+
   return (
-    <PipelineProvider sectionsData={sections} tasksData={tasks} onTaskMoved={updateDealStage}>
+    <PipelineProvider sectionsData={sections} tasksData={tasks} onTaskMoved={updateDealStage} onTaskMoveError={setErrorMessage}>
       <div className="outlook-box kanban-app">
         <Card className="h-100 mb-0 flex-grow-1">
-          <PipelineHeader onAddDeal={() => openCreate()} onAddStage={openCreateStage} />
-          <Board onAddTask={openCreate} onEditTask={openEdit} onDeleteTask={handleDelete} onEditStage={openEditStage} onDeleteStage={handleDeleteStage} />
+          {errorMessage && (
+            <Alert variant="danger" className="m-3 mb-0" dismissible onClose={() => setErrorMessage('')}>
+              {errorMessage}
+            </Alert>
+          )}
+          <PipelineHeader onAddDeal={() => openCreate()} onAddStage={openCreateStage} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+          <Board
+            onAddTask={openCreate}
+            onEditTask={openEdit}
+            onDeleteTask={handleDelete}
+            onEditStage={openEditStage}
+            onDeleteStage={handleDeleteStage}
+            searchTerm={searchTerm}
+          />
         </Card>
       </div>
       <DealFormModal
@@ -116,11 +142,27 @@ const PipelinePage = () => {
 
 export default PipelinePage
 
-const PipelineHeader = ({ onAddDeal, onAddStage }: { onAddDeal: () => void; onAddStage: () => void }) => {
+const PipelineHeader = ({
+  onAddDeal,
+  onAddStage,
+  searchTerm,
+  onSearchChange,
+}: {
+  onAddDeal: () => void
+  onAddStage: () => void
+  searchTerm: string
+  onSearchChange: (value: string) => void
+}) => {
   return (
     <CardHeader className="d-flex border-light align-items-center gap-2">
       <div className="app-search d-none d-lg-block">
-        <input type="search" className="form-control" placeholder="Buscar negociación..." />
+        <input
+          type="search"
+          className="form-control"
+          placeholder="Buscar negociación..."
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
         <Icon icon="search" className="app-search-icon text-muted" />
       </div>
       <Button variant="light" className="ms-auto" onClick={onAddStage}>
@@ -139,17 +181,30 @@ const Board = ({
   onDeleteTask,
   onEditStage,
   onDeleteStage,
+  searchTerm,
 }: {
   onAddTask: (sectionId: string) => void
   onEditTask: (task: PipelineTaskType) => void
   onDeleteTask: (task: PipelineTaskType) => void
   onEditStage: (stage: PipelineSectionType) => void
   onDeleteStage: (stage: PipelineSectionType) => void
+  searchTerm: string
 }) => {
   const { onDragEnd, sections, getAllTasksPerSection } = usePipelineContext()
+  const isFiltering = Boolean(searchTerm.trim())
+  const query = searchTerm.trim().toLowerCase()
+  const getVisibleTasks = (sectionId: string) =>
+    isFiltering
+      ? getAllTasksPerSection(sectionId).filter((task) => task.title.toLowerCase().includes(query) || task.userName.toLowerCase().includes(query))
+      : getAllTasksPerSection(sectionId)
 
   return (
     <CardBody className="p-0">
+      {isFiltering && (
+        <p className="text-muted fs-xs px-3 pt-2 mb-0">
+          <Icon icon="info" className="me-1" /> Arrastrar para cambiar de etapa está desactivado mientras filtras — limpia la búsqueda para reordenar.
+        </p>
+      )}
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="kanban-content">
           {sections.map((section) => (
@@ -158,7 +213,7 @@ const Board = ({
                 <div className={`kanban-board bg-${section.variant} bg-opacity-10`} ref={provided.innerRef}>
                   <div className="kanban-item py-2 px-3 d-flex align-items-center">
                     <h5 className="m-0">
-                      {section.title} ({getAllTasksPerSection(section.id).length})
+                      {section.title} ({getVisibleTasks(section.id).length})
                     </h5>
                     <div className="ms-auto d-flex align-items-center gap-1">
                       <Button className="btn btn-sm btn-icon rounded-circle btn-primary" onClick={() => onAddTask(section.id)}>
@@ -183,8 +238,8 @@ const Board = ({
                   </div>
                   <SimpleBar className="kanban-board-group px-2">
                     <ul>
-                      {getAllTasksPerSection(section.id).map((task, idx) => (
-                        <Draggable draggableId={task.id} index={idx} key={task.id}>
+                      {getVisibleTasks(section.id).map((task, idx) => (
+                        <Draggable draggableId={task.id} index={idx} key={task.id} isDragDisabled={isFiltering}>
                           {(provided) => (
                             <li className="kanban-item" ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
                               <TaskItem item={task} onEdit={onEditTask} onDelete={onDeleteTask} />

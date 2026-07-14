@@ -3,7 +3,7 @@ import Icon from '@/components/wrappers/Icon'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
 import { useState } from 'react'
-import { Badge, Button, Card, CardBody, CardHeader, Col, ListGroup, ListGroupItem, Row, Spinner } from 'react-bootstrap'
+import { Alert, Badge, Button, Card, CardBody, CardHeader, Col, ListGroup, ListGroupItem, Row, Spinner } from 'react-bootstrap'
 
 import { ROLE_LABELS } from './components/data'
 import { useTeam } from './components/useTeam'
@@ -11,9 +11,10 @@ import InviteFormModal from './components/InviteFormModal'
 
 const Page = () => {
   const { role: myRole, tenantId } = useAuth()
-  const { members, invitations, loading, reload } = useTeam()
+  const { members, invitations, loading, error: loadError, reload } = useTeam()
   const [showInvite, setShowInvite] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState('')
 
   const canManageTeam = myRole === 'owner' || myRole === 'admin'
 
@@ -29,7 +30,7 @@ const Page = () => {
     if (!window.confirm('¿Revocar esta invitación?')) return
     const { error } = await supabase.from('invitations').delete().eq('id', invitationId).eq('tenant_id', tenantId)
     if (error) {
-      window.alert(error.message)
+      setErrorMessage(error.message)
       return
     }
     reload()
@@ -43,9 +44,29 @@ const Page = () => {
     )
   }
 
+  if (loadError) {
+    return (
+      <>
+        <PageBreadcrumb title="Equipo" subtitle="CRM Inmobiliario" />
+        <div className="text-center py-5">
+          <p className="text-danger mb-3">{loadError}</p>
+          <Button variant="primary" onClick={reload}>
+            Reintentar
+          </Button>
+        </div>
+      </>
+    )
+  }
+
   return (
     <>
       <PageBreadcrumb title="Equipo" subtitle="CRM Inmobiliario" />
+
+      {errorMessage && (
+        <Alert variant="danger" dismissible onClose={() => setErrorMessage('')}>
+          {errorMessage}
+        </Alert>
+      )}
 
       <Row>
         <Col lg={6}>

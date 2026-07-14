@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { acceptInvitation, completeSignup, getInvitation } from '@/lib/api'
 import { setPendingInvitationToken } from '@/lib/pendingInvitation'
 import { setPendingTenantName } from '@/lib/pendingTenant'
+import { translateAuthError } from '@/utils/authErrors'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Alert, Button, Form, FormCheck, FormControl, FormLabel, Spinner } from 'react-bootstrap'
@@ -81,7 +82,7 @@ const Forms = () => {
       const { data, error } = await signUp(email, password, { data: { full_name: fullName } })
 
       if (error) {
-        setErrorMessage(error.message)
+        setErrorMessage(translateAuthError(error.message))
         return
       }
 

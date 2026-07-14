@@ -9,6 +9,7 @@ export function useContacts() {
   const { tenantId } = useAuth()
   const [contacts, setContacts] = useState<ContactType[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const loadContacts = useCallback(async () => {
     if (!tenantId) return
@@ -24,9 +25,11 @@ export function useContacts() {
       // eslint-disable-next-line no-console
       console.error('Error al cargar contactos:', error?.message)
       setContacts([])
+      setError('No se pudieron cargar los contactos. Intenta de nuevo.')
       setLoading(false)
       return
     }
+    setError(null)
 
     const contactIds = contactRows.map((row) => row.id)
 
@@ -68,5 +71,5 @@ export function useContacts() {
     loadContacts()
   }, [loadContacts])
 
-  return { contacts, loading, reload: loadContacts }
+  return { contacts, loading, error, reload: loadContacts }
 }

@@ -4,16 +4,17 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { Button, Card, CardBody, CardFooter, Col, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Row, Spinner } from 'react-bootstrap'
+import { Alert, Button, Card, CardBody, CardFooter, Col, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Row, Spinner } from 'react-bootstrap'
 import { CONTACT_SOURCE_LABELS, CONTACT_TYPE_BADGE, CONTACT_TYPE_LABELS, type ContactType } from './components/data'
 import { useContacts } from './components/useContacts'
 import ContactFormModal from './components/ContactFormModal'
 
 const Page = () => {
-  const { contacts, loading, reload } = useContacts()
+  const { contacts, loading, error: loadError, reload } = useContacts()
   const { tenantId } = useAuth()
   const [showModal, setShowModal] = useState(false)
   const [editingContact, setEditingContact] = useState<ContactType | null>(null)
+  const [errorMessage, setErrorMessage] = useState('')
 
   const openCreate = () => {
     setEditingContact(null)
@@ -30,7 +31,7 @@ const Page = () => {
     if (!window.confirm(`¿Eliminar a ${contact.name}? Esta acción no se puede deshacer.`)) return
     const { error } = await supabase.from('contacts').delete().eq('id', contact.id).eq('tenant_id', tenantId)
     if (error) {
-      window.alert(error.message)
+      setErrorMessage(error.message)
       return
     }
     reload()
@@ -51,9 +52,22 @@ const Page = () => {
         </Col>
       </Row>
 
+      {errorMessage && (
+        <Alert variant="danger" dismissible onClose={() => setErrorMessage('')}>
+          {errorMessage}
+        </Alert>
+      )}
+
       {loading ? (
         <div className="text-center py-5">
           <Spinner animation="border" variant="primary" />
+        </div>
+      ) : loadError ? (
+        <div className="text-center py-5">
+          <p className="text-danger mb-3">{loadError}</p>
+          <Button variant="primary" onClick={reload}>
+            Reintentar
+          </Button>
         </div>
       ) : contacts.length === 0 ? (
         <p className="text-muted text-center py-5">Todavía no hay contactos registrados para tu agencia.</p>
