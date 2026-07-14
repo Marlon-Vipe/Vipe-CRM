@@ -2,7 +2,7 @@
   "name": "crm-inmobiliario",
   "version": "8.0.0",
   "description": "CRM para gestión de contactos, propiedades, negociaciones y mensajería de agencias inmobiliarias en República Dominicana.",
-  "author": "Coderthemes",
+  "author": "Vipe CRM",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

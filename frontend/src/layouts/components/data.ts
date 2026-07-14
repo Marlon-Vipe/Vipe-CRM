@@ -2,9 +2,9 @@ import { type MenuItemType } from '@/types'
 
 /**
  * Menú lateral del CRM Inmobiliario.
- * Reescrito a partir del menú original de UBold: se quitaron las secciones
- * de demostración del template (Layouts, Components/Icons, Menu Items) y se
- * agregó la sección "CRM Inmobiliario" con las 4 pantallas principales.
+ * Se quitaron las secciones de demostración del template original (Layouts,
+ * Components/Icons, Menu Items) y se agregó la sección "CRM Inmobiliario"
+ * con las 4 pantallas principales.
  * Ver CRM_PROMPT.md sección 5 para el detalle de cada pantalla.
  */
 export const menuItems: MenuItemType[] = [

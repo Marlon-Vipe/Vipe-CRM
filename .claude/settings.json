@@ -24,7 +24,14 @@
       "Bash(node check-reset-flow.mjs \"https://vdzwgylbcptrjfyqgpfw.supabase.co/auth/v1/verify?token=155c3efd3bb426e7ca13cbc4ce244cb003142703c79b44654db99c24&type=recovery&redirect_to=http://localhost:3000\")",
       "Bash(sort -t_ -k1 -n)",
       "Bash(node check-rf16.mjs)",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('\\\\n'.join\\(sorted\\(d.get\\('dependencies',{}\\).keys\\(\\)\\)\\)\\)\")"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('\\\\n'.join\\(sorted\\(d.get\\('dependencies',{}\\).keys\\(\\)\\)\\)\\)\")",
+      "Bash(brew install *)",
+      "Bash(ngrok config *)",
+      "Bash(curl -s http://127.0.0.1:4040/api/tunnels)",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); print\\(data['tunnels'][0]['public_url']\\)\")",
+      "Bash(curl -s -o /dev/null -w \"status: %{http_code}\\\\n\" https://dingy-virus-contented.ngrok-free.dev/health)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(grep -rln \"— by$\\\\|— by\\\\s*$\" src --include=\"*.tsx\")"
     ]
   }
 }

@@ -33,8 +33,7 @@ const Page = () => {
                 </p>
               </Card>
               <p className="text-center text-muted mt-4 mb-0">
-                © {currentYear} {META_DATA.name} — by
-                <span className="fw-semibold">{META_DATA.author}</span>
+                © {currentYear} {META_DATA.name} — by <span className="fw-semibold">{META_DATA.author}</span>
               </p>
             </Col>
           </Row>

@@ -1,16 +1,21 @@
 import { Link } from 'react-router'
 
-import logoBlack from '@/assets/images/logo-black.png'
-import logo from '@/assets/images/logo.png'
+import Icon from '@/components/wrappers/Icon'
 
 const AuthLogo = () => {
   return (
     <>
       <Link to="/" className="logo-dark">
-        <img src={logoBlack} alt="dark logo" />
+        <span className="d-inline-flex align-items-center justify-content-center gap-2">
+          <Icon icon="building-2" className="fs-28" />
+          <span className="fw-bold fs-24">Vipe CRM</span>
+        </span>
       </Link>
       <Link to="/" className="logo-light">
-        <img src={logo} alt="logo" />
+        <span className="d-inline-flex align-items-center justify-content-center gap-2">
+          <Icon icon="building-2" className="fs-28" />
+          <span className="fw-bold fs-24">Vipe CRM</span>
+        </span>
       </Link>
     </>
   )

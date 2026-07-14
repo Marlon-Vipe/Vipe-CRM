@@ -1,26 +1,26 @@
 import { Link } from 'react-router'
 
-import logoBlack from '@/assets/images/logo-black.png'
-import logoSm from '@/assets/images/logo-sm.png'
-import logo from '@/assets/images/logo.png'
+import Icon from '@/components/wrappers/Icon'
 
 const AppLogo = () => {
   return (
     <Link to="/" className="logo">
       <span className="logo logo-light">
-        <span className="logo-lg">
-          <img src={logo} alt="logo" />
+        <span className="logo-lg d-flex align-items-center gap-2">
+          <Icon icon="building-2" className="fs-24" />
+          <span className="fw-bold fs-20">Vipe CRM</span>
         </span>
         <span className="logo-sm">
-          <img src={logoSm} alt="small logo" />
+          <Icon icon="building-2" className="fs-24" />
         </span>
       </span>
       <span className="logo logo-dark">
-        <span className="logo-lg">
-          <img src={logoBlack} alt="dark logo" />
+        <span className="logo-lg d-flex align-items-center gap-2">
+          <Icon icon="building-2" className="fs-24" />
+          <span className="fw-bold fs-20">Vipe CRM</span>
         </span>
         <span className="logo-sm">
-          <img src={logoSm} alt="small logo" />
+          <Icon icon="building-2" className="fs-24" />
         </span>
       </span>
     </Link>
