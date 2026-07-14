@@ -53,6 +53,51 @@ router.post("/whatsapp", requireAuth, requireOwnerOrAdmin, async (req, res) => {
   return res.status(existing ? 200 : 201).json(channel);
 });
 
+// RF-16: catálogo de plantillas de WhatsApp ya aprobadas por Meta que la
+// agencia registró en su consola de Twilio — se usan para mandar mensajes
+// fuera de la ventana de servicio de 24h (ver backend/src/routes/messages.js).
+router.get("/whatsapp/templates", requireAuth, requireMembership, async (req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from("whatsapp_templates")
+    .select("id, name, twilio_content_sid, variable_labels, created_at")
+    .eq("tenant_id", req.membership.tenant_id)
+    .order("created_at", { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data);
+});
+
+router.post("/whatsapp/templates", requireAuth, requireOwnerOrAdmin, async (req, res) => {
+  const name = (req.body?.name || "").trim();
+  const twilioContentSid = (req.body?.twilio_content_sid || "").trim();
+  const variableLabels = Array.isArray(req.body?.variable_labels) ? req.body.variable_labels.map((v) => String(v).trim()).filter(Boolean) : [];
+
+  if (!name) return res.status(400).json({ error: "El nombre de la plantilla es requerido." });
+  if (!/^HX[0-9a-f]{32}$/i.test(twilioContentSid)) {
+    return res.status(400).json({ error: "El Content SID de Twilio no es válido (debe empezar con HX...)." });
+  }
+
+  const { data: template, error } = await supabaseAdmin
+    .from("whatsapp_templates")
+    .insert({ tenant_id: req.membership.tenant_id, name, twilio_content_sid: twilioContentSid, variable_labels: variableLabels })
+    .select("id, name, twilio_content_sid, variable_labels, created_at")
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  return res.status(201).json(template);
+});
+
+router.delete("/whatsapp/templates/:templateId", requireAuth, requireOwnerOrAdmin, async (req, res) => {
+  const { error } = await supabaseAdmin
+    .from("whatsapp_templates")
+    .delete()
+    .eq("id", req.params.templateId)
+    .eq("tenant_id", req.membership.tenant_id);
+
+  if (error) return res.status(500).json({ error: error.message });
+  return res.status(204).send();
+});
+
 router.delete("/:id", requireAuth, requireOwnerOrAdmin, async (req, res) => {
   const { data: channel, error: findError } = await supabaseAdmin
     .from("channels")

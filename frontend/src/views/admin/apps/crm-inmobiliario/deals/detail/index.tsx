@@ -2,7 +2,7 @@ import PageBreadcrumb from '@/components/PageBreadcrumb'
 import Icon from '@/components/wrappers/Icon'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import {
   Alert,
@@ -85,10 +85,11 @@ const Page = () => {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [showNewActivity, setShowNewActivity] = useState(false)
+  const loadedIdRef = useRef<string | null>(null)
 
   const loadDetail = useCallback(async () => {
     if (!tenantId || !id) return
-    setLoading(true)
+    if (loadedIdRef.current !== id) setLoading(true)
 
     const { data: dealRow, error: dealError } = await supabase
       .from('deals')
@@ -105,6 +106,7 @@ const Page = () => {
       setLoadError('No se pudo cargar la negociación. Intenta de nuevo.')
       setDeal(null)
       setLoading(false)
+      loadedIdRef.current = id
       return
     }
     setLoadError(null)
@@ -138,6 +140,7 @@ const Page = () => {
     }
 
     setLoading(false)
+    loadedIdRef.current = id
   }, [tenantId, id])
 
   useEffect(() => {

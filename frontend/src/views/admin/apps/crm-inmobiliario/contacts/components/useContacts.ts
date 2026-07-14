@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
@@ -10,10 +10,14 @@ export function useContacts() {
   const [contacts, setContacts] = useState<ContactType[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const hasLoadedOnce = useRef(false)
 
   const loadContacts = useCallback(async () => {
     if (!tenantId) return
-    setLoading(true)
+    // Solo la primera carga bloquea la pantalla con el spinner — un reload
+    // disparado por crear/editar/borrar un contacto no debe hacer parpadear
+    // toda la lista, solo actualizar los datos cuando estén listos.
+    if (!hasLoadedOnce.current) setLoading(true)
 
     const { data: contactRows, error } = await supabase
       .from('contacts')
@@ -27,6 +31,7 @@ export function useContacts() {
       setContacts([])
       setError('No se pudieron cargar los contactos. Intenta de nuevo.')
       setLoading(false)
+      hasLoadedOnce.current = true
       return
     }
     setError(null)
@@ -65,6 +70,7 @@ export function useContacts() {
       }))
     )
     setLoading(false)
+    hasLoadedOnce.current = true
   }, [tenantId])
 
   useEffect(() => {

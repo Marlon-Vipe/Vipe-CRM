@@ -2,7 +2,7 @@ import PageBreadcrumb from '@/components/PageBreadcrumb'
 import Icon from '@/components/wrappers/Icon'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import {
   Alert,
@@ -73,10 +73,14 @@ const Page = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [showEditContact, setShowEditContact] = useState(false)
   const [showNewActivity, setShowNewActivity] = useState(false)
+  // Recordar para qué id ya se cargó, para no volver a mostrar el spinner de
+  // pantalla completa cuando un reload (ej. agregar una actividad) es sobre
+  // el mismo contacto — solo cambiar de contacto amerita el spinner de nuevo.
+  const loadedIdRef = useRef<string | null>(null)
 
   const loadDetail = useCallback(async () => {
     if (!tenantId || !id) return
-    setLoading(true)
+    if (loadedIdRef.current !== id) setLoading(true)
 
     const [contactResult, activityResult, conversationResult] = await Promise.all([
       supabase
@@ -105,6 +109,7 @@ const Page = () => {
       setLoadError('No se pudo cargar el contacto. Intenta de nuevo.')
       setContact(null)
       setLoading(false)
+      loadedIdRef.current = id
       return
     }
     setLoadError(null)
@@ -113,6 +118,7 @@ const Page = () => {
     setActivities(activityResult.data || [])
     setConversations((conversationResult.data as unknown as ConversationRow[]) || [])
     setLoading(false)
+    loadedIdRef.current = id
   }, [tenantId, id])
 
   useEffect(() => {

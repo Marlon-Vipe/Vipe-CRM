@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
@@ -18,10 +18,11 @@ export function useConversations() {
   const [conversations, setConversations] = useState<ConversationItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const hasLoadedOnce = useRef(false)
 
   const loadConversations = useCallback(async () => {
     if (!tenantId) return
-    setLoading(true)
+    if (!hasLoadedOnce.current) setLoading(true)
 
     const { data: conversationRows, error } = await supabase
       .from('conversations')
@@ -35,6 +36,7 @@ export function useConversations() {
       setConversations([])
       setError('No se pudieron cargar las conversaciones. Intenta de nuevo.')
       setLoading(false)
+      hasLoadedOnce.current = true
       return
     }
     setError(null)
@@ -70,6 +72,7 @@ export function useConversations() {
       }))
     )
     setLoading(false)
+    hasLoadedOnce.current = true
   }, [tenantId])
 
   useEffect(() => {

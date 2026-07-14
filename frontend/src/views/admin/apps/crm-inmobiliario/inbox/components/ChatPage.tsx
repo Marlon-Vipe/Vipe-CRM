@@ -5,9 +5,11 @@ import { Link } from 'react-router'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Alert, Button, Card, CardFooter, CardHeader, Form, FormControl, ListGroup, ListGroupItem, Offcanvas, Spinner } from 'react-bootstrap'
 import ChatToolbar from './ChatToolbar'
+import TemplateComposer from './TemplateComposer'
 import { CHANNEL_LABELS, type ConversationItem } from './data'
 import { useConversations } from './useConversations'
 import { useMessages } from './useMessages'
+import { useWhatsAppTemplates } from './useWhatsAppTemplates'
 
 const formatTimestamp = (value: string | null) => {
   if (!value) return ''
@@ -27,7 +29,8 @@ const ChatPage = () => {
   }, [conversations, selectedId])
 
   const currentConversation = conversations.find((c) => c.id === selectedId) || null
-  const { messages, loading: loadingMessages, sending, sendMessage } = useMessages(selectedId)
+  const { messages, loading: loadingMessages, sending, sendMessage, sendTemplate, isWithinServiceWindow } = useMessages(selectedId)
+  const { templates, loading: templatesLoading } = useWhatsAppTemplates()
   const [draft, setDraft] = useState('')
   const [sendError, setSendError] = useState('')
 
@@ -147,27 +150,33 @@ const ChatPage = () => {
         </SimpleBar>
 
         <CardFooter className="bg-body-secondary border-top border-dashed border-bottom-0 position-absolute bottom-0 w-100">
-          {sendError && (
-            <Alert variant="danger" className="py-1 px-2 fs-xs mb-2" onClose={() => setSendError('')} dismissible>
-              {sendError}
-            </Alert>
+          {currentConversation && !loadingMessages && !isWithinServiceWindow ? (
+            <TemplateComposer templates={templates} templatesLoading={templatesLoading} sending={sending} disabled={!currentConversation} onSend={sendTemplate} />
+          ) : (
+            <>
+              {sendError && (
+                <Alert variant="danger" className="py-1 px-2 fs-xs mb-2" onClose={() => setSendError('')} dismissible>
+                  {sendError}
+                </Alert>
+              )}
+              <Form onSubmit={handleSend} className="d-flex gap-2 align-items-center">
+                <div className="app-search flex-grow-1">
+                  <FormControl
+                    type="text"
+                    className="py-2 bg-light-subtle border-light"
+                    placeholder="Escribe un mensaje..."
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    disabled={sending || loadingMessages || !currentConversation}
+                  />
+                  <Icon icon="message-square-text" className="app-search-icon text-muted" />
+                </div>
+                <Button variant="primary" type="submit" disabled={sending || loadingMessages || !draft.trim() || !currentConversation}>
+                  {sending ? 'Enviando...' : 'Enviar'} <Icon icon="send-horizontal" className="ms-1 fs-xl" />
+                </Button>
+              </Form>
+            </>
           )}
-          <Form onSubmit={handleSend} className="d-flex gap-2 align-items-center">
-            <div className="app-search flex-grow-1">
-              <FormControl
-                type="text"
-                className="py-2 bg-light-subtle border-light"
-                placeholder="Escribe un mensaje..."
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                disabled={sending || loadingMessages || !currentConversation}
-              />
-              <Icon icon="message-square-text" className="app-search-icon text-muted" />
-            </div>
-            <Button variant="primary" type="submit" disabled={sending || loadingMessages || !draft.trim() || !currentConversation}>
-              {sending ? 'Enviando...' : 'Enviar'} <Icon icon="send-horizontal" className="ms-1 fs-xl" />
-            </Button>
-          </Form>
         </CardFooter>
       </Card>
     </div>

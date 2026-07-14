@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
@@ -40,10 +40,11 @@ export function useDashboardStats() {
   const [stats, setStats] = useState<DashboardStats>(EMPTY_STATS)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const hasLoadedOnce = useRef(false)
 
   const load = useCallback(async () => {
     if (!tenantId) return
-    setLoading(true)
+    if (!hasLoadedOnce.current) setLoading(true)
 
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
@@ -69,6 +70,7 @@ export function useDashboardStats() {
       console.error('Error al cargar las métricas del dashboard:', firstError.message)
       setError('No se pudieron cargar las métricas del dashboard. Intenta de nuevo.')
       setLoading(false)
+      hasLoadedOnce.current = true
       return
     }
     setError(null)
@@ -110,6 +112,7 @@ export function useDashboardStats() {
       upcomingActivities,
     })
     setLoading(false)
+    hasLoadedOnce.current = true
   }, [tenantId])
 
   useEffect(() => {

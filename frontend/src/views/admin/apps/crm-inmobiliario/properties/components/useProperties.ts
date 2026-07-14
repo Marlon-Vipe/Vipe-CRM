@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
@@ -10,10 +10,11 @@ export function useProperties() {
   const [properties, setProperties] = useState<PropertyType[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const hasLoadedOnce = useRef(false)
 
   const loadProperties = useCallback(async () => {
     if (!tenantId) return
-    setLoading(true)
+    if (!hasLoadedOnce.current) setLoading(true)
 
     const { data: rows, error } = await supabase
       .from('properties')
@@ -27,6 +28,7 @@ export function useProperties() {
       setProperties([])
       setError('No se pudieron cargar las propiedades. Intenta de nuevo.')
       setLoading(false)
+      hasLoadedOnce.current = true
       return
     }
     setError(null)
@@ -65,6 +67,7 @@ export function useProperties() {
       }))
     )
     setLoading(false)
+    hasLoadedOnce.current = true
   }, [tenantId])
 
   useEffect(() => {

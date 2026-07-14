@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
-import { sendConversationMessage } from '@/lib/api'
+import { sendConversationMessage, sendTemplateMessage } from '@/lib/api'
 
 import type { MessageItem } from './data'
+
+const SERVICE_WINDOW_MS = 24 * 60 * 60 * 1000
 
 export function useMessages(conversationId: string | null) {
   const { tenantId, session } = useAuth()
@@ -92,5 +94,31 @@ export function useMessages(conversationId: string | null) {
     [conversationId, session]
   )
 
-  return { messages, loading, sending, sendMessage }
+  const sendTemplate = useCallback(
+    async (templateId: string, variables: string[]) => {
+      if (!conversationId || !session) {
+        throw new Error('No hay una conversación seleccionada o tu sesión expiró. Recarga la página e intenta de nuevo.')
+      }
+      setSending(true)
+      try {
+        await sendTemplateMessage({ accessToken: session.access_token, conversationId, templateId, variables })
+      } finally {
+        setSending(false)
+      }
+    },
+    [conversationId, session]
+  )
+
+  // Mismo cálculo que el backend (SERVICE_WINDOW_MS en messages.js): si el
+  // último mensaje del contacto tiene más de 24h, WhatsApp exige una
+  // plantilla aprobada en vez de texto libre — se calcula acá también para
+  // que el composer pueda cambiar de modo sin esperar a que el backend
+  // rechace el envío primero.
+  const isWithinServiceWindow = useMemo(() => {
+    const lastInbound = [...messages].reverse().find((message) => message.direction === 'entrante')
+    if (!lastInbound) return false
+    return Date.now() - new Date(lastInbound.createdAt).getTime() < SERVICE_WINDOW_MS
+  }, [messages])
+
+  return { messages, loading, sending, sendMessage, sendTemplate, isWithinServiceWindow }
 }

@@ -36,6 +36,28 @@ async function sendWhatsAppMessage({ from, to, body }) {
   });
 }
 
+// RF-16: fuera de la ventana de servicio de 24h, WhatsApp exige mandar una
+// plantilla ya aprobada por Meta en vez de texto libre — se envía por
+// Content SID (Twilio Content API) + variables posicionales ("1", "2", ...).
+async function sendWhatsAppTemplate({ from, to, contentSid, variables }) {
+  const twilioClient = getTwilioClient();
+  if (!twilioClient) {
+    throw new Error("Twilio no está configurado (faltan TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN).");
+  }
+
+  const contentVariables = {};
+  variables.forEach((value, index) => {
+    contentVariables[String(index + 1)] = value;
+  });
+
+  return twilioClient.messages.create({
+    from: toWhatsAppAddress(from),
+    to: toWhatsAppAddress(to),
+    contentSid,
+    contentVariables: JSON.stringify(contentVariables),
+  });
+}
+
 function validateTwilioSignature(req) {
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   if (!authToken) return false;
@@ -45,4 +67,4 @@ function validateTwilioSignature(req) {
   return twilio.validateRequest(authToken, signature, url, req.body);
 }
 
-module.exports = { getTwilioClient, isConfigured, stripWhatsAppPrefix, toWhatsAppAddress, sendWhatsAppMessage, validateTwilioSignature };
+module.exports = { isConfigured, stripWhatsAppPrefix, sendWhatsAppMessage, sendWhatsAppTemplate, validateTwilioSignature };

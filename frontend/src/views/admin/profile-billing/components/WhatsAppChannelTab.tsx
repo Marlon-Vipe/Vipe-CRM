@@ -4,6 +4,8 @@ import { connectWhatsAppChannel, disconnectChannel, listChannels } from '@/lib/a
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Form, FormControl, FormLabel, FormText, ListGroup, ListGroupItem, Spinner } from 'react-bootstrap'
 
+import WhatsAppTemplatesCard from './WhatsAppTemplatesCard'
+
 interface Channel {
   id: string
   type: string
@@ -82,8 +84,9 @@ const WhatsAppChannelTab = () => {
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <>
+      <Card className="mb-3">
+        <CardHeader>
         <h5 className="mb-0">Canal de WhatsApp</h5>
       </CardHeader>
       <CardBody>
@@ -131,6 +134,9 @@ const WhatsAppChannelTab = () => {
         )}
       </CardBody>
     </Card>
+
+    <WhatsAppTemplatesCard />
+    </>
   )
 }
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
@@ -46,10 +46,11 @@ export function useDeals() {
   const [propertyOptions, setPropertyOptions] = useState<DealPropertyOption[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const hasLoadedOnce = useRef(false)
 
   const loadPipeline = useCallback(async () => {
     if (!tenantId) return
-    setLoading(true)
+    if (!hasLoadedOnce.current) setLoading(true)
 
     const [stagesResult, dealsResult, contactsResult, propertiesResult] = await Promise.all([
       supabase.from('pipeline_stages').select('id, name, sort_order').eq('tenant_id', tenantId).order('sort_order', { ascending: true }),
@@ -70,6 +71,7 @@ export function useDeals() {
       console.error('Error al cargar el pipeline de negociaciones:', firstError.message)
       setError('No se pudo cargar el pipeline de negociaciones. Intenta de nuevo.')
       setLoading(false)
+      hasLoadedOnce.current = true
       return
     }
     setError(null)
@@ -107,6 +109,7 @@ export function useDeals() {
     setContactOptions(contactRows || [])
     setPropertyOptions(propertyRows || [])
     setLoading(false)
+    hasLoadedOnce.current = true
   }, [tenantId])
 
   useEffect(() => {

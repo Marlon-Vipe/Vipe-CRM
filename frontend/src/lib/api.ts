@@ -66,8 +66,60 @@ export function sendConversationMessage({
   })
 }
 
+export interface WhatsAppTemplate {
+  id: string
+  name: string
+  twilio_content_sid: string
+  variable_labels: string[]
+  created_at: string
+}
+
+export function sendTemplateMessage({
+  accessToken,
+  conversationId,
+  templateId,
+  variables,
+}: {
+  accessToken: string
+  conversationId: string
+  templateId: string
+  variables: string[]
+}): Promise<{ id: string; direction: string; content: string; type: string; created_at: string }> {
+  return request(`/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    accessToken,
+    body: { templateId, variables },
+  })
+}
+
 export function listChannels(accessToken: string): Promise<{ id: string; type: string; provider: string; external_id: string; status: string }[]> {
   return request('/channels', { accessToken })
+}
+
+export function listWhatsAppTemplates(accessToken: string): Promise<WhatsAppTemplate[]> {
+  return request('/channels/whatsapp/templates', { accessToken })
+}
+
+export function createWhatsAppTemplate({
+  accessToken,
+  name,
+  twilioContentSid,
+  variableLabels,
+}: {
+  accessToken: string
+  name: string
+  twilioContentSid: string
+  variableLabels: string[]
+}): Promise<WhatsAppTemplate> {
+  return request('/channels/whatsapp/templates', {
+    method: 'POST',
+    accessToken,
+    body: { name, twilio_content_sid: twilioContentSid, variable_labels: variableLabels },
+  })
+}
+
+export function deleteWhatsAppTemplate({ accessToken, templateId }: { accessToken: string; templateId: string }): Promise<null> {
+  return request(`/channels/whatsapp/templates/${templateId}`, { method: 'DELETE', accessToken })
 }
 
 export function connectWhatsAppChannel({

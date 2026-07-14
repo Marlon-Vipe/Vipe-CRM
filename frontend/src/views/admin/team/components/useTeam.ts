@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
@@ -11,10 +11,11 @@ export function useTeam() {
   const [invitations, setInvitations] = useState<PendingInvitation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const hasLoadedOnce = useRef(false)
 
   const load = useCallback(async () => {
     if (!tenantId) return
-    setLoading(true)
+    if (!hasLoadedOnce.current) setLoading(true)
 
     const [membershipsResult, profilesResult, invitationsResult] = await Promise.all([
       supabase.from('memberships').select('user_id, role').eq('tenant_id', tenantId),
@@ -34,6 +35,7 @@ export function useTeam() {
       console.error('Error al cargar el equipo:', firstError.message)
       setError('No se pudo cargar el equipo. Intenta de nuevo.')
       setLoading(false)
+      hasLoadedOnce.current = true
       return
     }
     setError(null)
@@ -64,6 +66,7 @@ export function useTeam() {
     )
 
     setLoading(false)
+    hasLoadedOnce.current = true
   }, [tenantId])
 
   useEffect(() => {
