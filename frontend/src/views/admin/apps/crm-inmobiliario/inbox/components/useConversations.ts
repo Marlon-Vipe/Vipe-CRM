@@ -79,5 +79,31 @@ export function useConversations() {
     loadConversations()
   }, [loadConversations])
 
+  // Realtime: si llega un mensaje nuevo (aunque sea de una conversación que
+  // no está abierta ahora mismo) o se crea/actualiza una conversación, hay
+  // que refrescar la lista — si no, el panel izquierdo (con el último
+  // mensaje y el orden por fecha) solo se actualiza al recargar la página.
+  useEffect(() => {
+    if (!tenantId) return
+
+    const channel = supabase
+      .channel(`conversations-list-${tenantId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'conversations', filter: `tenant_id=eq.${tenantId}` },
+        () => loadConversations()
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `tenant_id=eq.${tenantId}` },
+        () => loadConversations()
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [tenantId, loadConversations])
+
   return { conversations, loading, error, reload: loadConversations }
 }

@@ -31,7 +31,18 @@
       "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); print\\(data['tunnels'][0]['public_url']\\)\")",
       "Bash(curl -s -o /dev/null -w \"status: %{http_code}\\\\n\" https://dingy-virus-contented.ngrok-free.dev/health)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
-      "Bash(grep -rln \"— by$\\\\|— by\\\\s*$\" src --include=\"*.tsx\")"
+      "Bash(grep -rln \"— by$\\\\|— by\\\\s*$\" src --include=\"*.tsx\")",
+      "Bash(curl -s -o /dev/null -w \"ngrok local api: %{http_code}\\\\n\" http://127.0.0.1:4040/api/tunnels)",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); print\\('tunnel url:', data['tunnels'][0]['public_url']\\) if data.get\\('tunnels'\\) else print\\('no tunnels'\\)\")",
+      "Bash(curl -s -o /dev/null -w \"backend local: %{http_code}\\\\n\" http://localhost:4001/health)",
+      "Bash(curl -s -o /dev/null -w \"ngrok: %{http_code}\\\\n\" https://dingy-virus-contented.ngrok-free.dev/health)",
+      "Bash(node \"/private/tmp/claude-501/-Users-marlonvillalona-Documents-Vipe-CRM/f6ea875a-5a4b-4013-903c-09fbd00f3081/scratchpad/test-realtime.mjs\")",
+      "Bash(cp \"/private/tmp/claude-501/-Users-marlonvillalona-Documents-Vipe-CRM/f6ea875a-5a4b-4013-903c-09fbd00f3081/scratchpad/test-realtime.mjs\" \"/Users/marlonvillalona/Documents/Vipe CRM/backend/test-realtime.mjs\")",
+      "Bash(node test-realtime.mjs)",
+      "Bash(rm -f test-realtime.mjs)",
+      "Bash(node test-realtime2.mjs)",
+      "Bash(node test-realtime3.mjs)",
+      "Bash(curl -s -o /dev/null -w \"frontend: %{http_code}\\\\n\" http://localhost:5173)"
     ]
   }
 }
