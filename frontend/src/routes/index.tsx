@@ -31,6 +31,7 @@ export const routes: RouteObject[] = [
   { path: '/auth/reset-pass', Component: lazy(() => import('@/views/auth/basic/reset-pass')) },
   { path: '/auth/sign-in', Component: lazy(() => import('@/views/auth/basic/sign-in')) },
   { path: '/auth/sign-up', Component: lazy(() => import('@/views/auth/basic/sign-up')) },
+  { path: '/auth/invite-callback', Component: lazy(() => import('@/views/auth/basic/invite-callback')) },
   { path: '/error/400', Component: lazy(() => import('@/views/error/400')) },
   { path: '/error/401', Component: lazy(() => import('@/views/error/401')) },
   { path: '/error/403', Component: lazy(() => import('@/views/error/403')) },
