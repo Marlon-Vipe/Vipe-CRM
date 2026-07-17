@@ -1,11 +1,12 @@
 import Icon from '@/components/wrappers/Icon'
-import { menuItems } from '@/layouts/components/data'
+import { getMenuItems } from '@/layouts/components/data'
 import type { MenuItemType } from '@/types'
 import clsx from 'clsx'
 import { Link } from 'react-router'
 import { useLocation } from 'react-router'
 import { Fragment, useState } from 'react'
 import { Dropdown, DropdownMenu, DropdownToggle } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 const MenuItemWithChildren = ({ item, wrapperClass, togglerClass, level }: { item: MenuItemType; wrapperClass?: string; togglerClass?: string; level?: number }) => {
   const menuLevel = level ?? 1
@@ -82,6 +83,8 @@ const MenuItem = ({ item, linkClass, wrapperClass, level }: { item: MenuItemType
 }
 
 const AppMenu = () => {
+  const { t } = useTranslation()
+  const menuItems = getMenuItems(t)
   return (
     <ul className="navbar-nav">
       {menuItems.map((item, idx) => (

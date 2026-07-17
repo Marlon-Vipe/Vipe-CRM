@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router'
 import App from './App'
 import AppProvidersWrapper from './components/wrappers/AppProvidersWrapper'
 
+import '@/i18n/config'
 import '@/assets/scss/app.scss'
 
 createRoot(document.getElementById('root')!).render(

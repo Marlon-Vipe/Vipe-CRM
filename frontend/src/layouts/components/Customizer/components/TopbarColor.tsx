@@ -1,5 +1,6 @@
 import { useLayoutContext } from '@/context/useLayoutContext'
 import { toTitleCase } from '@/utils/helpers'
+import { useTranslation } from 'react-i18next'
 import type { CustomizationOptionType } from '../index'
 
 import darkImg from '@/assets/images/layouts/topbar-color-dark.png'
@@ -15,6 +16,7 @@ const topbarColorOptions: CustomizationOptionType[] = [
 ]
 
 const TopBarColor = () => {
+  const { t } = useTranslation()
   const { updateSettings, topbarColor } = useLayoutContext()
 
   const handleTopBarColorChange = (value: string) => {
@@ -23,7 +25,7 @@ const TopBarColor = () => {
 
   return (
     <div id="topbar-color" className="p-3 border-bottom border-dashed">
-      <h5 className="mb-3 fw-bold">Topbar Color</h5>
+      <h5 className="mb-3 fw-bold">{t('layout.customizer.topbarColor')}</h5>
       <div className="row g-3">
         {topbarColorOptions &&
           topbarColorOptions.map((option) => (

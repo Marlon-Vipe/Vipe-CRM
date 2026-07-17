@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
@@ -6,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient'
 import type { ContactType } from './data'
 
 export function useContacts() {
+  const { t } = useTranslation()
   const { tenantId } = useAuth()
   const [contacts, setContacts] = useState<ContactType[]>([])
   const [loading, setLoading] = useState(true)
@@ -29,7 +31,7 @@ export function useContacts() {
       // eslint-disable-next-line no-console
       console.error('Error al cargar contactos:', error?.message)
       setContacts([])
-      setError('No se pudieron cargar los contactos. Intenta de nuevo.')
+      setError(t('crm.contacts.loadError'))
       setLoading(false)
       hasLoadedOnce.current = true
       return
@@ -71,7 +73,7 @@ export function useContacts() {
     )
     setLoading(false)
     hasLoadedOnce.current = true
-  }, [tenantId])
+  }, [tenantId, t])
 
   useEffect(() => {
     loadContacts()

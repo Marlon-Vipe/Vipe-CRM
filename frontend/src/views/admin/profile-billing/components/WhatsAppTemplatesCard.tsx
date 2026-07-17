@@ -2,9 +2,11 @@ import Icon from '@/components/wrappers/Icon'
 import { useAuth } from '@/hooks/useAuth'
 import { createWhatsAppTemplate, deleteWhatsAppTemplate, listWhatsAppTemplates, type WhatsAppTemplate } from '@/lib/api'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Form, FormControl, FormLabel, FormText, ListGroup, ListGroupItem } from 'react-bootstrap'
 
 const WhatsAppTemplatesCard = () => {
+  const { t } = useTranslation()
   const { session, role } = useAuth()
   const [templates, setTemplates] = useState<WhatsAppTemplate[]>([])
   const [loading, setLoading] = useState(true)
@@ -60,7 +62,7 @@ const WhatsAppTemplatesCard = () => {
 
   const handleDelete = async (templateId: string) => {
     if (!session) return
-    if (!window.confirm('¿Eliminar esta plantilla?')) return
+    if (!window.confirm(t('profileBilling.templates.deleteConfirm'))) return
     try {
       await deleteWhatsAppTemplate({ accessToken: session.access_token, templateId })
       await load()
@@ -72,12 +74,11 @@ const WhatsAppTemplatesCard = () => {
   return (
     <Card>
       <CardHeader>
-        <h5 className="mb-0">Plantillas de WhatsApp</h5>
+        <h5 className="mb-0">{t('profileBilling.templates.title')}</h5>
       </CardHeader>
       <CardBody>
         <p className="text-muted fs-sm">
-          Fuera de la ventana de 24 horas desde el último mensaje de un contacto, WhatsApp exige usar una plantilla ya aprobada por
-          Meta. Regístrala aquí con el <strong>Content SID</strong> que Twilio te da al aprobarla, para poder elegirla desde Mensajes.
+          {t('profileBilling.templates.descriptionPart1')} <strong>Content SID</strong> {t('profileBilling.templates.descriptionPart2')}
         </p>
 
         {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
@@ -109,25 +110,36 @@ const WhatsAppTemplatesCard = () => {
           </ListGroup>
         )}
 
-        {!loading && templates.length === 0 && <p className="text-muted">Todavía no hay plantillas registradas.</p>}
+        {!loading && templates.length === 0 && <p className="text-muted">{t('profileBilling.templates.noTemplates')}</p>}
 
         {canManage && (
           <Form onSubmit={handleCreate} className="d-flex gap-2 align-items-end flex-wrap border-top pt-3 mt-3">
             <div>
-              <FormLabel>Nombre</FormLabel>
-              <FormControl value={name} onChange={(e) => setName(e.target.value)} placeholder="Confirmación de visita" required />
+              <FormLabel>{t('profileBilling.templates.nameLabel')}</FormLabel>
+              <FormControl
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t('profileBilling.templates.namePlaceholder')}
+                required
+              />
             </div>
             <div>
-              <FormLabel>Content SID de Twilio</FormLabel>
+              <FormLabel>{t('profileBilling.templates.contentSidLabel')}</FormLabel>
               <FormControl value={contentSid} onChange={(e) => setContentSid(e.target.value)} placeholder="HX..." required />
             </div>
             <div>
-              <FormLabel>Variables (separadas por coma)</FormLabel>
-              <FormControl value={variableLabels} onChange={(e) => setVariableLabels(e.target.value)} placeholder="nombre, fecha" />
-              <FormText>En el orden en que aparecen en la plantilla, ej. {'{{1}}'}, {'{{2}}'}.</FormText>
+              <FormLabel>{t('profileBilling.templates.variablesLabel')}</FormLabel>
+              <FormControl
+                value={variableLabels}
+                onChange={(e) => setVariableLabels(e.target.value)}
+                placeholder={t('profileBilling.templates.variablesPlaceholder')}
+              />
+              <FormText>
+                {t('profileBilling.templates.variablesHint')} {'{{1}}'}, {'{{2}}'}.
+              </FormText>
             </div>
             <Button type="submit" variant="primary" disabled={submitting}>
-              {submitting ? 'Guardando...' : 'Agregar plantilla'}
+              {submitting ? t('common.saving') : t('profileBilling.templates.addButton')}
             </Button>
           </Form>
         )}

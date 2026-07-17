@@ -1,5 +1,5 @@
 import Icon from '@/components/wrappers/Icon'
-import { menuItems } from '@/layouts/components/data'
+import { getMenuItems } from '@/layouts/components/data'
 import type { MenuItemType } from '@/types'
 import { scrollToElement } from '@/utils/layout'
 import clsx from 'clsx'
@@ -7,6 +7,7 @@ import { Link } from 'react-router'
 import { useLocation } from 'react-router'
 import { Fragment, useCallback, useEffect, useState } from 'react'
 import { Collapse } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 const MenuItemWithChildren = ({ item, openMenuKey, setOpenMenuKey, level = 0 }: { item: MenuItemType; openMenuKey: string | null; setOpenMenuKey: (key: string | null) => void; level?: number }) => {
   const pathname = useLocation().pathname
@@ -89,6 +90,8 @@ const MenuItem = ({ item, level = 0 }: { item: MenuItemType; level?: number }) =
 }
 
 const AppMenu = () => {
+  const { t } = useTranslation()
+  const menuItems = getMenuItems(t)
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null)
   const scrollToActiveLink = () => {
     const activeItem: HTMLAnchorElement | null = document.querySelector('.side-nav-link.active')

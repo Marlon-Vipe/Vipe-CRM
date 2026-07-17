@@ -17,6 +17,7 @@ import saasImg from '@/assets/images/layouts/skin-saas.png'
 
 import { useLayoutContext } from '@/context/useLayoutContext'
 import { toTitleCase } from '@/utils/helpers'
+import { useTranslation } from 'react-i18next'
 import type { CustomizationOptionType } from '../index'
 
 const skinOptions: CustomizationOptionType[] = [
@@ -33,6 +34,7 @@ const skinOptions: CustomizationOptionType[] = [
 ]
 
 const Skin = () => {
+  const { t } = useTranslation()
   const { updateSettings, skin } = useLayoutContext()
 
   const handleSkinChange = (value: string) => {
@@ -41,7 +43,7 @@ const Skin = () => {
 
   return (
     <div id="skin" className="p-3 border-bottom border-dashed">
-      <h5 className="mb-3 fw-bold">Select Theme</h5>
+      <h5 className="mb-3 fw-bold">{t('layout.customizer.selectTheme')}</h5>
       <div className="row g-3">
         {skinOptions.map((item) => (
           <div className="col-6" id={`skin-${item.value}`} key={item.value}>

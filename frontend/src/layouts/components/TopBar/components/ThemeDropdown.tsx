@@ -1,6 +1,7 @@
 import Icon from '@/components/wrappers/Icon'
 import { useLayoutContext } from '@/context/useLayoutContext'
 import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 type ThemeOption = {
   value: string
@@ -8,14 +9,15 @@ type ThemeOption = {
   icon: string
 }
 
-const themeDropdownOptions: ThemeOption[] = [
-  { value: 'light', label: 'Light', icon: 'sun' },
-  { value: 'dark', label: 'Dark', icon: 'moon' },
-  { value: 'system', label: 'System', icon: 'sun-moon' },
-]
-
 const ThemeMode = () => {
+  const { t } = useTranslation()
   const { theme, updateSettings } = useLayoutContext()
+
+  const themeDropdownOptions: ThemeOption[] = [
+    { value: 'light', label: t('layout.theme.light'), icon: 'sun' },
+    { value: 'dark', label: t('layout.theme.dark'), icon: 'moon' },
+    { value: 'system', label: t('layout.theme.system'), icon: 'sun-moon' },
+  ]
 
   return (
     <div id="theme-dropdown" className="topbar-item d-none d-sm-flex">

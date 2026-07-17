@@ -2,9 +2,11 @@ import AuthImage from '@/assets/images/auth-card-bg.svg'
 import AuthLogo from '@/components/AuthLogo'
 import { currentYear, META_DATA } from '@/config/constants'
 import { Button, Card, Col, Container, Row } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 
 const Page = () => {
+  const { t } = useTranslation()
   return (
     <>
       <div className="auth-box overflow-hidden align-items-center d-flex">
@@ -20,10 +22,10 @@ const Page = () => {
                 </div>
                 <div className="p-2 text-center">
                   <div className="error-text-alt fs-72">400</div>
-                  <h3 className="fw-bold text-uppercase">Bad Request</h3>
-                  <p className="text-muted"> Something's not right in the request you made.</p>
+                  <h3 className="fw-bold text-uppercase">{t('errors.badRequest.title')}</h3>
+                  <p className="text-muted">{t('errors.badRequest.message')}</p>
                   <Button variant="primary" className="mt-3 rounded-pill">
-                    Go Home
+                    {t('nav.dashboard')}
                   </Button>
                 </div>
               </Card>

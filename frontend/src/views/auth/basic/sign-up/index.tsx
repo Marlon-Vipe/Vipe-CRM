@@ -3,10 +3,12 @@ import AuthLogo from '@/components/AuthLogo'
 import { currentYear, META_DATA } from '@/config/constants'
 import { Link } from 'react-router'
 import { Card, Col, Container, Row } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 import Forms from './components/Forms'
 
 
 const Page = () => {
+  const { t } = useTranslation()
   return (
     <>
       <div className="auth-box overflow-hidden align-items-center d-flex">
@@ -19,13 +21,13 @@ const Page = () => {
                 </div>
                 <div className="auth-brand text-center mb-4">
                   <AuthLogo />
-                  <p className="text-muted w-lg-75 mx-auto mt-3">Completa tus datos para continuar.</p>
+                  <p className="text-muted w-lg-75 mx-auto mt-3">{t('auth.signUp.subtitle')}</p>
                 </div>
                 <Forms />
                 <p className="text-muted text-center mt-4 mb-0">
-                  ¿Ya tienes una cuenta?
+                  {t('auth.signUp.alreadyHaveAccount')}
                   <Link to="/auth/sign-in" className="text-decoration-underline link-offset-3 fw-semibold ms-1">
-                    Inicia sesión
+                    {t('auth.signUp.signInLink')}
                   </Link>
                 </p>
               </Card>

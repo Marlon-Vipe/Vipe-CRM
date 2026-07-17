@@ -3,6 +3,7 @@ import lightImg from '@/assets/images/layouts/theme-light.png'
 import systemImg from '@/assets/images/layouts/theme-system.png'
 import { useLayoutContext } from '@/context/useLayoutContext'
 import { toTitleCase } from '@/utils/helpers'
+import { useTranslation } from 'react-i18next'
 import type { CustomizationOptionType } from '../index'
 
 const themeOptions: CustomizationOptionType[] = [
@@ -12,6 +13,7 @@ const themeOptions: CustomizationOptionType[] = [
 ]
 
 const Theme = () => {
+  const { t } = useTranslation()
   const { updateSettings, theme } = useLayoutContext()
 
   const handleThemeChange = (value: string) => {
@@ -20,7 +22,7 @@ const Theme = () => {
 
   return (
     <div id="theme" className="p-3 border-bottom border-dashed">
-      <h5 className="mb-3 fw-bold">Color Scheme</h5>
+      <h5 className="mb-3 fw-bold">{t('layout.customizer.colorScheme')}</h5>
       <div className="row">
         {themeOptions.map((item) => (
           <div className="col-4" id={`theme-${item.value}`} key={item.value}>

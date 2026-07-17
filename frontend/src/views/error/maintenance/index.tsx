@@ -3,9 +3,11 @@ import maintenanceImg from '@/assets/images/maintenance.svg'
 import AuthLogo from '@/components/AuthLogo'
 import { currentYear, META_DATA } from '@/config/constants'
 import { Button, Card, CardBody, Col, Container, Row } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 
 const Page = () => {
+  const { t } = useTranslation()
   return (
     <>
       <div className="auth-box d-flex align-items-center">
@@ -22,20 +24,20 @@ const Page = () => {
                   </div>
                   <div className="p-2 text-center">
                     <div className="w-md-50 mx-auto">
-                      <img src={maintenanceImg} alt="Maintenance" className="img-fluid" />
+                      <img src={maintenanceImg} alt={t('errors.maintenance.imageAlt')} className="img-fluid" />
                     </div>
-                    <h3 className="fw-bold text-uppercase">Site Under Maintenance</h3>
+                    <h3 className="fw-bold text-uppercase">{t('errors.maintenance.title')}</h3>
                     <p className="text-muted">
-                      We’re currently performing scheduled maintenance.
+                      {t('errors.maintenance.message')}
                       <br />
-                      Please check back soon.
+                      {t('errors.maintenance.detail')}
                     </p>
                     <Button variant="primary" className="mt-3 me-1">
-                      Call Now
+                      {t('errors.maintenance.callNow')}
                     </Button>
                     &nbsp;
                     <Button variant="info" className="mt-3">
-                      Email Us
+                      {t('errors.maintenance.emailUs')}
                     </Button>
                   </div>
                   <p className="text-center text-muted mt-5 mb-0">

@@ -3,10 +3,12 @@ import AuthLogo from '@/components/AuthLogo'
 import { currentYear, META_DATA } from '@/config/constants'
 import { Link } from 'react-router'
 import { Card, Col, Container, Row } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 import LoginForm from './components/Form'
 
 
 const Page = () => {
+  const { t } = useTranslation()
   return (
     <>
       <div className="auth-box overflow-hidden align-items-center d-flex">
@@ -20,15 +22,15 @@ const Page = () => {
                 <div className="auth-brand text-center mb-4">
                   <AuthLogo />
 
-                  <p className="text-muted w-lg-75 mt-3 mx-auto">Ingresa tu correo y contraseña para continuar.</p>
+                  <p className="text-muted w-lg-75 mt-3 mx-auto">{t('auth.signIn.subtitle')}</p>
                 </div>
 
                 <LoginForm />
 
                 <p className="text-muted text-center mt-4 mb-0">
-                  ¿Nuevo por aquí?&nbsp;
+                  {t('auth.signIn.newHere')}&nbsp;
                   <Link to="/auth/sign-up" className="text-decoration-underline link-offset-3 fw-semibold">
-                    Crea una cuenta
+                    {t('auth.signIn.createAccount')}
                   </Link>
                 </p>
               </Card>

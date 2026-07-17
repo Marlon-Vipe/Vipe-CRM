@@ -3,13 +3,14 @@ import Icon from '@/components/wrappers/Icon'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
 import { useState } from 'react'
-import { Alert, Badge, Button, Card, CardBody, CardHeader, Col, ListGroup, ListGroupItem, Row, Spinner } from 'react-bootstrap'
+import { Alert, Badge, Button, Card, CardHeader, Col, ListGroup, ListGroupItem, Row, Spinner } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
-import { ROLE_LABELS } from './components/data'
 import { useTeam } from './components/useTeam'
 import InviteFormModal from './components/InviteFormModal'
 
 const Page = () => {
+  const { t } = useTranslation()
   const { role: myRole, tenantId } = useAuth()
   const { members, invitations, loading, error: loadError, reload } = useTeam()
   const [showInvite, setShowInvite] = useState(false)
@@ -27,7 +28,7 @@ const Page = () => {
 
   const handleRevoke = async (invitationId: string) => {
     if (!tenantId) return
-    if (!window.confirm('¿Revocar esta invitación?')) return
+    if (!window.confirm(t('team.revokeConfirm'))) return
     const { error } = await supabase.from('invitations').delete().eq('id', invitationId).eq('tenant_id', tenantId)
     if (error) {
       setErrorMessage(error.message)
@@ -47,11 +48,11 @@ const Page = () => {
   if (loadError) {
     return (
       <>
-        <PageBreadcrumb title="Equipo" subtitle="CRM Inmobiliario" />
+        <PageBreadcrumb title={t('nav.team')} subtitle={t('nav.crmGroup')} />
         <div className="text-center py-5">
           <p className="text-danger mb-3">{loadError}</p>
           <Button variant="primary" onClick={reload}>
-            Reintentar
+            {t('common.retry')}
           </Button>
         </div>
       </>
@@ -60,7 +61,7 @@ const Page = () => {
 
   return (
     <>
-      <PageBreadcrumb title="Equipo" subtitle="CRM Inmobiliario" />
+      <PageBreadcrumb title={t('nav.team')} subtitle={t('nav.crmGroup')} />
 
       {errorMessage && (
         <Alert variant="danger" dismissible onClose={() => setErrorMessage('')}>
@@ -72,7 +73,7 @@ const Page = () => {
         <Col lg={6}>
           <Card>
             <CardHeader>
-              <h5 className="mb-0">Miembros ({members.length})</h5>
+              <h5 className="mb-0">{t('team.membersHeader', { count: members.length })}</h5>
             </CardHeader>
             <ListGroup variant="flush">
               {members.map((member) => (
@@ -81,7 +82,7 @@ const Page = () => {
                     <p className="mb-0 fw-medium">{member.fullName || member.email}</p>
                     <p className="mb-0 text-muted fs-xs">{member.email}</p>
                   </div>
-                  <Badge className="text-bg-light">{ROLE_LABELS[member.role]}</Badge>
+                  <Badge className="text-bg-light">{t(`common.roles.${member.role}`)}</Badge>
                 </ListGroupItem>
               ))}
             </ListGroup>
@@ -91,26 +92,26 @@ const Page = () => {
         <Col lg={6}>
           <Card>
             <CardHeader className="d-flex justify-content-between align-items-center">
-              <h5 className="mb-0">Invitaciones pendientes ({invitations.length})</h5>
+              <h5 className="mb-0">{t('team.pendingInvitationsHeader', { count: invitations.length })}</h5>
               {canManageTeam && (
                 <Button size="sm" variant="primary" onClick={() => setShowInvite(true)}>
-                  <Icon icon="plus" className="fs-sm me-1" /> Invitar agente
+                  <Icon icon="plus" className="fs-sm me-1" /> {t('team.inviteAgent')}
                 </Button>
               )}
             </CardHeader>
             <ListGroup variant="flush">
-              {invitations.length === 0 && <ListGroupItem className="text-muted">No hay invitaciones pendientes.</ListGroupItem>}
+              {invitations.length === 0 && <ListGroupItem className="text-muted">{t('team.noPendingInvitations')}</ListGroupItem>}
               {invitations.map((invitation) => (
                 <ListGroupItem key={invitation.id} className="d-flex justify-content-between align-items-center">
                   <div>
                     <p className="mb-0 fw-medium">{invitation.email}</p>
-                    <p className="mb-0 text-muted fs-xs">{ROLE_LABELS[invitation.role]}</p>
+                    <p className="mb-0 text-muted fs-xs">{t(`common.roles.${invitation.role}`)}</p>
                   </div>
                   {canManageTeam && (
                     <div className="d-flex gap-1">
                       <Button size="sm" variant="light" onClick={() => copyInviteLink(invitation.token, invitation.id)}>
                         <Icon icon={copiedId === invitation.id ? 'check' : 'link'} className="fs-sm me-1" />
-                        {copiedId === invitation.id ? 'Copiado' : 'Copiar enlace'}
+                        {copiedId === invitation.id ? t('team.copied') : t('team.copyLink')}
                       </Button>
                       <button type="button" className="btn btn-icon btn-sm btn-ghost-light text-muted" onClick={() => handleRevoke(invitation.id)}>
                         <Icon icon="trash-2" className="fs-sm" />

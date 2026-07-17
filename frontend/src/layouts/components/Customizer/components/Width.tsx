@@ -1,6 +1,7 @@
 import { useLayoutContext } from '@/context/useLayoutContext'
 import { toPascalCase } from '@/utils/helpers'
 import { Col } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 import type { CustomizationOptionType } from '../index'
 
 import boxedImg from '@/assets/images/layouts/width-boxed.png'
@@ -12,6 +13,7 @@ const widthOptions: CustomizationOptionType[] = [
 ]
 
 const Width = () => {
+  const { t } = useTranslation()
   const { updateSettings, width } = useLayoutContext()
 
   const handleWidthChange = (value: string) => {
@@ -20,7 +22,7 @@ const Width = () => {
 
   return (
     <div id="width" className="p-3 border-bottom border-dashed">
-      <h5 className="mb-3 fw-bold">Layout Width</h5>
+      <h5 className="mb-3 fw-bold">{t('layout.customizer.layoutWidth')}</h5>
       <div className="row g-3">
         {widthOptions.map((option) => (
           <Col xs={4} id={`width-${option.value}`} key={option.value}>

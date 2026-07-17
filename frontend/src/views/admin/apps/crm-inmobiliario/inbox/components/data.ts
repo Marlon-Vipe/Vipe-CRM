@@ -16,8 +16,10 @@ export type MessageItem = {
   createdAt: string
 }
 
-export const CHANNEL_LABELS: Record<string, string> = {
-  whatsapp: 'WhatsApp',
-  instagram: 'Instagram',
-  messenger: 'Messenger',
+export function getChannelLabels(t: (key: string) => string): Record<string, string> {
+  return {
+    whatsapp: t('crm.contacts.channels.whatsapp'),
+    instagram: t('crm.contacts.channels.instagram'),
+    messenger: t('crm.contacts.channels.messenger'),
+  }
 }

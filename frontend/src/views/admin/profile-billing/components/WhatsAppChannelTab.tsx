@@ -2,6 +2,7 @@ import Icon from '@/components/wrappers/Icon'
 import { useAuth } from '@/hooks/useAuth'
 import { connectWhatsAppChannel, disconnectChannel, listChannels } from '@/lib/api'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Form, FormControl, FormLabel, FormText, ListGroup, ListGroupItem, Spinner } from 'react-bootstrap'
 
 import WhatsAppTemplatesCard from './WhatsAppTemplatesCard'
@@ -14,14 +15,24 @@ interface Channel {
   status: string
 }
 
-const STATUS_LABELS: Record<string, { label: string; variant: string }> = {
-  activo: { label: 'Activo', variant: 'success' },
-  conectando: { label: 'Conectando', variant: 'info' },
-  desconectado: { label: 'Desconectado', variant: 'secondary' },
-  error: { label: 'Error', variant: 'danger' },
+const STATUS_VARIANTS: Record<string, string> = {
+  activo: 'success',
+  conectando: 'info',
+  desconectado: 'secondary',
+  error: 'danger',
+}
+
+function getStatusLabels(t: (key: string) => string): Record<string, string> {
+  return {
+    activo: t('profileBilling.whatsapp.status.activo'),
+    conectando: t('profileBilling.whatsapp.status.conectando'),
+    desconectado: t('profileBilling.whatsapp.status.desconectado'),
+    error: t('profileBilling.whatsapp.status.error'),
+  }
 }
 
 const WhatsAppChannelTab = () => {
+  const { t } = useTranslation()
   const { session, role } = useAuth()
   const [channels, setChannels] = useState<Channel[]>([])
   const [loading, setLoading] = useState(true)
@@ -66,7 +77,7 @@ const WhatsAppChannelTab = () => {
 
   const handleDisconnect = async (channelId: string) => {
     if (!session) return
-    if (!window.confirm('¿Desconectar este número de WhatsApp? Las conversaciones ya existentes se conservan.')) return
+    if (!window.confirm(t('profileBilling.whatsapp.disconnectConfirm'))) return
     try {
       await disconnectChannel({ accessToken: session.access_token, channelId })
       await load()
@@ -83,11 +94,13 @@ const WhatsAppChannelTab = () => {
     )
   }
 
+  const statusLabels = getStatusLabels(t)
+
   return (
     <>
       <Card className="mb-3">
         <CardHeader>
-        <h5 className="mb-0">Canal de WhatsApp</h5>
+        <h5 className="mb-0">{t('profileBilling.whatsapp.title')}</h5>
       </CardHeader>
       <CardBody>
         {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
@@ -98,24 +111,24 @@ const WhatsAppChannelTab = () => {
               <ListGroupItem key={channel.id} className="d-flex justify-content-between align-items-center px-0">
                 <div>
                   <p className="mb-0 fw-medium">{channel.external_id}</p>
-                  <Badge bg={STATUS_LABELS[channel.status]?.variant || 'secondary'}>{STATUS_LABELS[channel.status]?.label || channel.status}</Badge>
+                  <Badge bg={STATUS_VARIANTS[channel.status] || 'secondary'}>{statusLabels[channel.status] || channel.status}</Badge>
                 </div>
                 {canManageChannels && channel.status !== 'desconectado' && (
                   <Button size="sm" variant="light" onClick={() => handleDisconnect(channel.id)}>
-                    <Icon icon="unplug" className="fs-sm me-1" /> Desconectar
+                    <Icon icon="unplug" className="fs-sm me-1" /> {t('profileBilling.whatsapp.disconnect')}
                   </Button>
                 )}
               </ListGroupItem>
             ))}
           </ListGroup>
         ) : (
-          <p className="text-muted">Todavía no has conectado ningún número de WhatsApp.</p>
+          <p className="text-muted">{t('profileBilling.whatsapp.noChannels')}</p>
         )}
 
         {canManageChannels && (
           <Form onSubmit={handleConnect} className="d-flex gap-2 align-items-end flex-wrap">
             <div>
-              <FormLabel>Número de WhatsApp Business</FormLabel>
+              <FormLabel>{t('profileBilling.whatsapp.phoneNumberLabel')}</FormLabel>
               <FormControl
                 type="tel"
                 placeholder="+18095551234"
@@ -123,12 +136,10 @@ const WhatsAppChannelTab = () => {
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 required
               />
-              <FormText>
-                Usa el número ya aprovisionado en la consola de Twilio (o el número del sandbox de WhatsApp mientras desarrollas).
-              </FormText>
+              <FormText>{t('profileBilling.whatsapp.phoneNumberHint')}</FormText>
             </div>
             <Button type="submit" variant="primary" disabled={submitting}>
-              {submitting ? 'Conectando...' : 'Conectar número'}
+              {submitting ? t('common.connecting') : t('profileBilling.whatsapp.connectButton')}
             </Button>
           </Form>
         )}

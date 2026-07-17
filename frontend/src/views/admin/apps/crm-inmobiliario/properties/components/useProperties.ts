@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
@@ -6,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient'
 import type { PropertyType } from './data'
 
 export function useProperties() {
+  const { t } = useTranslation()
   const { tenantId } = useAuth()
   const [properties, setProperties] = useState<PropertyType[]>([])
   const [loading, setLoading] = useState(true)
@@ -26,7 +28,7 @@ export function useProperties() {
       // eslint-disable-next-line no-console
       console.error('Error al cargar propiedades:', error?.message)
       setProperties([])
-      setError('No se pudieron cargar las propiedades. Intenta de nuevo.')
+      setError(t('crm.properties.loadError'))
       setLoading(false)
       hasLoadedOnce.current = true
       return
@@ -68,7 +70,7 @@ export function useProperties() {
     )
     setLoading(false)
     hasLoadedOnce.current = true
-  }, [tenantId])
+  }, [tenantId, t])
 
   useEffect(() => {
     loadProperties()

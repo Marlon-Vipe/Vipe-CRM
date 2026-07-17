@@ -4,16 +4,12 @@ import Icon from '@/components/wrappers/Icon'
 import { useAuth } from '@/hooks/useAuth'
 import { Link } from 'react-router'
 import { Dropdown, DropdownHeader, DropdownItem, DropdownMenu, DropdownToggle } from 'react-bootstrap'
-
-const ROLE_LABELS: Record<string, string> = {
-  owner: 'Dueño',
-  admin: 'Administrador',
-  agent: 'Agente',
-}
+import { useTranslation } from 'react-i18next'
 
 const UserProfileSettings = () => {
+  const { t } = useTranslation()
   const { user, tenant, role, logout } = useAuth()
-  const displayName = (user?.user_metadata?.full_name as string | undefined) || user?.email || 'Usuario'
+  const displayName = (user?.user_metadata?.full_name as string | undefined) || user?.email || t('common.defaultUser')
 
   return (
     <div id="user-profile-settings" className="sidenav-user" style={{ background: `url(${bgPattern})` }}>
@@ -23,7 +19,7 @@ const UserProfileSettings = () => {
             <img src={user1} alt="user-image" className="rounded-circle mb-2 avatar-md" />
             <span className="sidenav-user-name fw-bold">{displayName}</span>
             <span className="fs-12 fw-semibold" data-lang="user-role">
-              {role ? ROLE_LABELS[role] || role : ''}
+              {role ? t(`common.roles.${role}`) : ''}
             </span>
           </Link>
         </div>
@@ -34,19 +30,19 @@ const UserProfileSettings = () => {
             </DropdownToggle>
             <DropdownMenu>
               <DropdownHeader className="noti-title">
-                <h6 className="text-overflow m-0">{tenant?.name || 'Tu agencia'}</h6>
+                <h6 className="text-overflow m-0">{tenant?.name || t('common.yourAgency')}</h6>
               </DropdownHeader>
               <DropdownItem href="/perfil">
                 <Icon icon="credit-card" className="me-1 fs-lg align-middle" />
-                <span className="align-middle">Perfil y facturación</span>
+                <span className="align-middle">{t('nav.profileBilling')}</span>
               </DropdownItem>
               <DropdownItem href="/equipo">
                 <Icon icon="users" className="me-1 fs-lg align-middle" />
-                <span className="align-middle">Equipo</span>
+                <span className="align-middle">{t('nav.team')}</span>
               </DropdownItem>
               <DropdownItem as="button" onClick={() => logout()} className="text-danger fw-semibold">
                 <Icon icon="log-out" className="me-1 fs-lg align-middle" />
-                <span className="align-middle">Cerrar sesión</span>
+                <span className="align-middle">{t('common.logout')}</span>
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>

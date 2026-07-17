@@ -5,6 +5,7 @@ const { requireAuth } = require("../middleware/requireAuth");
 const { requireOwnerOrAdmin } = require("../lib/membership");
 const { upsertProfile } = require("../lib/profiles");
 const { sendInvitationEmail } = require("../lib/email");
+const { createNotification } = require("../lib/notifications");
 
 const router = express.Router();
 
@@ -139,6 +140,14 @@ router.post("/:token/accept", requireAuth, async (req, res) => {
 
   await upsertProfile(req.user, invitation.tenant_id);
   await supabaseAdmin.from("invitations").update({ accepted_at: new Date().toISOString() }).eq("id", invitation.id);
+
+  await createNotification({
+    tenantId: invitation.tenant_id,
+    type: "invitation_accepted",
+    title: invitation.email,
+    metadata: { role: invitation.role },
+    link: "/equipo",
+  });
 
   return res.status(201).json({ tenant_id: invitation.tenant_id });
 });

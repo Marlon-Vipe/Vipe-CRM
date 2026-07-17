@@ -5,11 +5,13 @@ import { supabase } from '@/lib/supabaseClient'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { Alert, Button, Card, CardBody, CardFooter, Col, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Row, Spinner } from 'react-bootstrap'
-import { CONTACT_SOURCE_LABELS, CONTACT_TYPE_BADGE, CONTACT_TYPE_LABELS, type ContactType } from './components/data'
+import { useTranslation } from 'react-i18next'
+import { CONTACT_TYPE_BADGE, getContactSourceLabels, getContactTypeLabels, type ContactType } from './components/data'
 import { useContacts } from './components/useContacts'
 import ContactFormModal from './components/ContactFormModal'
 
 const Page = () => {
+  const { t } = useTranslation()
   const { contacts, loading, error: loadError, reload } = useContacts()
   const { tenantId } = useAuth()
   const [showModal, setShowModal] = useState(false)
@@ -28,7 +30,7 @@ const Page = () => {
 
   const handleDelete = async (contact: ContactType) => {
     if (!tenantId) return
-    if (!window.confirm(`¿Eliminar a ${contact.name}? Esta acción no se puede deshacer.`)) return
+    if (!window.confirm(t('crm.contacts.deleteConfirm', { name: contact.name }))) return
     const { error } = await supabase.from('contacts').delete().eq('id', contact.id).eq('tenant_id', tenantId)
     if (error) {
       setErrorMessage(error.message)
@@ -39,14 +41,14 @@ const Page = () => {
 
   return (
     <>
-      <PageBreadcrumb title="Contactos" subtitle="CRM Inmobiliario" />
+      <PageBreadcrumb title={t('nav.contacts')} subtitle={t('nav.crmGroup')} />
 
       <Row className="mb-2">
         <Col lg={12}>
           <div className="bg-light-subtle rounded border p-3 d-flex justify-content-between align-items-center">
-            <h3 className="mb-0 fs-xl">{contacts.length} Contactos</h3>
+            <h3 className="mb-0 fs-xl">{t('crm.contacts.count', { count: contacts.length })}</h3>
             <Button variant="primary" onClick={openCreate}>
-              <Icon icon="plus" className="fs-sm me-2" /> Agregar contacto
+              <Icon icon="plus" className="fs-sm me-2" /> {t('crm.contacts.addContact')}
             </Button>
           </div>
         </Col>
@@ -66,11 +68,11 @@ const Page = () => {
         <div className="text-center py-5">
           <p className="text-danger mb-3">{loadError}</p>
           <Button variant="primary" onClick={reload}>
-            Reintentar
+            {t('common.retry')}
           </Button>
         </div>
       ) : contacts.length === 0 ? (
-        <p className="text-muted text-center py-5">Todavía no hay contactos registrados para tu agencia.</p>
+        <p className="text-muted text-center py-5">{t('crm.contacts.noContacts')}</p>
       ) : (
         <Row>
           {contacts.map((contact) => (
@@ -95,6 +97,9 @@ const ContactCard = ({
   onEdit: (contact: ContactType) => void
   onDelete: (contact: ContactType) => void
 }) => {
+  const { t } = useTranslation()
+  const contactTypeLabels = getContactTypeLabels(t)
+  const contactSourceLabels = getContactSourceLabels(t)
   const initials = contact.name
     .split(' ')
     .map((word) => word.charAt(0))
@@ -118,7 +123,7 @@ const ContactCard = ({
               </h5>
               <div className="d-flex align-items-center gap-2">
                 {contact.type && (
-                  <span className={`badge badge-label ${CONTACT_TYPE_BADGE[contact.type]}`}>{CONTACT_TYPE_LABELS[contact.type]}</span>
+                  <span className={`badge badge-label ${CONTACT_TYPE_BADGE[contact.type]}`}>{contactTypeLabels[contact.type]}</span>
                 )}
                 <Dropdown align="end">
                   <DropdownToggle className="btn btn-icon btn-sm drop-arrow-none btn-ghost-light text-muted content-none" type="button">
@@ -126,16 +131,18 @@ const ContactCard = ({
                   </DropdownToggle>
                   <DropdownMenu>
                     <DropdownItem onClick={() => onEdit(contact)}>
-                      <Icon icon="square-pen" className="me-2" /> Editar
+                      <Icon icon="square-pen" className="me-2" /> {t('common.edit')}
                     </DropdownItem>
                     <DropdownItem className="text-danger" onClick={() => onDelete(contact)}>
-                      <Icon icon="trash-2" className="me-2" /> Eliminar
+                      <Icon icon="trash-2" className="me-2" /> {t('common.delete')}
                     </DropdownItem>
                   </DropdownMenu>
                 </Dropdown>
               </div>
             </div>
-            <p className="mb-3 text-muted fs-xs">Origen: {CONTACT_SOURCE_LABELS[contact.source] || contact.source}</p>
+            <p className="mb-3 text-muted fs-xs">
+              {t('crm.contacts.sourcePrefix')} {contactSourceLabels[contact.source] || contact.source}
+            </p>
             <div className="mb-2">
               {contact.email && (
                 <div className="d-flex align-items-center gap-2 mb-1">
@@ -164,11 +171,11 @@ const ContactCard = ({
         <CardFooter className="bg-light-subtle d-flex justify-content-between text-center border-top border-dashed">
           <div>
             <h5 className="mb-0">{contact.dealsCount}</h5>
-            <span className="text-muted">Negociaciones</span>
+            <span className="text-muted">{t('crm.contacts.deals')}</span>
           </div>
           <div>
             <h5 className="mb-0">{contact.pendingActivitiesCount}</h5>
-            <span className="text-muted">Actividades pendientes</span>
+            <span className="text-muted">{t('crm.contacts.pendingActivities')}</span>
           </div>
         </CardFooter>
       </Card>

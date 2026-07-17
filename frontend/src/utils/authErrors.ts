@@ -1,22 +1,24 @@
 // Supabase Auth siempre devuelve sus mensajes de error en inglés
-// (AuthError.message) — el resto de la interfaz está en español (ver
-// CRM_PROMPT.md sección 9.3), así que se traducen los casos más comunes acá.
-// Si no hay traducción conocida, se muestra el mensaje original de Supabase
-// en vez de esconder la causa real del error.
-const KNOWN_MESSAGES: Record<string, string> = {
-  'Invalid login credentials': 'Correo o contraseña incorrectos.',
-  'Email not confirmed': 'Debes confirmar tu correo antes de iniciar sesión. Revisa tu bandeja de entrada.',
-  'User already registered': 'Ya existe una cuenta con este correo.',
-  'Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres.',
-  'Unable to validate email address: invalid format': 'El formato del correo electrónico no es válido.',
-  'Email rate limit exceeded': 'Se enviaron demasiados correos. Espera unos minutos antes de intentar de nuevo.',
-  'signups not allowed for this instance': 'El registro de nuevas cuentas no está habilitado.',
+// (AuthError.message). Acá se mapean los casos más comunes a una clave de
+// traducción bajo auth.errors.* — así el mensaje se re-renderiza en el
+// idioma activo en vez de quedar congelado en el idioma que estaba
+// seleccionado cuando ocurrió el error. Si no hay traducción conocida, se
+// muestra el mensaje original de Supabase en vez de esconder la causa real.
+const KNOWN_MESSAGE_KEYS: Record<string, string> = {
+  'Invalid login credentials': 'invalidCredentials',
+  'Email not confirmed': 'emailNotConfirmed',
+  'User already registered': 'userAlreadyRegistered',
+  'Password should be at least 6 characters': 'passwordTooShort',
+  'Unable to validate email address: invalid format': 'invalidEmailFormat',
+  'Email rate limit exceeded': 'rateLimitExceeded',
+  'signups not allowed for this instance': 'signupsDisabled',
 }
 
-export function translateAuthError(message: string): string {
-  if (KNOWN_MESSAGES[message]) return KNOWN_MESSAGES[message]
+export function translateAuthError(t: (key: string) => string, message: string): string {
+  const key = KNOWN_MESSAGE_KEYS[message]
+  if (key) return t(`auth.errors.${key}`)
   if (message.startsWith('For security purposes')) {
-    return 'Por seguridad, espera unos segundos antes de intentar de nuevo.'
+    return t('auth.errors.securityWait')
   }
   return message
 }

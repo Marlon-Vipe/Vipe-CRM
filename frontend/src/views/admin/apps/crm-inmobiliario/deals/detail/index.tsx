@@ -21,9 +21,10 @@ import {
   Row,
   Spinner,
 } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 import ActivityFormModal from '../../components/ActivityFormModal'
-import { ACTIVITY_STATUS_BADGE, ACTIVITY_STATUS_LABELS, ACTIVITY_TYPE_LABELS } from '../../components/activityLabels'
+import { ACTIVITY_STATUS_BADGE, getActivityStatusLabels, getActivityTypeLabels } from '../../components/activityLabels'
 
 interface DealDetail {
   id: string
@@ -59,13 +60,13 @@ interface StageHistoryRow {
   to_stage: { name: string } | null
 }
 
-const formatCurrency = (value: number | null) => {
-  if (value == null) return 'Sin definir'
+const formatCurrency = (value: number | null, notSetLabel: string) => {
+  if (value == null) return notSetLabel
   return `RD$ ${new Intl.NumberFormat('es-DO', { maximumFractionDigits: 0 }).format(value)}`
 }
 
-const formatDate = (value: string | null) => {
-  if (!value) return 'Sin definir'
+const formatDate = (value: string | null, notSetLabel: string) => {
+  if (!value) return notSetLabel
   return new Date(value).toLocaleDateString('es-DO', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
@@ -74,6 +75,9 @@ const formatDateTime = (value: string) => {
 }
 
 const Page = () => {
+  const { t } = useTranslation()
+  const activityTypeLabels = getActivityTypeLabels(t)
+  const activityStatusLabels = getActivityStatusLabels(t)
   const { id } = useParams<{ id: string }>()
   const { tenantId } = useAuth()
 
@@ -103,7 +107,7 @@ const Page = () => {
     if (dealError) {
       // eslint-disable-next-line no-console
       console.error('Error al cargar la negociación:', dealError.message)
-      setLoadError('No se pudo cargar la negociación. Intenta de nuevo.')
+      setLoadError(t('crm.deals.detail.loadError'))
       setDeal(null)
       setLoading(false)
       loadedIdRef.current = id
@@ -141,7 +145,7 @@ const Page = () => {
 
     setLoading(false)
     loadedIdRef.current = id
-  }, [tenantId, id])
+  }, [tenantId, id, t])
 
   useEffect(() => {
     loadDetail()
@@ -159,7 +163,7 @@ const Page = () => {
 
   const handleDeleteActivity = async (activityId: string) => {
     if (!tenantId) return
-    if (!window.confirm('¿Eliminar esta actividad?')) return
+    if (!window.confirm(t('crm.deals.detail.deleteActivityConfirm'))) return
     const { error } = await supabase.from('activities').delete().eq('id', activityId).eq('tenant_id', tenantId)
     if (error) {
       setErrorMessage(error.message)
@@ -179,11 +183,11 @@ const Page = () => {
   if (loadError) {
     return (
       <>
-        <PageBreadcrumb title="Negociación" subtitle="CRM Inmobiliario" />
+        <PageBreadcrumb title={t('crm.deals.detail.title')} subtitle={t('nav.crmGroup')} />
         <div className="text-center py-5">
           <p className="text-danger mb-3">{loadError}</p>
           <Button variant="primary" onClick={loadDetail}>
-            Reintentar
+            {t('common.retry')}
           </Button>
         </div>
       </>
@@ -193,15 +197,15 @@ const Page = () => {
   if (!deal) {
     return (
       <>
-        <PageBreadcrumb title="Negociación" subtitle="CRM Inmobiliario" />
-        <p className="text-muted text-center py-5">No se encontró la negociación.</p>
+        <PageBreadcrumb title={t('crm.deals.detail.title')} subtitle={t('nav.crmGroup')} />
+        <p className="text-muted text-center py-5">{t('crm.deals.detail.notFound')}</p>
       </>
     )
   }
 
   return (
     <>
-      <PageBreadcrumb title={deal.properties?.title || 'Negociación'} subtitle="Negociaciones" />
+      <PageBreadcrumb title={deal.properties?.title || t('crm.deals.detail.title')} subtitle={t('nav.deals')} />
 
       {errorMessage && (
         <Alert variant="danger" dismissible onClose={() => setErrorMessage('')}>
@@ -213,30 +217,30 @@ const Page = () => {
         <Col lg={8}>
           <Card>
             <CardHeader className="d-flex justify-content-between align-items-center">
-              <h5 className="mb-0">Datos de la negociación</h5>
+              <h5 className="mb-0">{t('crm.deals.detail.dealData')}</h5>
               {deal.pipeline_stages && <Badge className="text-bg-primary">{deal.pipeline_stages.name}</Badge>}
             </CardHeader>
             <CardBody>
               <Row className="g-3">
                 <Col md={6}>
-                  <p className="text-muted fs-xs mb-1">Contacto</p>
+                  <p className="text-muted fs-xs mb-1">{t('crm.deals.detail.contact')}</p>
                   {deal.contacts ? (
                     <Link to={`/crm/contactos/${deal.contacts.id}`} className="link-reset fw-medium">
                       {deal.contacts.name}
                     </Link>
                   ) : (
-                    <span className="fw-medium">Sin contacto asociado</span>
+                    <span className="fw-medium">{t('crm.deals.detail.noContact')}</span>
                   )}
                   {deal.contacts?.phone && <p className="mb-0 text-muted fs-xs">{deal.contacts.phone}</p>}
                 </Col>
                 <Col md={6}>
-                  <p className="text-muted fs-xs mb-1">Propiedad</p>
+                  <p className="text-muted fs-xs mb-1">{t('crm.deals.detail.property')}</p>
                   {deal.properties ? (
                     <Link to={`/crm/propiedades/${deal.properties.id}/editar`} className="link-reset fw-medium">
                       {deal.properties.title}
                     </Link>
                   ) : (
-                    <span className="fw-medium">Sin propiedad asociada</span>
+                    <span className="fw-medium">{t('crm.deals.noPropertyAssociated')}</span>
                   )}
                   {deal.properties?.sector && (
                     <p className="mb-0 text-muted fs-xs">
@@ -246,23 +250,23 @@ const Page = () => {
                   )}
                 </Col>
                 <Col md={6}>
-                  <p className="text-muted fs-xs mb-1">Valor estimado</p>
-                  <p className="fw-medium mb-0">{formatCurrency(deal.value_estimate)}</p>
+                  <p className="text-muted fs-xs mb-1">{t('crm.deals.detail.valueEstimate')}</p>
+                  <p className="fw-medium mb-0">{formatCurrency(deal.value_estimate, t('crm.deals.detail.notSet'))}</p>
                 </Col>
                 <Col md={6}>
-                  <p className="text-muted fs-xs mb-1">Fecha estimada de cierre</p>
-                  <p className="fw-medium mb-0">{formatDate(deal.expected_close_date)}</p>
+                  <p className="text-muted fs-xs mb-1">{t('crm.deals.detail.expectedCloseDate')}</p>
+                  <p className="fw-medium mb-0">{formatDate(deal.expected_close_date, t('crm.deals.detail.notSet'))}</p>
                 </Col>
                 <Col md={6}>
-                  <p className="text-muted fs-xs mb-1">Agente asignado</p>
+                  <p className="text-muted fs-xs mb-1">{t('crm.deals.detail.assignedAgent')}</p>
                   <p className="fw-medium mb-0">
                     {(deal.assigned_agent_id && (profilesById.get(deal.assigned_agent_id)?.full_name || profilesById.get(deal.assigned_agent_id)?.email)) ||
-                      'Sin asignar'}
+                      t('crm.deals.detail.unassigned')}
                   </p>
                 </Col>
                 <Col md={6}>
-                  <p className="text-muted fs-xs mb-1">Creada el</p>
-                  <p className="fw-medium mb-0">{formatDate(deal.created_at)}</p>
+                  <p className="text-muted fs-xs mb-1">{t('crm.deals.detail.createdOn')}</p>
+                  <p className="fw-medium mb-0">{formatDate(deal.created_at, t('crm.deals.detail.notSet'))}</p>
                 </Col>
               </Row>
             </CardBody>
@@ -272,17 +276,17 @@ const Page = () => {
         <Col lg={4}>
           <Card>
             <CardHeader>
-              <h5 className="mb-0">Acciones</h5>
+              <h5 className="mb-0">{t('crm.deals.detail.actions')}</h5>
             </CardHeader>
             <ListGroup variant="flush">
               <ListGroupItem action as={Link} to="/crm/negociaciones" className="d-flex align-items-center gap-2">
                 <Icon icon="kanban" className="text-muted" />
-                Volver al pipeline
+                {t('crm.deals.detail.backToPipeline')}
               </ListGroupItem>
               {deal.contacts && (
                 <ListGroupItem action as={Link} to={`/crm/contactos/${deal.contacts.id}`} className="d-flex align-items-center gap-2">
                   <Icon icon="user" className="text-muted" />
-                  Ver contacto
+                  {t('crm.deals.detail.viewContact')}
                 </ListGroupItem>
               )}
             </ListGroup>
@@ -294,28 +298,28 @@ const Page = () => {
         <Col lg={6}>
           <Card>
             <CardHeader className="d-flex justify-content-between align-items-center">
-              <h5 className="mb-0">Actividades</h5>
+              <h5 className="mb-0">{t('crm.deals.detail.activities')}</h5>
               <Button size="sm" variant="primary" onClick={() => setShowNewActivity(true)}>
-                <Icon icon="plus" className="fs-sm me-1" /> Nueva
+                <Icon icon="plus" className="fs-sm me-1" /> {t('crm.deals.detail.newActivity')}
               </Button>
             </CardHeader>
             <ListGroup variant="flush">
-              {activities.length === 0 && <ListGroupItem className="text-muted">Sin actividades registradas.</ListGroupItem>}
+              {activities.length === 0 && <ListGroupItem className="text-muted">{t('crm.deals.detail.noActivities')}</ListGroupItem>}
               {activities.map((activity) => (
                 <ListGroupItem key={activity.id} className="d-flex justify-content-between align-items-start">
                   <div>
-                    <p className="mb-1 fw-medium">{ACTIVITY_TYPE_LABELS[activity.type] || activity.type}</p>
+                    <p className="mb-1 fw-medium">{activityTypeLabels[activity.type] || activity.type}</p>
                     {activity.notes && <p className="mb-0 text-muted fs-xs">{activity.notes}</p>}
                   </div>
                   <div className="d-flex align-items-center gap-1">
                     <Dropdown align="end">
                       <DropdownToggle as="span" bsPrefix="badge-dropdown-toggle" style={{ cursor: 'pointer' }}>
                         <Badge className={ACTIVITY_STATUS_BADGE[activity.status] || 'text-bg-secondary'}>
-                          {ACTIVITY_STATUS_LABELS[activity.status] || activity.status}
+                          {activityStatusLabels[activity.status] || activity.status}
                         </Badge>
                       </DropdownToggle>
                       <DropdownMenu>
-                        {Object.entries(ACTIVITY_STATUS_LABELS).map(([value, label]) => (
+                        {Object.entries(activityStatusLabels).map(([value, label]) => (
                           <DropdownItem key={value} onClick={() => handleActivityStatusChange(activity.id, value)}>
                             {label}
                           </DropdownItem>
@@ -335,10 +339,10 @@ const Page = () => {
         <Col lg={6}>
           <Card>
             <CardHeader>
-              <h5 className="mb-0">Historial de etapa</h5>
+              <h5 className="mb-0">{t('crm.deals.detail.stageHistory')}</h5>
             </CardHeader>
             <ListGroup variant="flush">
-              {history.length === 0 && <ListGroupItem className="text-muted">Sin cambios de etapa registrados.</ListGroupItem>}
+              {history.length === 0 && <ListGroupItem className="text-muted">{t('crm.deals.detail.noStageHistory')}</ListGroupItem>}
               {history.map((entry) => {
                 const changedByProfile = entry.changed_by ? profilesById.get(entry.changed_by) : undefined
                 return (
@@ -350,7 +354,7 @@ const Page = () => {
                           <span className="fw-medium">{entry.to_stage?.name}</span>
                         </>
                       ) : (
-                        <span className="fw-medium">Creada en {entry.to_stage?.name}</span>
+                        <span className="fw-medium">{t('crm.deals.detail.createdInStage', { stage: entry.to_stage?.name })}</span>
                       )}
                     </p>
                     <p className="mb-0 text-muted fs-xs">

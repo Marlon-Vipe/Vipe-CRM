@@ -18,6 +18,22 @@ export const normalizePhoneE164 = (input: string, defaultCountryCode = '1'): str
   return `+${digits}`
 }
 
+// Intl.RelativeTimeFormat ya sabe pluralizar/formatear "hace 5 minutos" /
+// "5 minutes ago" para 'es'/'en' sin necesidad de claves de traducción a mano.
+export const formatRelativeTime = (iso: string, locale: string): string => {
+  const diffMs = Date.now() - new Date(iso).getTime()
+  const diffSec = Math.round(diffMs / 1000)
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
+
+  if (diffSec < 60) return rtf.format(-diffSec, 'second')
+  const diffMin = Math.round(diffSec / 60)
+  if (diffMin < 60) return rtf.format(-diffMin, 'minute')
+  const diffHour = Math.round(diffMin / 60)
+  if (diffHour < 24) return rtf.format(-diffHour, 'hour')
+  const diffDay = Math.round(diffHour / 24)
+  return rtf.format(-diffDay, 'day')
+}
+
 export const generateInitials = (name = ''): string => {
   return name
     .split(' ')

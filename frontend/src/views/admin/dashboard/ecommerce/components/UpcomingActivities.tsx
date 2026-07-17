@@ -1,23 +1,28 @@
 import Icon from '@/components/wrappers/Icon'
-import { ACTIVITY_STATUS_BADGE, ACTIVITY_STATUS_LABELS, ACTIVITY_TYPE_LABELS } from '@/views/admin/apps/crm-inmobiliario/components/activityLabels'
+import { ACTIVITY_STATUS_BADGE, getActivityStatusLabels, getActivityTypeLabels } from '@/views/admin/apps/crm-inmobiliario/components/activityLabels'
 import { Badge, Card, CardBody, CardHeader, CardTitle, ListGroup, ListGroupItem } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 import type { UpcomingActivity } from './useDashboardStats'
 
-const formatDueDate = (value: string | null) => {
-  if (!value) return 'Sin fecha'
-  return new Date(value).toLocaleString('es-DO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
-}
-
 const UpcomingActivities = ({ activities }: { activities: UpcomingActivity[] }) => {
+  const { t, i18n } = useTranslation()
+  const activityTypeLabels = getActivityTypeLabels(t)
+  const activityStatusLabels = getActivityStatusLabels(t)
+
+  const formatDueDate = (value: string | null) => {
+    if (!value) return t('crm.dashboard.noDate')
+    return new Date(value).toLocaleString(i18n.language === 'en' ? 'en-US' : 'es-DO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+  }
+
   return (
     <Card className="h-100 mb-0">
       <CardHeader>
-        <CardTitle as="h4">Próximas actividades pendientes</CardTitle>
+        <CardTitle as="h4">{t('crm.dashboard.upcomingActivities')}</CardTitle>
       </CardHeader>
       {activities.length === 0 ? (
         <CardBody>
-          <p className="text-muted text-center py-4 mb-0">No hay actividades pendientes.</p>
+          <p className="text-muted text-center py-4 mb-0">{t('crm.dashboard.noPendingActivities')}</p>
         </CardBody>
       ) : (
         <ListGroup variant="flush">
@@ -27,13 +32,13 @@ const UpcomingActivities = ({ activities }: { activities: UpcomingActivity[] }) 
                 <Icon icon="calendar-clock" className="text-muted fs-lg flex-shrink-0" />
                 <div className="overflow-hidden">
                   <p className="mb-0 fw-medium text-truncate">
-                    {ACTIVITY_TYPE_LABELS[activity.type] || activity.type}
+                    {activityTypeLabels[activity.type] || activity.type}
                     {activity.contactName ? ` — ${activity.contactName}` : ''}
                   </p>
                   <p className="mb-0 text-muted fs-xs">{formatDueDate(activity.dueAt)}</p>
                 </div>
               </div>
-              <Badge className={`${ACTIVITY_STATUS_BADGE[activity.status]} flex-shrink-0`}>{ACTIVITY_STATUS_LABELS[activity.status] || activity.status}</Badge>
+              <Badge className={`${ACTIVITY_STATUS_BADGE[activity.status]} flex-shrink-0`}>{activityStatusLabels[activity.status] || activity.status}</Badge>
             </ListGroupItem>
           ))}
         </ListGroup>

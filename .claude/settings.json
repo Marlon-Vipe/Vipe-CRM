@@ -42,7 +42,22 @@
       "Bash(rm -f test-realtime.mjs)",
       "Bash(node test-realtime2.mjs)",
       "Bash(node test-realtime3.mjs)",
-      "Bash(curl -s -o /dev/null -w \"frontend: %{http_code}\\\\n\" http://localhost:5173)"
+      "Bash(curl -s -o /dev/null -w \"frontend: %{http_code}\\\\n\" http://localhost:5173)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('deps:'\\); [print\\(' ',k,v\\) for k,v in d.get\\('dependencies',{}\\).items\\(\\)]; print\\('devDeps:'\\); [print\\(' ',k,v\\) for k,v in d.get\\('devDependencies',{}\\).items\\(\\)]\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('deps:'\\); [print\\(' ',k,v\\) for k,v in d.get\\('dependencies',{}\\).items\\(\\)]\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('es.json'\\)\\); JSON.parse\\(require\\('fs'\\).readFileSync\\('en.json'\\)\\); console.log\\('OK'\\)\")",
+      "Bash(python3 -c ' *)",
+      "Bash(grep -rn \"<Trans\\\\b\\\\|{ Trans }\\\\|Trans,\" src --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(tee /tmp/tsc_out.txt)",
+      "Bash(echo \"---EXIT $?---\")",
+      "Bash(echo \"EXIT CODE: $?\")",
+      "Bash(awk '/\"crm\": \\\\{/,0' src/i18n/locales/es.json)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('es.json'\\)\\); JSON.parse\\(require\\('fs'\\).readFileSync\\('en.json'\\)\\); console.log\\('JSON OK'\\)\")",
+      "Bash(echo \"EXIT_CODE=$?\")",
+      "Bash(xargs grep -nE '\"[A-ZÁÉÍÓÚÑ][a-záéíóúñ ]{3,}\"|>[A-ZÁÉÍÓÚÑ][a-záéíóúñ]{3,}[a-záéíóúñ .]*<')",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:5174/)",
+      "Bash(curl -s http://localhost:5174/)"
     ]
   }
 }

@@ -23,14 +23,21 @@ export const STATUS_VARIANT: Record<PropertyStatus, string> = {
   alquilada: 'info',
 }
 
-export const STATUS_LABEL: Record<PropertyStatus, string> = {
-  disponible: 'Disponible',
-  reservada: 'Reservada',
-  vendida: 'Vendida',
-  alquilada: 'Alquilada',
+// Funciones (no objetos estáticos) para que los labels se resuelvan con
+// `t()` en el idioma actual — un objeto a nivel de módulo se evaluaría una
+// sola vez al importar el archivo y nunca reaccionaría a un cambio de idioma.
+export function getStatusLabels(t: (key: string) => string): Record<PropertyStatus, string> {
+  return {
+    disponible: t('crm.properties.status.disponible'),
+    reservada: t('crm.properties.status.reservada'),
+    vendida: t('crm.properties.status.vendida'),
+    alquilada: t('crm.properties.status.alquilada'),
+  }
 }
 
-export const TYPE_LABEL: Record<PropertyKind, string> = {
-  venta: 'Venta',
-  alquiler: 'Alquiler',
+export function getTypeLabels(t: (key: string) => string): Record<PropertyKind, string> {
+  return {
+    venta: t('crm.properties.types.venta'),
+    alquiler: t('crm.properties.types.alquiler'),
+  }
 }

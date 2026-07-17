@@ -4,9 +4,10 @@ import { generateInitials } from '@/utils/helpers'
 import { Link } from 'react-router'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Alert, Button, Card, CardFooter, CardHeader, Form, FormControl, ListGroup, ListGroupItem, Offcanvas, Spinner } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 import ChatToolbar from './ChatToolbar'
 import TemplateComposer from './TemplateComposer'
-import { CHANNEL_LABELS, type ConversationItem } from './data'
+import { getChannelLabels, type ConversationItem } from './data'
 import { useConversations } from './useConversations'
 import { useMessages } from './useMessages'
 import { useWhatsAppTemplates } from './useWhatsAppTemplates'
@@ -17,6 +18,8 @@ const formatTimestamp = (value: string | null) => {
 }
 
 const ChatPage = () => {
+  const { t } = useTranslation()
+  const channelLabels = getChannelLabels(t)
   const [show, setShow] = useState(false)
   const { conversations, loading: loadingConversations, error: loadError, reload } = useConversations()
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -66,14 +69,14 @@ const ChatPage = () => {
       <div className="text-center py-5">
         <p className="text-danger mb-3">{loadError}</p>
         <Button variant="primary" onClick={reload}>
-          Reintentar
+          {t('common.retry')}
         </Button>
       </div>
     )
   }
 
   if (conversations.length === 0) {
-    return <p className="text-muted text-center py-5">Todavía no hay conversaciones para tu agencia.</p>
+    return <p className="text-muted text-center py-5">{t('crm.messages.noConversations')}</p>
   }
 
   const filteredConversations = searchTerm.trim()
@@ -107,7 +110,7 @@ const ChatPage = () => {
               </h5>
               <p className="mb-0 lh-sm text-muted" style={{ paddingTop: '1px' }}>
                 <Icon icon="circle" className={`me-1 ${currentConversation.status === 'abierta' ? 'text-success' : 'text-danger'}`} />
-                {currentConversation.status === 'abierta' ? 'Abierta' : 'Cerrada'} · {CHANNEL_LABELS[currentConversation.channelType]}
+                {currentConversation.status === 'abierta' ? t('crm.messages.status.abierta') : t('crm.messages.status.cerrada')} · {channelLabels[currentConversation.channelType]}
               </p>
             </div>
           )}
@@ -123,7 +126,7 @@ const ChatPage = () => {
           ) : messages.length === 0 ? (
             <div className="d-flex align-items-center justify-content-center my-5">
               <Icon icon="message-square-text" className="text-muted me-1 fs-1" />
-              <span>No hay mensajes en esta conversación.</span>
+              <span>{t('crm.messages.noMessages')}</span>
             </div>
           ) : (
             messages.map((message) => (
@@ -138,7 +141,7 @@ const ChatPage = () => {
                 )}
                 <div>
                   <div className={`chat-message py-2 px-3 rounded ${message.direction === 'saliente' ? 'bg-info-subtle' : 'bg-warning-subtle'}`}>
-                    {message.content || <span className="text-muted fst-italic">Mensaje sin contenido de texto ({message.type})</span>}
+                    {message.content || <span className="text-muted fst-italic">{t('crm.messages.noTextContent', { type: message.type })}</span>}
                   </div>
                   <div className="text-muted d-inline-flex align-items-center gap-1 fs-xs mt-1">
                     <Icon icon="clock" /> {formatTimestamp(message.createdAt)}
@@ -164,7 +167,7 @@ const ChatPage = () => {
                   <FormControl
                     type="text"
                     className="py-2 bg-light-subtle border-light"
-                    placeholder="Escribe un mensaje..."
+                    placeholder={t('crm.messages.typePlaceholder')}
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
                     disabled={sending || loadingMessages || !currentConversation}
@@ -172,7 +175,7 @@ const ChatPage = () => {
                   <Icon icon="message-square-text" className="app-search-icon text-muted" />
                 </div>
                 <Button variant="primary" type="submit" disabled={sending || loadingMessages || !draft.trim() || !currentConversation}>
-                  {sending ? 'Enviando...' : 'Enviar'} <Icon icon="send-horizontal" className="ms-1 fs-xl" />
+                  {sending ? t('common.sending') : t('crm.messages.send')} <Icon icon="send-horizontal" className="ms-1 fs-xl" />
                 </Button>
               </Form>
             </>
@@ -198,6 +201,8 @@ const ConversationList = ({
   searchTerm: string
   onSearchChange: (value: string) => void
 }) => {
+  const { t } = useTranslation()
+  const channelLabels = getChannelLabels(t)
   return (
     <Card className="h-100 mb-0 border-end-0 rounded-end-0">
       <CardHeader className="p-3 border-light card-bg d-block">
@@ -205,7 +210,7 @@ const ConversationList = ({
           <FormControl
             type="text"
             className="bg-light-subtle border-light"
-            placeholder="Buscar conversación..."
+            placeholder={t('crm.messages.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
           />
@@ -213,7 +218,7 @@ const ConversationList = ({
         </div>
       </CardHeader>
       <SimpleBar className="card-body p-2" style={{ height: 'calc(100% - 100px)' }}>
-        {conversations.length === 0 && <p className="text-muted text-center py-4 mb-0 fs-sm">Ninguna conversación coincide con la búsqueda.</p>}
+        {conversations.length === 0 && <p className="text-muted text-center py-4 mb-0 fs-sm">{t('crm.messages.noSearchResults')}</p>}
         <ListGroup variant="flush" className="chat-list">
           {conversations.map((conversation) => (
             <ListGroupItem
@@ -233,7 +238,7 @@ const ConversationList = ({
               </span>
               <span className="d-flex flex-column gap-1 justify-content-center flex-shrink-0 align-items-end">
                 <span className="text-muted fs-xs">{formatTimestamp(conversation.lastMessageAt)}</span>
-                <span className="badge text-bg-light fs-xxs">{CHANNEL_LABELS[conversation.channelType]}</span>
+                <span className="badge text-bg-light fs-xxs">{channelLabels[conversation.channelType]}</span>
               </span>
             </ListGroupItem>
           ))}

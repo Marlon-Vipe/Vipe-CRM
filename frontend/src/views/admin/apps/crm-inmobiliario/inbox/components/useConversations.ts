@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
@@ -14,6 +15,7 @@ interface ConversationRow {
 }
 
 export function useConversations() {
+  const { t } = useTranslation()
   const { tenantId } = useAuth()
   const [conversations, setConversations] = useState<ConversationItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -34,7 +36,7 @@ export function useConversations() {
       // eslint-disable-next-line no-console
       console.error('Error al cargar conversaciones:', error?.message)
       setConversations([])
-      setError('No se pudieron cargar las conversaciones. Intenta de nuevo.')
+      setError(t('crm.messages.loadError'))
       setLoading(false)
       hasLoadedOnce.current = true
       return
@@ -64,7 +66,7 @@ export function useConversations() {
       rows.map((row) => ({
         id: row.id,
         contactId: row.contacts?.id || null,
-        contactName: row.contacts?.name || 'Contacto desconocido',
+        contactName: row.contacts?.name || t('crm.messages.unknownContact'),
         channelType: row.channels?.type || 'whatsapp',
         lastMessage: lastMessageByConversation.get(row.id) || null,
         lastMessageAt: row.last_message_at,
@@ -73,7 +75,7 @@ export function useConversations() {
     )
     setLoading(false)
     hasLoadedOnce.current = true
-  }, [tenantId])
+  }, [tenantId, t])
 
   useEffect(() => {
     loadConversations()

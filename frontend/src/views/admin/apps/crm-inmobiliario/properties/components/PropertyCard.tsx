@@ -1,10 +1,11 @@
 import Icon from '@/components/wrappers/Icon'
 import { Link, useNavigate } from 'react-router'
 import { Badge, Card, CardBody, CardFooter, CardTitle, Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'react-bootstrap'
-import { STATUS_LABEL, STATUS_VARIANT, TYPE_LABEL, type PropertyType } from './data'
+import { useTranslation } from 'react-i18next'
+import { getStatusLabels, getTypeLabels, STATUS_VARIANT, type PropertyType } from './data'
 
-const formatPrice = (price: number | null, currency: string) => {
-  if (price == null) return 'Precio a consultar'
+const formatPrice = (price: number | null, currency: string, t: (key: string) => string) => {
+  if (price == null) return t('crm.properties.priceOnRequest')
   const formatted = new Intl.NumberFormat('es-DO', { maximumFractionDigits: 0 }).format(price)
   return `${currency === 'USD' ? 'US$' : 'RD$'} ${formatted}`
 }
@@ -15,13 +16,16 @@ interface Props {
 }
 
 const Page = ({ product, onDelete }: Props) => {
+  const { t } = useTranslation()
+  const statusLabels = getStatusLabels(t)
+  const typeLabels = getTypeLabels(t)
   const { id, price, currency, imageUrl, title, status, type, sector, city, bedrooms, bathrooms, areaM2 } = product
   const navigate = useNavigate()
 
   return (
     <Card className="h-100 mb-2">
       <Badge bg={STATUS_VARIANT[status]} className="badge-label fs-base rounded position-absolute top-0 start-0 m-3">
-        {STATUS_LABEL[status]}
+        {statusLabels[status]}
       </Badge>
 
       <div className="position-absolute top-0 end-0 m-2">
@@ -31,10 +35,10 @@ const Page = ({ product, onDelete }: Props) => {
           </DropdownToggle>
           <DropdownMenu>
             <DropdownItem onClick={() => navigate(`/crm/propiedades/${id}/editar`)}>
-              <Icon icon="square-pen" className="me-2" /> Editar
+              <Icon icon="square-pen" className="me-2" /> {t('common.edit')}
             </DropdownItem>
             <DropdownItem className="text-danger" onClick={() => onDelete(id)}>
-              <Icon icon="trash-2" className="me-2" /> Eliminar
+              <Icon icon="trash-2" className="me-2" /> {t('common.delete')}
             </DropdownItem>
           </DropdownMenu>
         </Dropdown>
@@ -59,7 +63,7 @@ const Page = ({ product, onDelete }: Props) => {
 
         <p className="text-muted fs-xs mb-2">
           <Icon icon="map-pin" className="me-1" />
-          {sector || 'Sector sin especificar'}
+          {sector || t('crm.properties.sectorUnspecified')}
           {city ? `, ${city}` : ''}
         </p>
 
@@ -86,9 +90,9 @@ const Page = ({ product, onDelete }: Props) => {
       </CardBody>
 
       <CardFooter className="bg-transparent d-flex justify-content-between align-items-center">
-        <h5 className="mb-0 text-primary">{formatPrice(price, currency)}</h5>
+        <h5 className="mb-0 text-primary">{formatPrice(price, currency, t)}</h5>
         <Badge bg={type === 'venta' ? 'primary' : 'dark'} className="badge-label">
-          {TYPE_LABEL[type]}
+          {typeLabels[type]}
         </Badge>
       </CardFooter>
     </Card>

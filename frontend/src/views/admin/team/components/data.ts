@@ -14,9 +14,3 @@ export interface PendingInvitation {
   token: string
   expiresAt: string
 }
-
-export const ROLE_LABELS: Record<MembershipRole, string> = {
-  owner: 'Dueño',
-  admin: 'Administrador',
-  agent: 'Agente',
-}

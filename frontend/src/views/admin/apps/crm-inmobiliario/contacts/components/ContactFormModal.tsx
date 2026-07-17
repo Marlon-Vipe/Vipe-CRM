@@ -3,8 +3,9 @@ import { supabase } from '@/lib/supabaseClient'
 import { normalizePhoneE164 } from '@/utils/helpers'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Alert, Button, Form, FormControl, FormLabel, FormSelect, FormText, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
-import { CONTACT_SOURCE_LABELS, CONTACT_TYPE_LABELS } from './data'
+import { getContactSourceLabels, getContactTypeLabels } from './data'
 
 export interface ContactFormValues {
   id?: string
@@ -35,6 +36,9 @@ interface Props {
 }
 
 const ContactFormModal = ({ show, onHide, onSaved, contact }: Props) => {
+  const { t } = useTranslation()
+  const contactTypeLabels = getContactTypeLabels(t)
+  const contactSourceLabels = getContactSourceLabels(t)
   const { tenantId, user } = useAuth()
   const [form, setForm] = useState<ContactFormValues>(EMPTY_FORM)
   const [submitting, setSubmitting] = useState(false)
@@ -62,7 +66,7 @@ const ContactFormModal = ({ show, onHide, onSaved, contact }: Props) => {
     event.preventDefault()
     if (!tenantId) return
     if (!form.name.trim()) {
-      setErrorMessage('El nombre es requerido.')
+      setErrorMessage(t('crm.contacts.form.nameRequired'))
       return
     }
 
@@ -95,31 +99,31 @@ const ContactFormModal = ({ show, onHide, onSaved, contact }: Props) => {
   return (
     <Modal show={show} onHide={onHide}>
       <ModalHeader closeButton>
-        <ModalTitle as="h5">{form.id ? 'Editar contacto' : 'Nuevo contacto'}</ModalTitle>
+        <ModalTitle as="h5">{form.id ? t('crm.contacts.form.editTitle') : t('crm.contacts.form.createTitle')}</ModalTitle>
       </ModalHeader>
       <Form onSubmit={handleSubmit}>
         <ModalBody>
           {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
           <div className="mb-3">
             <FormLabel>
-              Nombre <span className="text-danger">*</span>
+              {t('crm.contacts.form.name')} <span className="text-danger">*</span>
             </FormLabel>
             <FormControl required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
           <div className="mb-3">
-            <FormLabel>Teléfono</FormLabel>
+            <FormLabel>{t('crm.contacts.form.phone')}</FormLabel>
             <FormControl value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-            <FormText>Se guarda en formato internacional (+1...) para que coincida con los mensajes de WhatsApp de este contacto.</FormText>
+            <FormText>{t('crm.contacts.form.phoneHint')}</FormText>
           </div>
           <div className="mb-3">
-            <FormLabel>Correo electrónico</FormLabel>
+            <FormLabel>{t('auth.fields.email')}</FormLabel>
             <FormControl type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
           </div>
           <div className="mb-3">
-            <FormLabel>Tipo</FormLabel>
+            <FormLabel>{t('crm.contacts.form.type')}</FormLabel>
             <FormSelect value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as ContactFormValues['type'] })}>
-              <option value="">Sin especificar</option>
-              {Object.entries(CONTACT_TYPE_LABELS).map(([value, label]) => (
+              <option value="">{t('crm.contacts.form.typeUnspecified')}</option>
+              {Object.entries(contactTypeLabels).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
                 </option>
@@ -127,9 +131,9 @@ const ContactFormModal = ({ show, onHide, onSaved, contact }: Props) => {
             </FormSelect>
           </div>
           <div className="mb-0">
-            <FormLabel>Origen</FormLabel>
+            <FormLabel>{t('crm.contacts.form.source')}</FormLabel>
             <FormSelect value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })}>
-              {Object.entries(CONTACT_SOURCE_LABELS).map(([value, label]) => (
+              {Object.entries(contactSourceLabels).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
                 </option>
@@ -139,10 +143,10 @@ const ContactFormModal = ({ show, onHide, onSaved, contact }: Props) => {
         </ModalBody>
         <ModalFooter>
           <Button variant="light" onClick={onHide} type="button">
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button variant="primary" type="submit" disabled={submitting}>
-            {submitting ? 'Guardando...' : 'Guardar'}
+            {submitting ? t('common.saving') : t('common.save')}
           </Button>
         </ModalFooter>
       </Form>

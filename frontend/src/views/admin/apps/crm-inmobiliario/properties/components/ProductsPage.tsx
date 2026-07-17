@@ -4,11 +4,13 @@ import { supabase } from '@/lib/supabaseClient'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Alert, Button, Col, Row, Spinner } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 import PropertyCard from './PropertyCard'
 import ProductFilter from './ProductFilter'
 import { useProperties } from './useProperties'
 
 const ProductsPage = () => {
+  const { t } = useTranslation()
   const [isOffcanvasOpen, setIsOffcanvasOpen] = useState(false)
   const { properties, loading, error: loadError, reload } = useProperties()
   const { tenantId } = useAuth()
@@ -17,7 +19,7 @@ const ProductsPage = () => {
 
   const handleDelete = async (propertyId: string) => {
     if (!tenantId) return
-    if (!window.confirm('¿Eliminar esta propiedad? Esta acción no se puede deshacer.')) return
+    if (!window.confirm(t('crm.properties.deleteConfirm'))) return
     const { error } = await supabase.from('properties').delete().eq('id', propertyId).eq('tenant_id', tenantId)
     if (error) {
       setErrorMessage(error.message)
@@ -37,9 +39,9 @@ const ProductsPage = () => {
                   <Icon icon="menu-4" className="fs-lg" />
                 </Button>
               </div>
-              <h3 className="mb-0 fs-xl flex-grow-1">{properties.length} Propiedades</h3>
+              <h3 className="mb-0 fs-xl flex-grow-1">{t('crm.properties.count', { count: properties.length })}</h3>
               <Button variant="primary" onClick={() => navigate('/crm/propiedades/nueva')}>
-                <Icon icon="plus" className="fs-sm me-2" /> Agregar propiedad
+                <Icon icon="plus" className="fs-sm me-2" /> {t('crm.properties.addProperty')}
               </Button>
             </div>
           </div>
@@ -64,11 +66,11 @@ const ProductsPage = () => {
             <div className="text-center py-5">
               <p className="text-danger mb-3">{loadError}</p>
               <Button variant="primary" onClick={reload}>
-                Reintentar
+                {t('common.retry')}
               </Button>
             </div>
           ) : properties.length === 0 ? (
-            <p className="text-muted text-center py-5">Todavía no hay propiedades registradas para tu agencia.</p>
+            <p className="text-muted text-center py-5">{t('crm.properties.noProperties')}</p>
           ) : (
             <Row className="row-cols-xxl-4 row-cols-lg-3 row-cols-sm-2 row-col-1 g-2">
               {properties.map((property) => (

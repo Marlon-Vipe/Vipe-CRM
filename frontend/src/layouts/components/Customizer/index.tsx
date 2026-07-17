@@ -13,6 +13,7 @@ import Skin from './components/Skin'
 import Theme from './components/Theme'
 import TopbarColor from './components/TopbarColor'
 import Width from './components/Width'
+import { useTranslation } from 'react-i18next'
 
 export type CustomizationOptionType = {
   value: string
@@ -20,14 +21,15 @@ export type CustomizationOptionType = {
 }
 
 const Customizer = () => {
+  const { t } = useTranslation()
   const { isCustomizerOpen, toggleCustomizer, reset } = useLayoutContext()
 
   return (
     <Offcanvas show={isCustomizerOpen} onHide={toggleCustomizer} placement="end" className="overflow-hidden" tabIndex={-1} id="theme-settings-offcanvas">
       <div className="d-flex justify-content-between text-bg-primary gap-2 p-3" style={{ backgroundImage: `url("${settingsBg}")` }}>
         <div>
-          <h5 className="mb-1 fw-bold text-white text-uppercase">Admin Customizer</h5>
-          <p className="text-white text-opacity-75 fst-italic fw-medium mb-0">Easily configure layout, styles, and preferences for your admin interface.</p>
+          <h5 className="mb-1 fw-bold text-white text-uppercase">{t('layout.customizer.title')}</h5>
+          <p className="text-white text-opacity-75 fst-italic fw-medium mb-0">{t('layout.customizer.subtitle')}</p>
         </div>
         <div className="flex-grow-0">
           <button type="button" onClick={toggleCustomizer} className="d-block btn btn-sm bg-white bg-opacity-25 text-white rounded-circle btn-icon" data-bs-dismiss="offcanvas">
@@ -60,7 +62,7 @@ const Customizer = () => {
         <Row className="justify-content-end">
           <Col xs={12}>
             <Button onClick={reset} variant="danger" type="button" className="fw-semibold py-2 w-100" id="reset-layout">
-              <Icon icon="refresh-ccw" className="me-2 fs-md" /> Reset
+              <Icon icon="refresh-ccw" className="me-2 fs-md" /> {t('layout.customizer.reset')}
             </Button>
           </Col>
         </Row>

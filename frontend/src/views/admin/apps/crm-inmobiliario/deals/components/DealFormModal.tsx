@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Alert, Button, Form, FormControl, FormLabel, FormSelect, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 import type { PipelineSectionType, PipelineTaskType } from './data'
 import type { DealContactOption, DealFormInput, DealPropertyOption } from './useDeals'
@@ -46,6 +47,7 @@ const DealFormModal = ({
   onCreate,
   onUpdate,
 }: Props) => {
+  const { t } = useTranslation()
   const [form, setForm] = useState<DealFormValues>(emptyForm(defaultStageId))
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -70,7 +72,7 @@ const DealFormModal = ({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!form.contactId || !form.stageId) {
-      setErrorMessage('El contacto y la etapa son requeridos.')
+      setErrorMessage(t('crm.deals.form.contactAndStageRequired'))
       return
     }
 
@@ -101,17 +103,17 @@ const DealFormModal = ({
   return (
     <Modal show={show} onHide={onHide}>
       <ModalHeader closeButton>
-        <ModalTitle as="h5">{form.id ? 'Editar negociación' : 'Nueva negociación'}</ModalTitle>
+        <ModalTitle as="h5">{form.id ? t('crm.deals.form.editTitle') : t('crm.deals.form.createTitle')}</ModalTitle>
       </ModalHeader>
       <Form onSubmit={handleSubmit}>
         <ModalBody>
           {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
           <div className="mb-3">
             <FormLabel>
-              Contacto <span className="text-danger">*</span>
+              {t('crm.deals.form.contact')} <span className="text-danger">*</span>
             </FormLabel>
             <FormSelect required value={form.contactId} onChange={(e) => setForm({ ...form, contactId: e.target.value })}>
-              <option value="">Selecciona un contacto</option>
+              <option value="">{t('crm.deals.form.selectContact')}</option>
               {contactOptions.map((contact) => (
                 <option key={contact.id} value={contact.id}>
                   {contact.name}
@@ -120,9 +122,9 @@ const DealFormModal = ({
             </FormSelect>
           </div>
           <div className="mb-3">
-            <FormLabel>Propiedad</FormLabel>
+            <FormLabel>{t('crm.deals.form.property')}</FormLabel>
             <FormSelect value={form.propertyId} onChange={(e) => setForm({ ...form, propertyId: e.target.value })}>
-              <option value="">Sin propiedad asociada</option>
+              <option value="">{t('crm.deals.noPropertyAssociated')}</option>
               {propertyOptions.map((property) => (
                 <option key={property.id} value={property.id}>
                   {property.title}
@@ -132,10 +134,10 @@ const DealFormModal = ({
           </div>
           <div className="mb-3">
             <FormLabel>
-              Etapa <span className="text-danger">*</span>
+              {t('crm.deals.form.stage')} <span className="text-danger">*</span>
             </FormLabel>
             <FormSelect required value={form.stageId} onChange={(e) => setForm({ ...form, stageId: e.target.value })}>
-              <option value="">Selecciona una etapa</option>
+              <option value="">{t('crm.deals.form.selectStage')}</option>
               {stages.map((stage) => (
                 <option key={stage.id} value={stage.id}>
                   {stage.title}
@@ -144,7 +146,7 @@ const DealFormModal = ({
             </FormSelect>
           </div>
           <div className="mb-3">
-            <FormLabel>Valor estimado (RD$)</FormLabel>
+            <FormLabel>{t('crm.deals.form.valueEstimate')}</FormLabel>
             <FormControl
               type="number"
               min="0"
@@ -153,7 +155,7 @@ const DealFormModal = ({
             />
           </div>
           <div className="mb-0">
-            <FormLabel>Fecha estimada de cierre</FormLabel>
+            <FormLabel>{t('crm.deals.form.expectedCloseDate')}</FormLabel>
             <FormControl
               type="date"
               value={form.expectedCloseDate}
@@ -163,10 +165,10 @@ const DealFormModal = ({
         </ModalBody>
         <ModalFooter>
           <Button variant="light" onClick={onHide} type="button">
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button variant="primary" type="submit" disabled={submitting}>
-            {submitting ? 'Guardando...' : 'Guardar'}
+            {submitting ? t('common.saving') : t('common.save')}
           </Button>
         </ModalFooter>
       </Form>

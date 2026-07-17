@@ -1,5 +1,6 @@
 import { useLayoutContext } from '@/context/useLayoutContext'
 import { toTitleCase } from '@/utils/helpers'
+import { useTranslation } from 'react-i18next'
 import type { CustomizationOptionType } from '../index'
 
 import compactImg from '@/assets/images/layouts/sidenav-size-compact.png'
@@ -19,6 +20,7 @@ const sidenavSizeOptions: CustomizationOptionType[] = [
 ]
 
 const SidenavSize = () => {
+  const { t } = useTranslation()
   const { updateSettings, sidenavSize } = useLayoutContext()
 
   const handleSidenavSizeChange = (value: string) => {
@@ -27,7 +29,7 @@ const SidenavSize = () => {
 
   return (
     <div id="sidenav-size" className="p-3 border-bottom border-dashed">
-      <h5 className="mb-3 fw-bold">Sidebar Size</h5>
+      <h5 className="mb-3 fw-bold">{t('layout.customizer.sidebarSize')}</h5>
       <div className="row g-3">
         {sidenavSizeOptions &&
           sidenavSizeOptions.map((option) => (

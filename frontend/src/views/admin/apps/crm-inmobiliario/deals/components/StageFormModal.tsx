@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Alert, Button, Form, FormControl, FormLabel, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 import type { PipelineSectionType } from './data'
 
@@ -13,6 +14,7 @@ interface Props {
 }
 
 const StageFormModal = ({ show, onHide, onSaved, stage, onCreate, onUpdate }: Props) => {
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -26,7 +28,7 @@ const StageFormModal = ({ show, onHide, onSaved, stage, onCreate, onUpdate }: Pr
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!name.trim()) {
-      setErrorMessage('El nombre de la etapa es requerido.')
+      setErrorMessage(t('crm.deals.stageForm.nameRequired'))
       return
     }
 
@@ -49,24 +51,24 @@ const StageFormModal = ({ show, onHide, onSaved, stage, onCreate, onUpdate }: Pr
   return (
     <Modal show={show} onHide={onHide}>
       <ModalHeader closeButton>
-        <ModalTitle as="h5">{stage ? 'Editar etapa' : 'Nueva etapa'}</ModalTitle>
+        <ModalTitle as="h5">{stage ? t('crm.deals.stageForm.editTitle') : t('crm.deals.stageForm.createTitle')}</ModalTitle>
       </ModalHeader>
       <Form onSubmit={handleSubmit}>
         <ModalBody>
           {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
           <div className="mb-0">
             <FormLabel>
-              Nombre <span className="text-danger">*</span>
+              {t('crm.deals.stageForm.name')} <span className="text-danger">*</span>
             </FormLabel>
             <FormControl required value={name} onChange={(e) => setName(e.target.value)} />
           </div>
         </ModalBody>
         <ModalFooter>
           <Button variant="light" onClick={onHide} type="button">
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button variant="primary" type="submit" disabled={submitting}>
-            {submitting ? 'Guardando...' : 'Guardar'}
+            {submitting ? t('common.saving') : t('common.save')}
           </Button>
         </ModalFooter>
       </Form>

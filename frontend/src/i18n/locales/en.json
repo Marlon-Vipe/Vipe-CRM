@@ -1,0 +1,483 @@
+{
+  "common": {
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "create": "Create",
+    "search": "Search",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "sending": "Sending...",
+    "connecting": "Connecting...",
+    "logout": "Log out",
+    "confirm": "Confirm",
+    "close": "Close",
+    "back": "Back",
+    "yes": "Yes",
+    "no": "No",
+    "required": "Required",
+    "optional": "Optional",
+    "noResults": "No results.",
+    "genericError": "Something went wrong. Please try again.",
+    "unsavedChanges": "You have unsaved changes.",
+    "defaultUser": "User",
+    "yourAgency": "Your agency",
+    "roles": {
+      "owner": "owner",
+      "admin": "admin",
+      "agent": "agent"
+    }
+  },
+  "nav": {
+    "main": "Home",
+    "dashboard": "Dashboard",
+    "crmGroup": "Real Estate CRM",
+    "contacts": "Contacts",
+    "properties": "Properties",
+    "deals": "Deals",
+    "messages": "Messages",
+    "account": "Account",
+    "team": "Team",
+    "profileBilling": "Profile & Billing"
+  },
+  "layout": {
+    "settingUpAccount": "Setting up your account...",
+    "membershipError": {
+      "loadFailed": "We couldn't load your account information. Check your connection and try again.",
+      "signupIncomplete": "We couldn't finish setting up your account. Try signing out and back in; if the problem continues, contact us."
+    },
+    "quickSearch": "Quick search...",
+    "theme": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "customizer": {
+      "title": "Admin Customizer",
+      "subtitle": "Easily configure layout, styles, and preferences for your admin interface.",
+      "reset": "Reset",
+      "direction": "Layout Direction",
+      "orientation": "Orientation",
+      "position": "Layout Position",
+      "fixed": "Fixed",
+      "scrollable": "Scrollable",
+      "sidenavColor": "Sidenav Color",
+      "sidebarSize": "Sidebar Size",
+      "sidebarUserInfo": "Sidebar User Info",
+      "selectTheme": "Select Theme",
+      "colorScheme": "Color Scheme",
+      "topbarColor": "Topbar Color",
+      "layoutWidth": "Layout Width"
+    }
+  },
+  "auth": {
+    "signIn": {
+      "subtitle": "Enter your email and password to continue.",
+      "newHere": "New here?",
+      "createAccount": "Create an account",
+      "rememberMe": "Keep me signed in",
+      "forgotPassword": "Forgot your password?",
+      "signingIn": "Signing in...",
+      "submit": "Sign in"
+    },
+    "signUp": {
+      "subtitle": "Fill in your details to continue.",
+      "alreadyHaveAccount": "Already have an account?",
+      "signInLink": "Sign in",
+      "agencyName": "Agency name",
+      "fullName": "Your full name",
+      "acceptTerms": "I accept the Terms and Conditions",
+      "mustAcceptTerms": "You must accept the Terms and Conditions to continue.",
+      "enterAgencyName": "Enter your agency name.",
+      "joinAgency": "Join agency",
+      "createAgency": "Create agency",
+      "genericError": "We couldn't complete the sign up.",
+      "confirmationSentPrefix": "We sent a confirmation email to",
+      "confirmationSentAction": "Open the link to activate your account {{suffix}}",
+      "confirmationSuffixInvite": "and join the agency.",
+      "confirmationSuffixNew": "and finish creating your agency.",
+      "invitedTo": "You were invited to join {{tenant}}.",
+      "invitationErrorSuffix": "You can create a new agency by filling out the form."
+    },
+    "resetPass": {
+      "subtitle": "Enter your email and we'll send you a link to reset your password.",
+      "backTo": "Back to",
+      "sendingLink": "Sending...",
+      "submit": "Send recovery link",
+      "sent": "If {{email}} has an account with us, we sent a link to reset your password. Check your inbox (and spam folder)."
+    },
+    "newPass": {
+      "subtitle": "Choose your new password.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "passwordsDontMatch": "Passwords don't match.",
+      "passwordTooShort": "Password must be at least 6 characters.",
+      "submit": "Update password",
+      "invalidOrExpiredLink": "This link is invalid or has expired.",
+      "requestNewLink": "Request a new one"
+    },
+    "fields": {
+      "email": "Email",
+      "password": "Password"
+    },
+    "passwordHint": "Use 8+ characters with letters, numbers, and symbols.",
+    "errors": {
+      "invalidCredentials": "Incorrect email or password.",
+      "emailNotConfirmed": "You need to confirm your email before signing in. Check your inbox.",
+      "userAlreadyRegistered": "An account with this email already exists.",
+      "passwordTooShort": "Password must be at least 6 characters.",
+      "invalidEmailFormat": "The email format is invalid.",
+      "rateLimitExceeded": "Too many emails sent. Wait a few minutes before trying again.",
+      "signupsDisabled": "New account sign-ups are not enabled.",
+      "securityWait": "For security, wait a few seconds before trying again."
+    }
+  },
+  "activity": {
+    "types": {
+      "llamada": "Call",
+      "visita": "Visit",
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "tarea_general": "General task"
+    },
+    "status": {
+      "pendiente": "Pending",
+      "completada": "Completed",
+      "cancelada": "Cancelled"
+    }
+  },
+  "crm": {
+    "activityForm": {
+      "title": "New activity",
+      "type": "Type",
+      "dueDate": "Date/time (optional)",
+      "notes": "Notes"
+    },
+    "contacts": {
+      "count": "{{count}} Contact",
+      "count_other": "{{count}} Contacts",
+      "addContact": "Add contact",
+      "noContacts": "No contacts registered for your agency yet.",
+      "loadError": "We couldn't load the contacts. Please try again.",
+      "deleteConfirm": "Delete {{name}}? This action cannot be undone.",
+      "sourcePrefix": "Source:",
+      "deals": "Deals",
+      "pendingActivities": "Pending activities",
+      "detail": {
+        "title": "Contact",
+        "notFound": "Contact not found.",
+        "loadError": "We couldn't load the contact. Please try again.",
+        "contactData": "Contact details",
+        "noEmail": "No email on file",
+        "noPhone": "No phone on file",
+        "activities": "Activities",
+        "newActivity": "New",
+        "noActivities": "No activities recorded.",
+        "conversations": "Conversations",
+        "noConversations": "No conversations recorded.",
+        "viewInInbox": "View in inbox",
+        "channel": "Channel",
+        "deleteActivityConfirm": "Delete this activity?"
+      },
+      "form": {
+        "editTitle": "Edit contact",
+        "createTitle": "New contact",
+        "name": "Name",
+        "nameRequired": "Name is required.",
+        "phone": "Phone",
+        "phoneHint": "Saved in international format (+1...) so it matches this contact's WhatsApp messages.",
+        "type": "Type",
+        "typeUnspecified": "Unspecified",
+        "source": "Source"
+      },
+      "types": {
+        "comprador": "Buyer",
+        "vendedor": "Seller",
+        "arrendatario": "Tenant"
+      },
+      "sources": {
+        "web": "Web",
+        "referido": "Referral",
+        "portal": "Real estate portal",
+        "whatsapp": "WhatsApp",
+        "instagram": "Instagram",
+        "facebook": "Facebook",
+        "walk_in": "Walk-in",
+        "otro": "Other"
+      },
+      "channels": {
+        "whatsapp": "WhatsApp",
+        "instagram": "Instagram",
+        "messenger": "Messenger"
+      }
+    },
+    "deals": {
+      "searchPlaceholder": "Search deal...",
+      "newStage": "New stage",
+      "newDeal": "New deal",
+      "dragDisabledHint": "Drag to change stage is disabled while filtering — clear the search to reorder.",
+      "editStage": "Edit stage",
+      "deleteStage": "Delete stage",
+      "deleteConfirm": "Delete the deal \"{{title}}\"? This action cannot be undone.",
+      "deleteStageConfirm": "Delete the stage \"{{title}}\"?",
+      "loadError": "We couldn't load the deals pipeline. Please try again.",
+      "noPropertyAssociated": "No property linked",
+      "noPropertyTitle": "Deal with no property linked",
+      "noContact": "No contact",
+      "missingTenant": "Missing tenant.",
+      "moveStageError": "We couldn't move the deal to the new stage. Please try again.",
+      "cannotDeleteStageWithDeals": "You can't delete a stage that still has deals. Move or delete those deals first.",
+      "form": {
+        "editTitle": "Edit deal",
+        "createTitle": "New deal",
+        "contactAndStageRequired": "Contact and stage are required.",
+        "contact": "Contact",
+        "selectContact": "Select a contact",
+        "property": "Property",
+        "stage": "Stage",
+        "selectStage": "Select a stage",
+        "valueEstimate": "Estimated value (RD$)",
+        "expectedCloseDate": "Expected close date"
+      },
+      "stageForm": {
+        "editTitle": "Edit stage",
+        "createTitle": "New stage",
+        "name": "Name",
+        "nameRequired": "Stage name is required."
+      },
+      "detail": {
+        "title": "Deal",
+        "notFound": "Deal not found.",
+        "loadError": "We couldn't load the deal. Please try again.",
+        "notSet": "Not set",
+        "dealData": "Deal details",
+        "contact": "Contact",
+        "noContact": "No contact linked",
+        "property": "Property",
+        "valueEstimate": "Estimated value",
+        "expectedCloseDate": "Expected close date",
+        "assignedAgent": "Assigned agent",
+        "unassigned": "Unassigned",
+        "createdOn": "Created on",
+        "actions": "Actions",
+        "backToPipeline": "Back to pipeline",
+        "viewContact": "View contact",
+        "activities": "Activities",
+        "newActivity": "New",
+        "noActivities": "No activities recorded.",
+        "deleteActivityConfirm": "Delete this activity?",
+        "stageHistory": "Stage history",
+        "noStageHistory": "No stage changes recorded.",
+        "createdInStage": "Created in {{stage}}"
+      }
+    },
+    "dashboard": {
+      "newLeads": "New leads (last 7 days)",
+      "activeProperties": "Active properties",
+      "openDeals": "Active deals",
+      "pendingActivities": "Pending activities",
+      "dealsByStage": "Deals by stage",
+      "noDeals": "No deals recorded yet.",
+      "upcomingActivities": "Upcoming pending activities",
+      "noPendingActivities": "No pending activities.",
+      "noDate": "No date",
+      "loadError": "We couldn't load the dashboard metrics. Please try again."
+    },
+    "properties": {
+      "count": "{{count}} Property",
+      "count_other": "{{count}} Properties",
+      "addProperty": "Add property",
+      "noProperties": "No properties registered for your agency yet.",
+      "loadError": "We couldn't load the properties. Please try again.",
+      "deleteConfirm": "Delete this property? This action cannot be undone.",
+      "priceOnRequest": "Price on request",
+      "sectorUnspecified": "Sector not specified",
+      "types": {
+        "venta": "Sale",
+        "alquiler": "Rental"
+      },
+      "status": {
+        "disponible": "Available",
+        "reservada": "Reserved",
+        "vendida": "Sold",
+        "alquilada": "Rented"
+      },
+      "filter": {
+        "searchPlaceholder": "Search property...",
+        "type": "Type:",
+        "status": "Status:",
+        "price": "Price (RD$):",
+        "priceRangeTo": "to",
+        "sector": "Sector:",
+        "noSectors": "No sectors registered yet."
+      },
+      "form": {
+        "editTitle": "Edit property",
+        "createTitle": "New property",
+        "propertyData": "Property data",
+        "titleLabel": "Title",
+        "titleRequired": "Title is required.",
+        "type": "Type",
+        "status": "Status",
+        "price": "Price",
+        "currency": "Currency",
+        "address": "Address",
+        "sector": "Sector",
+        "city": "City",
+        "bedrooms": "Bedrooms",
+        "bathrooms": "Bathrooms",
+        "area": "Area (m²)",
+        "areaShort": "Area",
+        "photos": "Photos",
+        "deletePhotoConfirm": "Delete this photo?",
+        "invalidNumber": "\"{{field}}\" must be a valid number.",
+        "createError": "Could not create the property.",
+        "uploadFailed": "The property was saved, but the upload of \"{{fileName}}\" failed:",
+        "newFilesSelected": "{{count}} new file(s) selected."
+      }
+    },
+    "messages": {
+      "loadError": "We couldn't load the conversations. Please try again.",
+      "noConversations": "No conversations for your agency yet.",
+      "noMessages": "No messages in this conversation.",
+      "noTextContent": "Message with no text content ({{type}})",
+      "typePlaceholder": "Type a message...",
+      "send": "Send",
+      "searchPlaceholder": "Search conversation...",
+      "noSearchResults": "No conversation matches the search.",
+      "unknownContact": "Unknown contact",
+      "noConversationSession": "No conversation selected or your session expired. Reload the page and try again.",
+      "viewContact": "View contact",
+      "noLinkedContact": "No contact linked",
+      "serviceWindowExpired": "More than 24h have passed since this contact's last message — WhatsApp requires using an approved template.",
+      "loadingTemplates": "Loading templates...",
+      "noTemplates": "Your agency doesn't have any templates registered yet. Add them in Profile & billing → WhatsApp channel.",
+      "templateLabel": "Template",
+      "selectTemplatePlaceholder": "Select a template...",
+      "sendTemplate": "Send template",
+      "status": {
+        "abierta": "Open",
+        "cerrada": "Closed"
+      }
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "count": "{{count}} notification",
+    "count_other": "{{count}} notifications",
+    "empty": "No notifications.",
+    "markAllSeen": "Mark all as seen",
+    "types": {
+      "new_message": "New WhatsApp message",
+      "new_lead": "New lead via WhatsApp",
+      "invitation_accepted": "Joined the team as {{role}}",
+      "activity_due": "Overdue activity"
+    }
+  },
+  "team": {
+    "membersHeader": "Members ({{count}})",
+    "pendingInvitationsHeader": "Pending invitations ({{count}})",
+    "inviteAgent": "Invite agent",
+    "noPendingInvitations": "No pending invitations.",
+    "copyLink": "Copy link",
+    "copied": "Copied",
+    "revokeConfirm": "Revoke this invitation?",
+    "loadError": "We couldn't load the team. Please try again.",
+    "role": "Role",
+    "createInvitation": "Create invitation",
+    "emailNotSentWarning": "The invitation was created, but the email couldn't be sent automatically. Use \"Copy link\" in the pending invitations list to share it manually."
+  },
+  "profileBilling": {
+    "billing": {
+      "title": "Plan & billing",
+      "plans": {
+        "starter": "Starter",
+        "pro": "Pro",
+        "agencia": "Agency"
+      },
+      "status": {
+        "trial": "Trial",
+        "activa": "Active",
+        "vencida": "Past due",
+        "cancelada": "Cancelled"
+      },
+      "notConfigured": "Billing isn't connected to a payment provider yet. You can keep using the CRM normally — this only affects upgrading the plan or managing the payment method from here.",
+      "currentPlanLabel": "Current plan",
+      "renewsOn": "Renews on {{date}}.",
+      "suspendedWarning": "Your agency's subscription is past due. You can't create new contacts, properties, or deals until the payment is up to date.",
+      "subscribeButton": "Subscribe to {{plan}}",
+      "redirecting": "Redirecting...",
+      "managePayment": "Manage payment method",
+      "ownerOnly": "Only the agency owner can manage billing."
+    },
+    "whatsapp": {
+      "title": "WhatsApp channel",
+      "status": {
+        "activo": "Active",
+        "conectando": "Connecting",
+        "desconectado": "Disconnected",
+        "error": "Error"
+      },
+      "noChannels": "You haven't connected a WhatsApp number yet.",
+      "disconnect": "Disconnect",
+      "disconnectConfirm": "Disconnect this WhatsApp number? Existing conversations are kept.",
+      "phoneNumberLabel": "WhatsApp Business number",
+      "phoneNumberHint": "Use the number already provisioned in the Twilio console (or the WhatsApp sandbox number while developing).",
+      "connectButton": "Connect number"
+    },
+    "templates": {
+      "title": "WhatsApp templates",
+      "descriptionPart1": "Outside the 24-hour window since a contact's last message, WhatsApp requires using a template already approved by Meta. Register it here with the",
+      "descriptionPart2": "Twilio gives you when it's approved, so you can pick it from Messages.",
+      "noTemplates": "No templates registered yet.",
+      "deleteConfirm": "Delete this template?",
+      "nameLabel": "Name",
+      "namePlaceholder": "Visit confirmation",
+      "contentSidLabel": "Twilio Content SID",
+      "variablesLabel": "Variables (comma-separated)",
+      "variablesPlaceholder": "name, date",
+      "variablesHint": "In the order they appear in the template, e.g.",
+      "addButton": "Add template"
+    }
+  },
+  "errors": {
+    "contactSupport": "Contact Support",
+    "badRequest": {
+      "title": "Bad Request",
+      "message": "Something's not right in the request you made."
+    },
+    "unauthorized": {
+      "title": "Unauthorized",
+      "message": "You are not authorized to access this page."
+    },
+    "forbidden": {
+      "title": "Access Denied",
+      "message": "You don't have permission to access this page or perform the requested action.",
+      "detail": "This may be due to insufficient privileges or restricted access settings."
+    },
+    "notFound": {
+      "title": "Page Not Found",
+      "message": "The page you're looking for can't be found. It may be missing or the URL is incorrect.",
+      "searchSite": "Search Site"
+    },
+    "timeout": {
+      "title": "Request Timeout",
+      "message": "The server timed out waiting for your request. Please try again or check your connection."
+    },
+    "serverError": {
+      "title": "Internal Server Error",
+      "message": "Something went wrong on our end. Please try again later or contact support if the issue persists."
+    },
+    "maintenance": {
+      "title": "Site Under Maintenance",
+      "message": "We're currently performing scheduled maintenance.",
+      "detail": "Please check back soon.",
+      "imageAlt": "Maintenance",
+      "callNow": "Call Now",
+      "emailUs": "Email Us"
+    }
+  }
+}

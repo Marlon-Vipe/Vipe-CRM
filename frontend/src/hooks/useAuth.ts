@@ -1,10 +1,12 @@
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 
 import { useAuthContext } from '@/context/AuthContext'
 import { translateAuthError } from '@/utils/authErrors'
 
 export const useAuth = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const auth = useAuthContext()
 
@@ -19,12 +21,12 @@ export const useAuth = () => {
       setLoading(false)
 
       if (signInError) {
-        setError(translateAuthError(signInError.message))
+        setError(translateAuthError(t, signInError.message))
         return
       }
       navigate('/', { replace: true })
     },
-    [auth, navigate]
+    [auth, navigate, t]
   )
 
   const logout = useCallback(async () => {

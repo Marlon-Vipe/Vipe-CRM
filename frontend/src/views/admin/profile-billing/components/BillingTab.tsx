@@ -2,14 +2,31 @@ import Icon from '@/components/wrappers/Icon'
 import { useAuth } from '@/hooks/useAuth'
 import { createCheckoutSession, createPortalSession, getSubscription } from '@/lib/api'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Spinner } from 'react-bootstrap'
 
-const PLAN_LABELS: Record<string, string> = { starter: 'Starter', pro: 'Pro', agencia: 'Agencia' }
-const STATUS_LABELS: Record<string, { label: string; variant: string }> = {
-  trial: { label: 'En prueba', variant: 'info' },
-  activa: { label: 'Activa', variant: 'success' },
-  vencida: { label: 'Vencida', variant: 'danger' },
-  cancelada: { label: 'Cancelada', variant: 'secondary' },
+function getPlanLabels(t: (key: string) => string): Record<string, string> {
+  return {
+    starter: t('profileBilling.billing.plans.starter'),
+    pro: t('profileBilling.billing.plans.pro'),
+    agencia: t('profileBilling.billing.plans.agencia'),
+  }
+}
+
+const STATUS_VARIANTS: Record<string, string> = {
+  trial: 'info',
+  activa: 'success',
+  vencida: 'danger',
+  cancelada: 'secondary',
+}
+
+function getStatusLabels(t: (key: string) => string): Record<string, string> {
+  return {
+    trial: t('profileBilling.billing.status.trial'),
+    activa: t('profileBilling.billing.status.activa'),
+    vencida: t('profileBilling.billing.status.vencida'),
+    cancelada: t('profileBilling.billing.status.cancelada'),
+  }
 }
 
 interface Subscription {
@@ -21,6 +38,7 @@ interface Subscription {
 }
 
 const BillingTab = () => {
+  const { t, i18n } = useTranslation()
   const { session, role } = useAuth()
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [loading, setLoading] = useState(true)
@@ -80,27 +98,27 @@ const BillingTab = () => {
     )
   }
 
-  const statusInfo = subscription?.status ? STATUS_LABELS[subscription.status] : null
+  const planLabels = getPlanLabels(t)
+  const statusLabels = getStatusLabels(t)
+  const statusInfo =
+    subscription?.status && statusLabels[subscription.status]
+      ? { label: statusLabels[subscription.status], variant: STATUS_VARIANTS[subscription.status] }
+      : null
 
   return (
     <Card>
       <CardHeader>
-        <h5 className="mb-0">Plan y facturación</h5>
+        <h5 className="mb-0">{t('profileBilling.billing.title')}</h5>
       </CardHeader>
       <CardBody>
         {actionError && <Alert variant="danger">{actionError}</Alert>}
 
-        {subscription && !subscription.billingConfigured && (
-          <Alert variant="warning">
-            La facturación todavía no está conectada a un proveedor de pagos. Puedes seguir usando el CRM con normalidad — esto solo
-            afecta la posibilidad de actualizar el plan o gestionar el método de pago desde aquí.
-          </Alert>
-        )}
+        {subscription && !subscription.billingConfigured && <Alert variant="warning">{t('profileBilling.billing.notConfigured')}</Alert>}
 
         <div className="d-flex align-items-center gap-2 mb-3">
           <div>
-            <p className="mb-0 text-muted fs-xs">Plan actual</p>
-            <h4 className="mb-0">{PLAN_LABELS[subscription?.plan || 'starter'] || subscription?.plan}</h4>
+            <p className="mb-0 text-muted fs-xs">{t('profileBilling.billing.currentPlanLabel')}</p>
+            <h4 className="mb-0">{planLabels[subscription?.plan || 'starter'] || subscription?.plan}</h4>
           </div>
           {statusInfo && (
             <Badge bg={statusInfo.variant} className="ms-2">
@@ -110,31 +128,34 @@ const BillingTab = () => {
         </div>
 
         {subscription?.renewsAt && (
-          <p className="text-muted fs-sm">Se renueva el {new Date(subscription.renewsAt).toLocaleDateString('es-DO')}.</p>
+          <p className="text-muted fs-sm">
+            {t('profileBilling.billing.renewsOn', {
+              date: new Date(subscription.renewsAt).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'es-DO'),
+            })}
+          </p>
         )}
 
-        {subscription?.tenantStatus === 'suspendido' && (
-          <Alert variant="danger">
-            La suscripción de tu agencia está vencida. No se pueden crear nuevos contactos, propiedades ni negociaciones hasta ponerse
-            al día con el pago.
-          </Alert>
-        )}
+        {subscription?.tenantStatus === 'suspendido' && <Alert variant="danger">{t('profileBilling.billing.suspendedWarning')}</Alert>}
 
         {canManageBilling ? (
           <div className="d-flex flex-wrap gap-2 mt-3">
             <Button variant="primary" disabled={actionLoading !== null} onClick={() => handleCheckout('starter')}>
-              {actionLoading === 'checkout-starter' ? 'Redirigiendo...' : 'Suscribirme a Starter'}
+              {actionLoading === 'checkout-starter'
+                ? t('profileBilling.billing.redirecting')
+                : t('profileBilling.billing.subscribeButton', { plan: planLabels.starter })}
             </Button>
             <Button variant="outline-primary" disabled={actionLoading !== null} onClick={() => handleCheckout('pro')}>
-              {actionLoading === 'checkout-pro' ? 'Redirigiendo...' : 'Suscribirme a Pro'}
+              {actionLoading === 'checkout-pro'
+                ? t('profileBilling.billing.redirecting')
+                : t('profileBilling.billing.subscribeButton', { plan: planLabels.pro })}
             </Button>
             <Button variant="light" disabled={actionLoading !== null} onClick={handlePortal}>
               <Icon icon="credit-card" className="me-1" />
-              {actionLoading === 'portal' ? 'Redirigiendo...' : 'Gestionar método de pago'}
+              {actionLoading === 'portal' ? t('profileBilling.billing.redirecting') : t('profileBilling.billing.managePayment')}
             </Button>
           </div>
         ) : (
-          <p className="text-muted fs-sm mt-3">Solo el dueño de la agencia puede gestionar la facturación.</p>
+          <p className="text-muted fs-sm mt-3">{t('profileBilling.billing.ownerOnly')}</p>
         )}
       </CardBody>
     </Card>

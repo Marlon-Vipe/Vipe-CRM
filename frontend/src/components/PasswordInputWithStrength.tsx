@@ -1,5 +1,6 @@
 import Icon from '@/components/wrappers/Icon'
 import { FormControl, FormLabel } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 type PasswordInputProps = {
   password: string
@@ -23,6 +24,7 @@ const calculatePasswordStrength = (password: string): number => {
 }
 
 const PasswordInputWithStrength = ({ password, setPassword, id, label, name, placeholder, showIcon, labelClassName, inputClassName }: PasswordInputProps) => {
+  const { t } = useTranslation()
   const strength = calculatePasswordStrength(password)
   const strengthBars = new Array(4).fill(0)
 
@@ -45,7 +47,7 @@ const PasswordInputWithStrength = ({ password, setPassword, id, label, name, pla
         ))}
       </div>
 
-      <p className="text-muted fs-xs mb-0">Usa 8+ caracteres con letras, números y símbolos.</p>
+      <p className="text-muted fs-xs mb-0">{t('auth.passwordHint')}</p>
     </>
   )
 }

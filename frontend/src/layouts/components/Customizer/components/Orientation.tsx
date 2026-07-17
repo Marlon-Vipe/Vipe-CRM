@@ -1,5 +1,6 @@
 import { useLayoutContext } from '@/context/useLayoutContext'
 import { toTitleCase } from '@/utils/helpers'
+import { useTranslation } from 'react-i18next'
 import type { CustomizationOptionType } from '../index'
 
 import horizontalImg from '@/assets/images/layouts/orientation-horizontal.png'
@@ -11,6 +12,7 @@ const orientationOptions: CustomizationOptionType[] = [
 ]
 
 const Orientation = () => {
+  const { t } = useTranslation()
   const { updateSettings, orientation } = useLayoutContext()
 
   const handleOrientationChange = (value: string) => {
@@ -19,7 +21,7 @@ const Orientation = () => {
 
   return (
     <div id="orientation" className="p-3 border-bottom border-dashed">
-      <h5 className="mb-3 fw-bold">Orientation</h5>
+      <h5 className="mb-3 fw-bold">{t('layout.customizer.orientation')}</h5>
       <div className="row g-3">
         {orientationOptions &&
           orientationOptions.map((option) => (

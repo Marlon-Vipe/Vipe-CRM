@@ -1,10 +1,11 @@
 import Icon from '@/components/wrappers/Icon'
 import { getColor } from '@/utils/helpers'
 import { useMemo, useState } from 'react'
-import { Badge, Button, Card, CardBody, Col, FormCheck, Nav, NavItem, Offcanvas } from 'react-bootstrap'
+import { Badge, Card, CardBody, Col, FormCheck, Nav, NavItem, Offcanvas } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 import { getTrackBackground, Range } from 'react-range'
 import { Direction, IRenderThumbParams, IRenderTrackParams } from 'react-range/lib/types'
-import { TYPE_LABEL, STATUS_LABEL, type PropertyType } from './data'
+import { getTypeLabels, getStatusLabels, type PropertyType } from './data'
 
 const STEP = 1000
 const MIN = 0
@@ -83,7 +84,11 @@ const ProductFilter = ({
   isOffcanvasOpen: boolean
   setIsOffcanvasOpen: (value: boolean) => void
 }) => {
+  const { t } = useTranslation()
   const [values, setValues] = useState([0, 5000000])
+
+  const typeLabels = getTypeLabels(t)
+  const statusLabels = getStatusLabels(t)
 
   const typeCounts = useMemo(() => countBy(properties, (p) => p.type), [properties])
   const statusCounts = useMemo(() => countBy(properties, (p) => p.status), [properties])
@@ -96,19 +101,19 @@ const ProductFilter = ({
           <CardBody className="p-0">
             <div className="p-3 border-bottom border-dashed">
               <div className="app-search">
-                <input type="search" className="form-control" placeholder="Buscar propiedad..." />
+                <input type="search" className="form-control" placeholder={t('crm.properties.filter.searchPlaceholder')} />
                 <Icon icon="search" className="app-search-icon text-muted" />
               </div>
             </div>
 
             <div className="p-3 border-bottom border-dashed">
               <div className="d-flex mb-2 justify-content-between align-items-center">
-                <h5 className="mb-0">Tipo:</h5>
+                <h5 className="mb-0">{t('crm.properties.filter.type')}</h5>
               </div>
               <Nav className="flex-column">
-                {(Object.keys(TYPE_LABEL) as Array<keyof typeof TYPE_LABEL>).map((id) => (
+                {(Object.keys(typeLabels) as Array<keyof typeof typeLabels>).map((id) => (
                   <NavItem key={id} className="d-flex align-items-center gap-2 text-muted py-1">
-                    <FormCheck type="checkbox" id={`type-${id}`} label={TYPE_LABEL[id]} className="form-check-label flex-grow-1" />
+                    <FormCheck type="checkbox" id={`type-${id}`} label={typeLabels[id]} className="form-check-label flex-grow-1" />
                     <Badge bg="light" text="dark" className="ms-2 text-bg-light">
                       {typeCounts[id] || 0}
                     </Badge>
@@ -119,12 +124,12 @@ const ProductFilter = ({
 
             <div className="p-3 border-bottom border-dashed">
               <div className="d-flex mb-2 justify-content-between align-items-center">
-                <h5 className="mb-0">Estatus:</h5>
+                <h5 className="mb-0">{t('crm.properties.filter.status')}</h5>
               </div>
 
-              {(Object.keys(STATUS_LABEL) as Array<keyof typeof STATUS_LABEL>).map((id) => (
+              {(Object.keys(statusLabels) as Array<keyof typeof statusLabels>).map((id) => (
                 <NavItem key={id} className="d-flex align-items-center gap-2 text-muted py-1">
-                  <FormCheck type="checkbox" id={`status-${id}`} label={STATUS_LABEL[id]} className="flex-grow-1" />
+                  <FormCheck type="checkbox" id={`status-${id}`} label={statusLabels[id]} className="flex-grow-1" />
                   <Badge bg="light" text="dark" className="ms-2 text-bg-light">
                     {statusCounts[id] || 0}
                   </Badge>
@@ -133,7 +138,7 @@ const ProductFilter = ({
             </div>
 
             <div className="p-3 border-bottom">
-              <h5 className="mb-0">Precio (RD$):</h5>
+              <h5 className="mb-0">{t('crm.properties.filter.price')}</h5>
 
               <Range step={STEP} min={MIN} max={MAX} values={values} onChange={(values) => setValues(values)} renderTrack={(params) => renderTrack({ ...params, values })} renderThumb={renderThumb} />
 
@@ -141,7 +146,7 @@ const ProductFilter = ({
                 <div className="form-control form-control-sm text-center" id="price-filter-low">
                   {values[0].toLocaleString('es-DO')}
                 </div>
-                <span className="fw-semibold text-muted">a</span>
+                <span className="fw-semibold text-muted">{t('crm.properties.filter.priceRangeTo')}</span>
                 <div className="form-control form-control-sm text-center" id="price-filter-high">
                   {values[1].toLocaleString('es-DO')}
                 </div>
@@ -150,9 +155,9 @@ const ProductFilter = ({
 
             <div className="p-3">
               <div className="d-flex mb-2 justify-content-between align-items-center">
-                <h5 className="mb-0">Sector:</h5>
+                <h5 className="mb-0">{t('crm.properties.filter.sector')}</h5>
               </div>
-              {Object.keys(sectorCounts).length === 0 && <p className="text-muted fs-xs">Sin sectores registrados todavía.</p>}
+              {Object.keys(sectorCounts).length === 0 && <p className="text-muted fs-xs">{t('crm.properties.filter.noSectors')}</p>}
               {Object.entries(sectorCounts).map(([sector, count]) => (
                 <div className="form-check py-1 d-flex align-items-center gap-2" key={sector}>
                   <FormCheck type="checkbox" id={`sector-${sector}`} label={sector} className="flex-grow-1" />

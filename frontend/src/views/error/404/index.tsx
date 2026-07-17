@@ -3,9 +3,11 @@ import AuthLogo from '@/components/AuthLogo'
 import { currentYear, META_DATA } from '@/config/constants'
 import { Link } from 'react-router'
 import { Card, Col, Container, Row } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 
 const Page = () => {
+  const { t } = useTranslation()
   return (
     <>
       <div className="auth-box overflow-hidden align-items-center d-flex">
@@ -21,13 +23,13 @@ const Page = () => {
                 </div>
                 <div className="p-4 text-center">
                   <div className="error-text-alt fs-72 text-warning">404</div>
-                  <h3 className="fw-bold text-uppercase">Page Not Found</h3>
-                  <p className="text-muted fs-5">The page you're looking for can't be found. It may be missing or the URL is incorrect.</p>
+                  <h3 className="fw-bold text-uppercase">{t('errors.notFound.title')}</h3>
+                  <p className="text-muted fs-5">{t('errors.notFound.message')}</p>
                   <div className="mt-4 d-flex justify-content-center gap-1">
                     <Link className="btn btn-primary" to="/">
-                      Go Home
+                      {t('nav.dashboard')}
                     </Link>
-                    <button className="btn btn-outline-info">Search Site</button>
+                    <button className="btn btn-outline-info">{t('errors.notFound.searchSite')}</button>
                   </div>
                 </div>
               </Card>

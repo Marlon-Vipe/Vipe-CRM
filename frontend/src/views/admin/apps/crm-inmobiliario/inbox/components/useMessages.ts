@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
@@ -9,6 +10,7 @@ import type { MessageItem } from './data'
 const SERVICE_WINDOW_MS = 24 * 60 * 60 * 1000
 
 export function useMessages(conversationId: string | null) {
+  const { t } = useTranslation()
   const { tenantId, session } = useAuth()
   const [messages, setMessages] = useState<MessageItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -82,7 +84,7 @@ export function useMessages(conversationId: string | null) {
   const sendMessage = useCallback(
     async (content: string) => {
       if (!conversationId || !session) {
-        throw new Error('No hay una conversación seleccionada o tu sesión expiró. Recarga la página e intenta de nuevo.')
+        throw new Error(t('crm.messages.noConversationSession'))
       }
       setSending(true)
       try {
@@ -91,13 +93,13 @@ export function useMessages(conversationId: string | null) {
         setSending(false)
       }
     },
-    [conversationId, session]
+    [conversationId, session, t]
   )
 
   const sendTemplate = useCallback(
     async (templateId: string, variables: string[]) => {
       if (!conversationId || !session) {
-        throw new Error('No hay una conversación seleccionada o tu sesión expiró. Recarga la página e intenta de nuevo.')
+        throw new Error(t('crm.messages.noConversationSession'))
       }
       setSending(true)
       try {
@@ -106,7 +108,7 @@ export function useMessages(conversationId: string | null) {
         setSending(false)
       }
     },
-    [conversationId, session]
+    [conversationId, session, t]
   )
 
   // Mismo cálculo que el backend (SERVICE_WINDOW_MS en messages.js): si el

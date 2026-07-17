@@ -6,6 +6,7 @@ import clsx from 'clsx'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { Alert, Button, Card, CardBody, CardHeader, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Spinner } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 import { type PipelineSectionType, type PipelineTaskType } from './data'
 import DealFormModal from './DealFormModal'
@@ -16,6 +17,7 @@ import { useDeals } from './useDeals'
 export const variants = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'] as const
 
 const PipelinePage = () => {
+  const { t } = useTranslation()
   const {
     sections,
     tasks,
@@ -52,7 +54,7 @@ const PipelinePage = () => {
   }
 
   const handleDelete = async (task: PipelineTaskType) => {
-    if (!window.confirm(`¿Eliminar la negociación "${task.title}"? Esta acción no se puede deshacer.`)) return
+    if (!window.confirm(t('crm.deals.deleteConfirm', { title: task.title }))) return
     const { error } = await deleteDeal(task.id)
     if (error) {
       setErrorMessage(error)
@@ -70,7 +72,7 @@ const PipelinePage = () => {
   }
 
   const handleDeleteStage = async (stage: PipelineSectionType) => {
-    if (!window.confirm(`¿Eliminar la etapa "${stage.title}"?`)) return
+    if (!window.confirm(t('crm.deals.deleteStageConfirm', { title: stage.title }))) return
     const { error } = await deleteStage(stage.id)
     if (error) {
       setErrorMessage(error)
@@ -90,7 +92,7 @@ const PipelinePage = () => {
       <div className="text-center py-5">
         <p className="text-danger mb-3">{loadError}</p>
         <Button variant="primary" onClick={reload}>
-          Reintentar
+          {t('common.retry')}
         </Button>
       </div>
     )
@@ -153,23 +155,24 @@ const PipelineHeader = ({
   searchTerm: string
   onSearchChange: (value: string) => void
 }) => {
+  const { t } = useTranslation()
   return (
     <CardHeader className="d-flex border-light align-items-center gap-2">
       <div className="app-search d-none d-lg-block">
         <input
           type="search"
           className="form-control"
-          placeholder="Buscar negociación..."
+          placeholder={t('crm.deals.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
         />
         <Icon icon="search" className="app-search-icon text-muted" />
       </div>
       <Button variant="light" className="ms-auto" onClick={onAddStage}>
-        <Icon icon="layout-grid" className="fs-sm me-2" /> Nueva etapa
+        <Icon icon="layout-grid" className="fs-sm me-2" /> {t('crm.deals.newStage')}
       </Button>
       <Button variant="primary" onClick={onAddDeal}>
-        <Icon icon="plus" className="fs-sm me-2" /> Nueva negociación
+        <Icon icon="plus" className="fs-sm me-2" /> {t('crm.deals.newDeal')}
       </Button>
     </CardHeader>
   )
@@ -190,6 +193,7 @@ const Board = ({
   onDeleteStage: (stage: PipelineSectionType) => void
   searchTerm: string
 }) => {
+  const { t } = useTranslation()
   const { onDragEnd, sections, getAllTasksPerSection } = usePipelineContext()
   const isFiltering = Boolean(searchTerm.trim())
   const query = searchTerm.trim().toLowerCase()
@@ -202,7 +206,7 @@ const Board = ({
     <CardBody className="p-0">
       {isFiltering && (
         <p className="text-muted fs-xs px-3 pt-2 mb-0">
-          <Icon icon="info" className="me-1" /> Arrastrar para cambiar de etapa está desactivado mientras filtras — limpia la búsqueda para reordenar.
+          <Icon icon="info" className="me-1" /> {t('crm.deals.dragDisabledHint')}
         </p>
       )}
       <DragDropContext onDragEnd={onDragEnd}>
@@ -226,11 +230,11 @@ const Board = ({
                         <DropdownMenu>
                           <DropdownItem onClick={() => onEditStage(section)}>
                             <Icon icon="square-pen" className="me-2" />
-                            Editar etapa
+                            {t('crm.deals.editStage')}
                           </DropdownItem>
                           <DropdownItem className="text-danger" onClick={() => onDeleteStage(section)}>
                             <Icon icon="trash-2" className="me-2" />
-                            Eliminar etapa
+                            {t('crm.deals.deleteStage')}
                           </DropdownItem>
                         </DropdownMenu>
                       </Dropdown>
@@ -269,6 +273,7 @@ const TaskItem = ({
   onEdit: (task: PipelineTaskType) => void
   onDelete: (task: PipelineTaskType) => void
 }) => {
+  const { t } = useTranslation()
   return (
     <>
       <Card className="shadow mb-2">
@@ -289,11 +294,11 @@ const TaskItem = ({
               <DropdownMenu align="end">
                 <DropdownItem onClick={() => onEdit(item)}>
                   <Icon icon="square-pen" className="me-2" />
-                  Editar
+                  {t('common.edit')}
                 </DropdownItem>
                 <DropdownItem className="text-danger" onClick={() => onDelete(item)}>
                   <Icon icon="trash-2" className="me-2" />
-                  Eliminar
+                  {t('common.delete')}
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>

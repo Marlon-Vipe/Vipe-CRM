@@ -26,6 +26,8 @@ interface Membership {
   tenants: Tenant | null
 }
 
+export type MembershipErrorCode = 'loadFailed' | 'signupIncomplete'
+
 export interface AuthContextValue {
   session: Session | null
   user: User | null
@@ -33,7 +35,7 @@ export interface AuthContextValue {
   role: MembershipRole | null
   tenant: Tenant | null
   loading: boolean
-  membershipError: string | null
+  membershipError: MembershipErrorCode | null
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>
   signUp: (
     email: string,
@@ -58,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null)
   const [membership, setMembership] = useState<Membership | null>(null)
   const [loading, setLoading] = useState(true)
-  const [membershipError, setMembershipError] = useState<string | null>(null)
+  const [membershipError, setMembershipError] = useState<MembershipErrorCode | null>(null)
   // getSession() y onAuthStateChange pueden disparar casi al mismo tiempo al
   // montar; este ref evita lanzar dos completeSignup en paralelo para el
   // mismo email (la constraint memberships_user_id_unique es el respaldo
@@ -85,7 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // siempre sin ninguna pista visible — cada pantalla protegida queda
       // con su hook de datos esperando un tenantId que nunca llega (spinner
       // infinito, ver MainLayout.tsx).
-      setMembershipError('No se pudo cargar la información de tu cuenta. Verifica tu conexión e intenta de nuevo.')
+      setMembershipError('loadFailed')
       return null
     }
     setMembershipError(null)
@@ -121,7 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error al completar el signup pendiente:', (error as Error).message)
-        setMembershipError('No se pudo terminar de configurar tu cuenta. Intenta cerrar sesión y volver a entrar; si el problema sigue, contáctanos.')
+        setMembershipError('signupIncomplete')
       } finally {
         pendingSignupInFlight.current.delete(email)
       }

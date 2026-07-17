@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
@@ -7,6 +8,7 @@ import type { MembershipRole, PendingInvitation, TeamMember } from './data'
 
 export function useTeam() {
   const { tenantId } = useAuth()
+  const { t } = useTranslation()
   const [members, setMembers] = useState<TeamMember[]>([])
   const [invitations, setInvitations] = useState<PendingInvitation[]>([])
   const [loading, setLoading] = useState(true)
@@ -33,7 +35,7 @@ export function useTeam() {
     if (firstError) {
       // eslint-disable-next-line no-console
       console.error('Error al cargar el equipo:', firstError.message)
-      setError('No se pudo cargar el equipo. Intenta de nuevo.')
+      setError(t('team.loadError'))
       setLoading(false)
       hasLoadedOnce.current = true
       return
@@ -67,7 +69,7 @@ export function useTeam() {
 
     setLoading(false)
     hasLoadedOnce.current = true
-  }, [tenantId])
+  }, [tenantId, t])
 
   useEffect(() => {
     load()

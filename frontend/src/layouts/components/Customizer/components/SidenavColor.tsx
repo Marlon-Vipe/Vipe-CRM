@@ -5,6 +5,7 @@ import imageImg from '@/assets/images/layouts/sidenav-color-image.png'
 import lightImg from '@/assets/images/layouts/sidenav-color-light.png'
 import { useLayoutContext } from '@/context/useLayoutContext'
 import { toTitleCase } from '@/utils/helpers'
+import { useTranslation } from 'react-i18next'
 import type { CustomizationOptionType } from '../index'
 
 const sidenavColorOptions: CustomizationOptionType[] = [
@@ -16,6 +17,7 @@ const sidenavColorOptions: CustomizationOptionType[] = [
 ]
 
 const SidenavColor = () => {
+  const { t } = useTranslation()
   const { updateSettings, sidenavColor } = useLayoutContext()
 
   const handleSidenavColorChange = (value: string) => {
@@ -24,7 +26,7 @@ const SidenavColor = () => {
 
   return (
     <div id="sidenav-color" className="p-3 border-bottom border-dashed">
-      <h5 className="mb-3 fw-bold">Sidenav Color</h5>
+      <h5 className="mb-3 fw-bold">{t('layout.customizer.sidenavColor')}</h5>
       <div className="row g-3">
         {sidenavColorOptions &&
           sidenavColorOptions.map((option) => (

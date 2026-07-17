@@ -2,8 +2,9 @@ import { useAuth } from '@/hooks/useAuth'
 import { createInvitation } from '@/lib/api'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Alert, Button, Form, FormControl, FormLabel, FormSelect, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
-import { ROLE_LABELS, type MembershipRole } from './data'
+import type { MembershipRole } from './data'
 
 interface Props {
   show: boolean
@@ -12,6 +13,7 @@ interface Props {
 }
 
 const InviteFormModal = ({ show, onHide, onSaved }: Props) => {
+  const { t } = useTranslation()
   const { session } = useAuth()
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<MembershipRole>('agent')
@@ -54,37 +56,32 @@ const InviteFormModal = ({ show, onHide, onSaved }: Props) => {
   return (
     <Modal show={show} onHide={onHide}>
       <ModalHeader closeButton>
-        <ModalTitle as="h5">Invitar agente</ModalTitle>
+        <ModalTitle as="h5">{t('team.inviteAgent')}</ModalTitle>
       </ModalHeader>
       <Form onSubmit={handleSubmit}>
         <ModalBody>
           {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
-          {emailSent === false && (
-            <Alert variant="warning">
-              La invitación se creó, pero no se pudo enviar el email automáticamente. Usa "Copiar enlace" en la lista de invitaciones
-              pendientes para compartirla manualmente.
-            </Alert>
-          )}
+          {emailSent === false && <Alert variant="warning">{t('team.emailNotSentWarning')}</Alert>}
           <div className="mb-3">
             <FormLabel>
-              Correo electrónico <span className="text-danger">*</span>
+              {t('auth.fields.email')} <span className="text-danger">*</span>
             </FormLabel>
             <FormControl type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="mb-0">
-            <FormLabel>Rol</FormLabel>
+            <FormLabel>{t('team.role')}</FormLabel>
             <FormSelect value={role} onChange={(e) => setRole(e.target.value as MembershipRole)}>
-              <option value="agent">{ROLE_LABELS.agent}</option>
-              <option value="admin">{ROLE_LABELS.admin}</option>
+              <option value="agent">{t('common.roles.agent')}</option>
+              <option value="admin">{t('common.roles.admin')}</option>
             </FormSelect>
           </div>
         </ModalBody>
         <ModalFooter>
           <Button variant="light" onClick={onHide} type="button">
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button variant="primary" type="submit" disabled={submitting}>
-            {submitting ? 'Enviando...' : 'Crear invitación'}
+            {submitting ? t('common.sending') : t('team.createInvitation')}
           </Button>
         </ModalFooter>
       </Form>

@@ -4,8 +4,10 @@ import HorizontalLayout from '@/layouts/HorizontalLayout'
 import VerticalLayout from '@/layouts/VerticalLayout'
 import { Outlet } from 'react-router'
 import { Button, Spinner } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 const MainLayout = () => {
+  const { t } = useTranslation()
   const { orientation } = useLayoutContext()
   const { isAuthenticated, loading, tenantId, membershipError, refreshMembership } = useAuth()
 
@@ -23,15 +25,15 @@ const MainLayout = () => {
       <div className="d-flex flex-column align-items-center justify-content-center vh-100 text-center px-3">
         {membershipError ? (
           <>
-            <p className="text-danger mb-3">{membershipError}</p>
+            <p className="text-danger mb-3">{t(`layout.membershipError.${membershipError}`)}</p>
             <Button variant="primary" onClick={() => refreshMembership()}>
-              Reintentar
+              {t('common.retry')}
             </Button>
           </>
         ) : (
           <>
             <Spinner animation="border" variant="primary" className="mb-3" />
-            <p className="text-muted mb-0">Configurando tu cuenta...</p>
+            <p className="text-muted mb-0">{t('layout.settingUpAccount')}</p>
           </>
         )}
       </div>

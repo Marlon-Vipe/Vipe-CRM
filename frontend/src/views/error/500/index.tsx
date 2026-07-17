@@ -2,9 +2,11 @@ import AuthImage from '@/assets/images/auth-card-bg.svg'
 import AuthLogo from '@/components/AuthLogo'
 import { currentYear, META_DATA } from '@/config/constants'
 import { Button, Card, Col, Container, Row } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 
 const Page = () => {
+  const { t } = useTranslation()
   return (
     <>
       <div className="auth-box overflow-hidden align-items-center d-flex">
@@ -20,11 +22,11 @@ const Page = () => {
                 </div>
                 <div className="p-4 text-center">
                   <div className="error-text-alt fs-72 text-danger">500</div>
-                  <h3 className="fw-bold text-uppercase">Internal Server Error</h3>
-                  <p className="text-muted fs-5">Something went wrong on our end. Please try again later or contact support if the issue persists.</p>
+                  <h3 className="fw-bold text-uppercase">{t('errors.serverError.title')}</h3>
+                  <p className="text-muted fs-5">{t('errors.serverError.message')}</p>
                   <div className="mt-4 d-flex justify-content-center gap-1">
-                    <Button variant="primary">Retry</Button>
-                    <Button variant="outline-info">Contact Support</Button>
+                    <Button variant="primary">{t('common.retry')}</Button>
+                    <Button variant="outline-info">{t('errors.contactSupport')}</Button>
                   </div>
                 </div>
               </Card>

@@ -3,9 +3,11 @@ import AuthLogo from '@/components/AuthLogo'
 import { currentYear, META_DATA } from '@/config/constants'
 import { Link } from 'react-router'
 import { Card, Col, Container, Row } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 
 const Page = () => {
+  const { t } = useTranslation()
   return (
     <>
       <div className="auth-box overflow-hidden align-items-center d-flex">
@@ -21,13 +23,13 @@ const Page = () => {
                 </div>
                 <div className="p-4 text-center">
                   <div className="error-text-alt fs-72 text-warning">408</div>
-                  <h3 className="fw-bold text-uppercase">Request Timeout</h3>
-                  <p className="text-muted fs-5">The server timed out waiting for your request. Please try again or check your connection.</p>
+                  <h3 className="fw-bold text-uppercase">{t('errors.timeout.title')}</h3>
+                  <p className="text-muted fs-5">{t('errors.timeout.message')}</p>
                   <div className="mt-4 d-flex justify-content-center gap-1">
                     <Link to="/" className="btn btn-primary">
-                      Retry
+                      {t('common.retry')}
                     </Link>
-                    <button className="btn btn-outline-info">Contact Support</button>
+                    <button className="btn btn-outline-info">{t('errors.contactSupport')}</button>
                   </div>
                 </div>
               </Card>

@@ -4,8 +4,10 @@ import { translateAuthError } from '@/utils/authErrors'
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router'
 import { Alert, Button, Form, FormControl, FormLabel, Spinner } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 const NewPassForm = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [checkingSession, setCheckingSession] = useState(true)
   const [hasRecoverySession, setHasRecoverySession] = useState(false)
@@ -44,11 +46,11 @@ const NewPassForm = () => {
     setErrorMessage('')
 
     if (password !== confirmPassword) {
-      setErrorMessage('Las contraseñas no coinciden.')
+      setErrorMessage(t('auth.newPass.passwordsDontMatch'))
       return
     }
     if (password.length < 6) {
-      setErrorMessage('La contraseña debe tener al menos 6 caracteres.')
+      setErrorMessage(t('auth.newPass.passwordTooShort'))
       return
     }
 
@@ -57,7 +59,7 @@ const NewPassForm = () => {
     setSubmitting(false)
 
     if (error) {
-      setErrorMessage(translateAuthError(error.message))
+      setErrorMessage(translateAuthError(t, error.message))
       return
     }
 
@@ -75,9 +77,9 @@ const NewPassForm = () => {
   if (!hasRecoverySession) {
     return (
       <Alert variant="warning">
-        Este enlace no es válido o ya expiró.{' '}
+        {t('auth.newPass.invalidOrExpiredLink')}{' '}
         <Link to="/auth/reset-pass" className="fw-semibold text-decoration-underline">
-          Solicita uno nuevo
+          {t('auth.newPass.requestNewLink')}
         </Link>
         .
       </Alert>
@@ -90,7 +92,7 @@ const NewPassForm = () => {
       <div className="mb-3" data-password="bar">
         <PasswordInputWithStrength
           id="newPassword"
-          label="Nueva contraseña"
+          label={t('auth.newPass.newPassword')}
           name="new-password"
           password={password}
           setPassword={setPassword}
@@ -100,13 +102,13 @@ const NewPassForm = () => {
       </div>
       <div className="mb-3">
         <FormLabel>
-          Confirmar contraseña <span className="text-danger">*</span>
+          {t('auth.newPass.confirmPassword')} <span className="text-danger">*</span>
         </FormLabel>
         <FormControl type="password" placeholder="••••••••" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
       </div>
       <div className="d-grid">
         <Button variant="primary" type="submit" className="fw-semibold py-2" disabled={submitting}>
-          {submitting ? 'Guardando...' : 'Actualizar contraseña'}
+          {submitting ? t('common.saving') : t('auth.newPass.submit')}
         </Button>
       </div>
     </Form>

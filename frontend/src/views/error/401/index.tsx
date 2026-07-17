@@ -3,9 +3,11 @@ import AuthLogo from '@/components/AuthLogo'
 import { currentYear, META_DATA } from '@/config/constants'
 import { Link } from 'react-router'
 import { Card, Col, Container, Row } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 
 const Page = () => {
+  const { t } = useTranslation()
   return (
     <>
       <div className="auth-box overflow-hidden align-items-center d-flex">
@@ -21,10 +23,10 @@ const Page = () => {
                 </div>
                 <div className="p-2 text-center">
                   <div className="error-text-alt fs-72">401</div>
-                  <h3 className="fw-bold text-uppercase">Unauthorized</h3>
-                  <p className="text-muted">You are not authorized to access this page.</p>
+                  <h3 className="fw-bold text-uppercase">{t('errors.unauthorized.title')}</h3>
+                  <p className="text-muted">{t('errors.unauthorized.message')}</p>
                   <Link className="btn btn-primary mt-3 rounded-pill" to="/">
-                    Go Home
+                    {t('nav.dashboard')}
                   </Link>
                 </div>
               </Card>

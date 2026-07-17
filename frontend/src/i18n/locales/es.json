@@ -1,0 +1,483 @@
+{
+  "common": {
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "create": "Crear",
+    "search": "Buscar",
+    "retry": "Reintentar",
+    "loading": "Cargando...",
+    "sending": "Enviando...",
+    "connecting": "Conectando...",
+    "logout": "Cerrar sesión",
+    "confirm": "Confirmar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "yes": "Sí",
+    "no": "No",
+    "required": "Requerido",
+    "optional": "Opcional",
+    "noResults": "No hay resultados.",
+    "genericError": "Ocurrió un error. Intenta de nuevo.",
+    "unsavedChanges": "Tienes cambios sin guardar.",
+    "defaultUser": "Usuario",
+    "yourAgency": "Tu agencia",
+    "roles": {
+      "owner": "dueño",
+      "admin": "administrador",
+      "agent": "agente"
+    }
+  },
+  "nav": {
+    "main": "Principal",
+    "dashboard": "Dashboard",
+    "crmGroup": "CRM Inmobiliario",
+    "contacts": "Contactos",
+    "properties": "Propiedades",
+    "deals": "Negociaciones",
+    "messages": "Mensajes",
+    "account": "Cuenta",
+    "team": "Equipo",
+    "profileBilling": "Perfil y facturación"
+  },
+  "layout": {
+    "settingUpAccount": "Configurando tu cuenta...",
+    "membershipError": {
+      "loadFailed": "No se pudo cargar la información de tu cuenta. Verifica tu conexión e intenta de nuevo.",
+      "signupIncomplete": "No se pudo terminar de configurar tu cuenta. Intenta cerrar sesión y volver a entrar; si el problema sigue, contáctanos."
+    },
+    "quickSearch": "Buscar rápido...",
+    "theme": {
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema"
+    },
+    "customizer": {
+      "title": "Personalizar panel",
+      "subtitle": "Configura fácilmente el diseño, los estilos y las preferencias de tu interfaz.",
+      "reset": "Restablecer",
+      "direction": "Dirección del diseño",
+      "orientation": "Orientación",
+      "position": "Posición del diseño",
+      "fixed": "Fijo",
+      "scrollable": "Con desplazamiento",
+      "sidenavColor": "Color del menú lateral",
+      "sidebarSize": "Tamaño del menú lateral",
+      "sidebarUserInfo": "Mostrar usuario en el menú lateral",
+      "selectTheme": "Selecciona el tema",
+      "colorScheme": "Esquema de color",
+      "topbarColor": "Color de la barra superior",
+      "layoutWidth": "Ancho del diseño"
+    }
+  },
+  "auth": {
+    "signIn": {
+      "subtitle": "Ingresa tu correo y contraseña para continuar.",
+      "newHere": "¿Nuevo por aquí?",
+      "createAccount": "Crea una cuenta",
+      "rememberMe": "Mantener sesión iniciada",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "signingIn": "Ingresando...",
+      "submit": "Iniciar sesión"
+    },
+    "signUp": {
+      "subtitle": "Completa tus datos para continuar.",
+      "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+      "signInLink": "Inicia sesión",
+      "agencyName": "Nombre de la agencia",
+      "fullName": "Tu nombre completo",
+      "acceptTerms": "Acepto los Términos y Condiciones",
+      "mustAcceptTerms": "Debes aceptar los Términos y Condiciones para continuar.",
+      "enterAgencyName": "Ingresa el nombre de tu agencia.",
+      "joinAgency": "Unirme a la agencia",
+      "createAgency": "Crear agencia",
+      "genericError": "No se pudo completar el registro.",
+      "confirmationSentPrefix": "Te enviamos un correo de confirmación a",
+      "confirmationSentAction": "Abre el enlace para activar tu cuenta {{suffix}}",
+      "confirmationSuffixInvite": "y unirte a la agencia.",
+      "confirmationSuffixNew": "y completar la creación de tu agencia.",
+      "invitedTo": "Te invitaron a unirte a {{tenant}}.",
+      "invitationErrorSuffix": "Puedes crear una agencia nueva completando el formulario."
+    },
+    "resetPass": {
+      "subtitle": "Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.",
+      "backTo": "Volver a",
+      "sendingLink": "Enviando...",
+      "submit": "Enviar enlace de recuperación",
+      "sent": "Si {{email}} tiene una cuenta con nosotros, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada (y la carpeta de spam)."
+    },
+    "newPass": {
+      "subtitle": "Elige tu nueva contraseña.",
+      "newPassword": "Nueva contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "passwordsDontMatch": "Las contraseñas no coinciden.",
+      "passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
+      "submit": "Actualizar contraseña",
+      "invalidOrExpiredLink": "Este enlace no es válido o ya expiró.",
+      "requestNewLink": "Solicita uno nuevo"
+    },
+    "fields": {
+      "email": "Correo electrónico",
+      "password": "Contraseña"
+    },
+    "passwordHint": "Usa 8+ caracteres con letras, números y símbolos.",
+    "errors": {
+      "invalidCredentials": "Correo o contraseña incorrectos.",
+      "emailNotConfirmed": "Debes confirmar tu correo antes de iniciar sesión. Revisa tu bandeja de entrada.",
+      "userAlreadyRegistered": "Ya existe una cuenta con este correo.",
+      "passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
+      "invalidEmailFormat": "El formato del correo electrónico no es válido.",
+      "rateLimitExceeded": "Se enviaron demasiados correos. Espera unos minutos antes de intentar de nuevo.",
+      "signupsDisabled": "El registro de nuevas cuentas no está habilitado.",
+      "securityWait": "Por seguridad, espera unos segundos antes de intentar de nuevo."
+    }
+  },
+  "activity": {
+    "types": {
+      "llamada": "Llamada",
+      "visita": "Visita",
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "tarea_general": "Tarea general"
+    },
+    "status": {
+      "pendiente": "Pendiente",
+      "completada": "Completada",
+      "cancelada": "Cancelada"
+    }
+  },
+  "crm": {
+    "activityForm": {
+      "title": "Nueva actividad",
+      "type": "Tipo",
+      "dueDate": "Fecha/hora (opcional)",
+      "notes": "Notas"
+    },
+    "contacts": {
+      "count": "{{count}} Contacto",
+      "count_other": "{{count}} Contactos",
+      "addContact": "Agregar contacto",
+      "noContacts": "Todavía no hay contactos registrados para tu agencia.",
+      "loadError": "No se pudieron cargar los contactos. Intenta de nuevo.",
+      "deleteConfirm": "¿Eliminar a {{name}}? Esta acción no se puede deshacer.",
+      "sourcePrefix": "Origen:",
+      "deals": "Negociaciones",
+      "pendingActivities": "Actividades pendientes",
+      "detail": {
+        "title": "Contacto",
+        "notFound": "No se encontró el contacto.",
+        "loadError": "No se pudo cargar el contacto. Intenta de nuevo.",
+        "contactData": "Datos del contacto",
+        "noEmail": "Sin correo registrado",
+        "noPhone": "Sin teléfono registrado",
+        "activities": "Actividades",
+        "newActivity": "Nueva",
+        "noActivities": "Sin actividades registradas.",
+        "conversations": "Conversaciones",
+        "noConversations": "Sin conversaciones registradas.",
+        "viewInInbox": "Ver en bandeja",
+        "channel": "Canal",
+        "deleteActivityConfirm": "¿Eliminar esta actividad?"
+      },
+      "form": {
+        "editTitle": "Editar contacto",
+        "createTitle": "Nuevo contacto",
+        "name": "Nombre",
+        "nameRequired": "El nombre es requerido.",
+        "phone": "Teléfono",
+        "phoneHint": "Se guarda en formato internacional (+1...) para que coincida con los mensajes de WhatsApp de este contacto.",
+        "type": "Tipo",
+        "typeUnspecified": "Sin especificar",
+        "source": "Origen"
+      },
+      "types": {
+        "comprador": "Comprador",
+        "vendedor": "Vendedor",
+        "arrendatario": "Arrendatario"
+      },
+      "sources": {
+        "web": "Web",
+        "referido": "Referido",
+        "portal": "Portal inmobiliario",
+        "whatsapp": "WhatsApp",
+        "instagram": "Instagram",
+        "facebook": "Facebook",
+        "walk_in": "Visita directa",
+        "otro": "Otro"
+      },
+      "channels": {
+        "whatsapp": "WhatsApp",
+        "instagram": "Instagram",
+        "messenger": "Messenger"
+      }
+    },
+    "deals": {
+      "searchPlaceholder": "Buscar negociación...",
+      "newStage": "Nueva etapa",
+      "newDeal": "Nueva negociación",
+      "dragDisabledHint": "Arrastrar para cambiar de etapa está desactivado mientras filtras — limpia la búsqueda para reordenar.",
+      "editStage": "Editar etapa",
+      "deleteStage": "Eliminar etapa",
+      "deleteConfirm": "¿Eliminar la negociación \"{{title}}\"? Esta acción no se puede deshacer.",
+      "deleteStageConfirm": "¿Eliminar la etapa \"{{title}}\"?",
+      "loadError": "No se pudo cargar el pipeline de negociaciones. Intenta de nuevo.",
+      "noPropertyAssociated": "Sin propiedad asociada",
+      "noPropertyTitle": "Negociación sin propiedad asociada",
+      "noContact": "Sin contacto",
+      "missingTenant": "Falta el tenant.",
+      "moveStageError": "No se pudo mover la negociación a la nueva etapa. Intenta de nuevo.",
+      "cannotDeleteStageWithDeals": "No puedes eliminar una etapa que todavía tiene negociaciones. Mueve o elimina esas negociaciones primero.",
+      "form": {
+        "editTitle": "Editar negociación",
+        "createTitle": "Nueva negociación",
+        "contactAndStageRequired": "El contacto y la etapa son requeridos.",
+        "contact": "Contacto",
+        "selectContact": "Selecciona un contacto",
+        "property": "Propiedad",
+        "stage": "Etapa",
+        "selectStage": "Selecciona una etapa",
+        "valueEstimate": "Valor estimado (RD$)",
+        "expectedCloseDate": "Fecha estimada de cierre"
+      },
+      "stageForm": {
+        "editTitle": "Editar etapa",
+        "createTitle": "Nueva etapa",
+        "name": "Nombre",
+        "nameRequired": "El nombre de la etapa es requerido."
+      },
+      "detail": {
+        "title": "Negociación",
+        "notFound": "No se encontró la negociación.",
+        "loadError": "No se pudo cargar la negociación. Intenta de nuevo.",
+        "notSet": "Sin definir",
+        "dealData": "Datos de la negociación",
+        "contact": "Contacto",
+        "noContact": "Sin contacto asociado",
+        "property": "Propiedad",
+        "valueEstimate": "Valor estimado",
+        "expectedCloseDate": "Fecha estimada de cierre",
+        "assignedAgent": "Agente asignado",
+        "unassigned": "Sin asignar",
+        "createdOn": "Creada el",
+        "actions": "Acciones",
+        "backToPipeline": "Volver al pipeline",
+        "viewContact": "Ver contacto",
+        "activities": "Actividades",
+        "newActivity": "Nueva",
+        "noActivities": "Sin actividades registradas.",
+        "deleteActivityConfirm": "¿Eliminar esta actividad?",
+        "stageHistory": "Historial de etapa",
+        "noStageHistory": "Sin cambios de etapa registrados.",
+        "createdInStage": "Creada en {{stage}}"
+      }
+    },
+    "dashboard": {
+      "newLeads": "Leads nuevos (últimos 7 días)",
+      "activeProperties": "Propiedades activas",
+      "openDeals": "Negociaciones activas",
+      "pendingActivities": "Actividades pendientes",
+      "dealsByStage": "Negociaciones por etapa",
+      "noDeals": "Todavía no hay negociaciones registradas.",
+      "upcomingActivities": "Próximas actividades pendientes",
+      "noPendingActivities": "No hay actividades pendientes.",
+      "noDate": "Sin fecha",
+      "loadError": "No se pudieron cargar las métricas del dashboard. Intenta de nuevo."
+    },
+    "properties": {
+      "count": "{{count}} Propiedad",
+      "count_other": "{{count}} Propiedades",
+      "addProperty": "Agregar propiedad",
+      "noProperties": "Todavía no hay propiedades registradas para tu agencia.",
+      "loadError": "No se pudieron cargar las propiedades. Intenta de nuevo.",
+      "deleteConfirm": "¿Eliminar esta propiedad? Esta acción no se puede deshacer.",
+      "priceOnRequest": "Precio a consultar",
+      "sectorUnspecified": "Sector sin especificar",
+      "types": {
+        "venta": "Venta",
+        "alquiler": "Alquiler"
+      },
+      "status": {
+        "disponible": "Disponible",
+        "reservada": "Reservada",
+        "vendida": "Vendida",
+        "alquilada": "Alquilada"
+      },
+      "filter": {
+        "searchPlaceholder": "Buscar propiedad...",
+        "type": "Tipo:",
+        "status": "Estatus:",
+        "price": "Precio (RD$):",
+        "priceRangeTo": "a",
+        "sector": "Sector:",
+        "noSectors": "Sin sectores registrados todavía."
+      },
+      "form": {
+        "editTitle": "Editar propiedad",
+        "createTitle": "Nueva propiedad",
+        "propertyData": "Datos de la propiedad",
+        "titleLabel": "Título",
+        "titleRequired": "El título es requerido.",
+        "type": "Tipo",
+        "status": "Estatus",
+        "price": "Precio",
+        "currency": "Moneda",
+        "address": "Dirección",
+        "sector": "Sector",
+        "city": "Ciudad",
+        "bedrooms": "Habitaciones",
+        "bathrooms": "Baños",
+        "area": "Área (m²)",
+        "areaShort": "Área",
+        "photos": "Fotos",
+        "deletePhotoConfirm": "¿Eliminar esta foto?",
+        "invalidNumber": "\"{{field}}\" debe ser un número válido.",
+        "createError": "No se pudo crear la propiedad.",
+        "uploadFailed": "La propiedad se guardó, pero falló la carga de \"{{fileName}}\":",
+        "newFilesSelected": "{{count}} archivo(s) nuevo(s) seleccionados."
+      }
+    },
+    "messages": {
+      "loadError": "No se pudieron cargar las conversaciones. Intenta de nuevo.",
+      "noConversations": "Todavía no hay conversaciones para tu agencia.",
+      "noMessages": "No hay mensajes en esta conversación.",
+      "noTextContent": "Mensaje sin contenido de texto ({{type}})",
+      "typePlaceholder": "Escribe un mensaje...",
+      "send": "Enviar",
+      "searchPlaceholder": "Buscar conversación...",
+      "noSearchResults": "Ninguna conversación coincide con la búsqueda.",
+      "unknownContact": "Contacto desconocido",
+      "noConversationSession": "No hay una conversación seleccionada o tu sesión expiró. Recarga la página e intenta de nuevo.",
+      "viewContact": "Ver contacto",
+      "noLinkedContact": "Sin contacto vinculado",
+      "serviceWindowExpired": "Pasaron más de 24h desde el último mensaje de este contacto — WhatsApp exige usar una plantilla aprobada.",
+      "loadingTemplates": "Cargando plantillas...",
+      "noTemplates": "Tu agencia todavía no tiene plantillas registradas. Agrégalas en Perfil y facturación → Canal de WhatsApp.",
+      "templateLabel": "Plantilla",
+      "selectTemplatePlaceholder": "Selecciona una plantilla...",
+      "sendTemplate": "Enviar plantilla",
+      "status": {
+        "abierta": "Abierta",
+        "cerrada": "Cerrada"
+      }
+    }
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "count": "{{count}} notificación",
+    "count_other": "{{count}} notificaciones",
+    "empty": "No hay notificaciones.",
+    "markAllSeen": "Marcar todas como vistas",
+    "types": {
+      "new_message": "Nuevo mensaje de WhatsApp",
+      "new_lead": "Nuevo lead por WhatsApp",
+      "invitation_accepted": "Se unió al equipo como {{role}}",
+      "activity_due": "Actividad vencida"
+    }
+  },
+  "team": {
+    "membersHeader": "Miembros ({{count}})",
+    "pendingInvitationsHeader": "Invitaciones pendientes ({{count}})",
+    "inviteAgent": "Invitar agente",
+    "noPendingInvitations": "No hay invitaciones pendientes.",
+    "copyLink": "Copiar enlace",
+    "copied": "Copiado",
+    "revokeConfirm": "¿Revocar esta invitación?",
+    "loadError": "No se pudo cargar el equipo. Intenta de nuevo.",
+    "role": "Rol",
+    "createInvitation": "Crear invitación",
+    "emailNotSentWarning": "La invitación se creó, pero no se pudo enviar el email automáticamente. Usa \"Copiar enlace\" en la lista de invitaciones pendientes para compartirla manualmente."
+  },
+  "profileBilling": {
+    "billing": {
+      "title": "Plan y facturación",
+      "plans": {
+        "starter": "Starter",
+        "pro": "Pro",
+        "agencia": "Agencia"
+      },
+      "status": {
+        "trial": "En prueba",
+        "activa": "Activa",
+        "vencida": "Vencida",
+        "cancelada": "Cancelada"
+      },
+      "notConfigured": "La facturación todavía no está conectada a un proveedor de pagos. Puedes seguir usando el CRM con normalidad — esto solo afecta la posibilidad de actualizar el plan o gestionar el método de pago desde aquí.",
+      "currentPlanLabel": "Plan actual",
+      "renewsOn": "Se renueva el {{date}}.",
+      "suspendedWarning": "La suscripción de tu agencia está vencida. No se pueden crear nuevos contactos, propiedades ni negociaciones hasta ponerse al día con el pago.",
+      "subscribeButton": "Suscribirme a {{plan}}",
+      "redirecting": "Redirigiendo...",
+      "managePayment": "Gestionar método de pago",
+      "ownerOnly": "Solo el dueño de la agencia puede gestionar la facturación."
+    },
+    "whatsapp": {
+      "title": "Canal de WhatsApp",
+      "status": {
+        "activo": "Activo",
+        "conectando": "Conectando",
+        "desconectado": "Desconectado",
+        "error": "Error"
+      },
+      "noChannels": "Todavía no has conectado ningún número de WhatsApp.",
+      "disconnect": "Desconectar",
+      "disconnectConfirm": "¿Desconectar este número de WhatsApp? Las conversaciones ya existentes se conservan.",
+      "phoneNumberLabel": "Número de WhatsApp Business",
+      "phoneNumberHint": "Usa el número ya aprovisionado en la consola de Twilio (o el número del sandbox de WhatsApp mientras desarrollas).",
+      "connectButton": "Conectar número"
+    },
+    "templates": {
+      "title": "Plantillas de WhatsApp",
+      "descriptionPart1": "Fuera de la ventana de 24 horas desde el último mensaje de un contacto, WhatsApp exige usar una plantilla ya aprobada por Meta. Regístrala aquí con el",
+      "descriptionPart2": "que Twilio te da al aprobarla, para poder elegirla desde Mensajes.",
+      "noTemplates": "Todavía no hay plantillas registradas.",
+      "deleteConfirm": "¿Eliminar esta plantilla?",
+      "nameLabel": "Nombre",
+      "namePlaceholder": "Confirmación de visita",
+      "contentSidLabel": "Content SID de Twilio",
+      "variablesLabel": "Variables (separadas por coma)",
+      "variablesPlaceholder": "nombre, fecha",
+      "variablesHint": "En el orden en que aparecen en la plantilla, ej.",
+      "addButton": "Agregar plantilla"
+    }
+  },
+  "errors": {
+    "contactSupport": "Contactar a soporte",
+    "badRequest": {
+      "title": "Solicitud incorrecta",
+      "message": "Algo no está bien en la solicitud que realizaste."
+    },
+    "unauthorized": {
+      "title": "No autorizado",
+      "message": "No tienes autorización para acceder a esta página."
+    },
+    "forbidden": {
+      "title": "Acceso denegado",
+      "message": "No tienes permiso para acceder a esta página o realizar la acción solicitada.",
+      "detail": "Esto puede deberse a privilegios insuficientes o a restricciones de acceso."
+    },
+    "notFound": {
+      "title": "Página no encontrada",
+      "message": "No pudimos encontrar la página que buscas. Es posible que no exista o que la URL sea incorrecta.",
+      "searchSite": "Buscar en el sitio"
+    },
+    "timeout": {
+      "title": "Tiempo de espera agotado",
+      "message": "El servidor tardó demasiado en responder a tu solicitud. Intenta de nuevo o revisa tu conexión."
+    },
+    "serverError": {
+      "title": "Error interno del servidor",
+      "message": "Algo salió mal de nuestro lado. Intenta de nuevo más tarde o contacta a soporte si el problema persiste."
+    },
+    "maintenance": {
+      "title": "Sitio en mantenimiento",
+      "message": "Estamos realizando un mantenimiento programado.",
+      "detail": "Vuelve a revisar pronto.",
+      "imageAlt": "Mantenimiento",
+      "callNow": "Llamar ahora",
+      "emailUs": "Escríbenos"
+    }
+  }
+}

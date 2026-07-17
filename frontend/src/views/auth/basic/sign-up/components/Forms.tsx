@@ -7,6 +7,7 @@ import { translateAuthError } from '@/utils/authErrors'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Alert, Button, Form, FormCheck, FormControl, FormLabel, Spinner } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 interface InvitationPreview {
   email: string
@@ -15,6 +16,7 @@ interface InvitationPreview {
 }
 
 const Forms = () => {
+  const { t } = useTranslation()
   const { signUp } = useAuth()
   const navigate = useNavigate()
   const isSubmittingRef = useRef(false)
@@ -68,11 +70,11 @@ const Forms = () => {
     setErrorMessage('')
 
     if (!agreement) {
-      setErrorMessage('Debes aceptar los Términos y Condiciones para continuar.')
+      setErrorMessage(t('auth.signUp.mustAcceptTerms'))
       return
     }
     if (!isInvitationFlow && !agencyName.trim()) {
-      setErrorMessage('Ingresa el nombre de tu agencia.')
+      setErrorMessage(t('auth.signUp.enterAgencyName'))
       return
     }
 
@@ -82,7 +84,7 @@ const Forms = () => {
       const { data, error } = await signUp(email, password, { data: { full_name: fullName } })
 
       if (error) {
-        setErrorMessage(translateAuthError(error.message))
+        setErrorMessage(translateAuthError(t, error.message))
         return
       }
 
@@ -106,7 +108,7 @@ const Forms = () => {
         setPendingConfirmationEmail(email)
       }
     } catch (error) {
-      setErrorMessage((error as Error).message || 'No se pudo completar el registro.')
+      setErrorMessage((error as Error).message || t('auth.signUp.genericError'))
     } finally {
       isSubmittingRef.current = false
       setSubmitting(false)
@@ -124,8 +126,10 @@ const Forms = () => {
   if (pendingConfirmationEmail) {
     return (
       <Alert variant="success">
-        Te enviamos un correo de confirmación a <strong>{pendingConfirmationEmail}</strong>. Abre el enlace para
-        activar tu cuenta {isInvitationFlow ? 'y unirte a la agencia.' : 'y completar la creación de tu agencia.'}
+        {t('auth.signUp.confirmationSentPrefix')} <strong>{pendingConfirmationEmail}</strong>.{' '}
+        {t('auth.signUp.confirmationSentAction', {
+          suffix: isInvitationFlow ? t('auth.signUp.confirmationSuffixInvite') : t('auth.signUp.confirmationSuffixNew'),
+        })}
       </Alert>
     )
   }
@@ -134,30 +138,30 @@ const Forms = () => {
     <Form onSubmit={handleSubmit}>
       {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
       {inviteToken && invitationError && (
-        <Alert variant="warning">{invitationError} Puedes crear una agencia nueva completando el formulario.</Alert>
+        <Alert variant="warning">
+          {invitationError} {t('auth.signUp.invitationErrorSuffix')}
+        </Alert>
       )}
       {isInvitationFlow && invitation && (
-        <Alert variant="info">
-          Te invitaron a unirte a <strong>{invitation.tenant_name}</strong>.
-        </Alert>
+        <Alert variant="info">{t('auth.signUp.invitedTo', { tenant: invitation.tenant_name })}</Alert>
       )}
       {!isInvitationFlow && (
         <div className="mb-3">
           <FormLabel>
-            Nombre de la agencia <span className="text-danger">*</span>
+            {t('auth.signUp.agencyName')} <span className="text-danger">*</span>
           </FormLabel>
           <FormControl type="text" required value={agencyName} onChange={(e) => setAgencyName(e.target.value)} />
         </div>
       )}
       <div className="mb-3">
         <FormLabel>
-          Tu nombre completo <span className="text-danger">*</span>
+          {t('auth.signUp.fullName')} <span className="text-danger">*</span>
         </FormLabel>
         <FormControl type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
       </div>
       <div className="mb-3">
         <FormLabel>
-          Correo electrónico <span className="text-danger">*</span>
+          {t('auth.fields.email')} <span className="text-danger">*</span>
         </FormLabel>
         <FormControl
           type="email"
@@ -169,7 +173,7 @@ const Forms = () => {
         />
       </div>
       <div className="mb-3" data-password="bar">
-        <PasswordInputWithStrength id="password" label="Contraseña" name="password" password={password} setPassword={setPassword} showIcon placeholder="••••••••" />
+        <PasswordInputWithStrength id="password" label={t('auth.fields.password')} name="password" password={password} setPassword={setPassword} showIcon placeholder="••••••••" />
       </div>
       <div className="mb-3">
         <FormCheck>
@@ -180,12 +184,12 @@ const Forms = () => {
             checked={agreement}
             onChange={(e) => setAgreement(e.target.checked)}
           />
-          <Form.Check.Label htmlFor="termAndPolicy">Acepto los Términos y Condiciones</Form.Check.Label>
+          <Form.Check.Label htmlFor="termAndPolicy">{t('auth.signUp.acceptTerms')}</Form.Check.Label>
         </FormCheck>
       </div>
       <div className="d-grid">
         <Button variant="primary" type="submit" className="fw-semibold py-2" disabled={submitting}>
-          {submitting ? 'Guardando...' : isInvitationFlow ? 'Unirme a la agencia' : 'Crear agencia'}
+          {submitting ? t('common.saving') : isInvitationFlow ? t('auth.signUp.joinAgency') : t('auth.signUp.createAgency')}
         </Button>
       </div>
     </Form>

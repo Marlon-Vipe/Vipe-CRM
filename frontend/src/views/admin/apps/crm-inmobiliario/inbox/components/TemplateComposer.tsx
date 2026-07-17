@@ -1,6 +1,7 @@
 import type { WhatsAppTemplate } from '@/lib/api'
 import { useState, type FormEvent } from 'react'
 import { Alert, Button, Col, Form, FormControl, FormLabel, FormSelect, Row } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   templates: WhatsAppTemplate[]
@@ -11,6 +12,7 @@ interface Props {
 }
 
 const TemplateComposer = ({ templates, templatesLoading, sending, disabled, onSend }: Props) => {
+  const { t } = useTranslation()
   const [templateId, setTemplateId] = useState('')
   const [variables, setVariables] = useState<string[]>([])
   const [errorMessage, setErrorMessage] = useState('')
@@ -39,7 +41,7 @@ const TemplateComposer = ({ templates, templatesLoading, sending, disabled, onSe
   return (
     <Form onSubmit={handleSubmit}>
       <Alert variant="warning" className="py-1 px-2 fs-xs mb-2">
-        Pasaron más de 24h desde el último mensaje de este contacto — WhatsApp exige usar una plantilla aprobada.
+        {t('crm.messages.serviceWindowExpired')}
       </Alert>
       {errorMessage && (
         <Alert variant="danger" className="py-1 px-2 fs-xs mb-2" onClose={() => setErrorMessage('')} dismissible>
@@ -48,17 +50,17 @@ const TemplateComposer = ({ templates, templatesLoading, sending, disabled, onSe
       )}
 
       {templatesLoading ? (
-        <p className="text-muted fs-sm mb-0">Cargando plantillas...</p>
+        <p className="text-muted fs-sm mb-0">{t('crm.messages.loadingTemplates')}</p>
       ) : templates.length === 0 ? (
         <p className="text-muted fs-sm mb-0">
-          Tu agencia todavía no tiene plantillas registradas. Agrégalas en Perfil y facturación → Canal de WhatsApp.
+          {t('crm.messages.noTemplates')}
         </p>
       ) : (
         <Row className="g-2 align-items-end">
           <Col md={variables.length > 0 ? 4 : 8}>
-            <FormLabel className="fs-xs mb-1">Plantilla</FormLabel>
+            <FormLabel className="fs-xs mb-1">{t('crm.messages.templateLabel')}</FormLabel>
             <FormSelect size="sm" value={templateId} onChange={(e) => handleTemplateChange(e.target.value)} disabled={disabled || sending} required>
-              <option value="">Selecciona una plantilla...</option>
+              <option value="">{t('crm.messages.selectTemplatePlaceholder')}</option>
               {templates.map((template) => (
                 <option key={template.id} value={template.id}>
                   {template.name}
@@ -80,7 +82,7 @@ const TemplateComposer = ({ templates, templatesLoading, sending, disabled, onSe
           ))}
           <Col md="auto">
             <Button type="submit" variant="primary" size="sm" disabled={disabled || sending || !templateId}>
-              {sending ? 'Enviando...' : 'Enviar plantilla'}
+              {sending ? t('common.sending') : t('crm.messages.sendTemplate')}
             </Button>
           </Col>
         </Row>

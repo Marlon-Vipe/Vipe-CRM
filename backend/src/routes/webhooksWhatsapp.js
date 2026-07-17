@@ -2,6 +2,7 @@ const express = require("express");
 
 const { supabaseAdmin } = require("../lib/supabaseAdmin");
 const { stripWhatsAppPrefix, validateTwilioSignature } = require("../lib/twilioClient");
+const { createNotification } = require("../lib/notifications");
 
 const router = express.Router();
 
@@ -13,18 +14,18 @@ router.use(express.urlencoded({ extended: false }));
 async function findOrCreateContact(tenantId, phone) {
   const { data: existing, error: findError } = await supabaseAdmin
     .from("contacts")
-    .select("id")
+    .select("id, name")
     .eq("tenant_id", tenantId)
     .eq("phone", phone)
     .maybeSingle();
 
   if (findError) throw new Error(findError.message);
-  if (existing) return existing.id;
+  if (existing) return { id: existing.id, name: existing.name, isNew: false };
 
   const { data: created, error: insertError } = await supabaseAdmin
     .from("contacts")
     .insert({ tenant_id: tenantId, name: phone, phone, source: "whatsapp" })
-    .select("id")
+    .select("id, name")
     .single();
 
   if (insertError) {
@@ -35,16 +36,16 @@ async function findOrCreateContact(tenantId, phone) {
     if (insertError.code === "23505") {
       const { data: winner, error: refetchError } = await supabaseAdmin
         .from("contacts")
-        .select("id")
+        .select("id, name")
         .eq("tenant_id", tenantId)
         .eq("phone", phone)
         .single();
       if (refetchError) throw new Error(refetchError.message);
-      return winner.id;
+      return { id: winner.id, name: winner.name, isNew: false };
     }
     throw new Error(insertError.message);
   }
-  return created.id;
+  return { id: created.id, name: created.name, isNew: true };
 }
 
 async function findOrCreateConversation(tenantId, channelId, contactId) {
@@ -117,8 +118,8 @@ router.post("/", async (req, res) => {
       return res.status(200).send();
     }
 
-    const contactId = await findOrCreateContact(channel.tenant_id, fromNumber);
-    const conversationId = await findOrCreateConversation(channel.tenant_id, channel.id, contactId);
+    const contact = await findOrCreateContact(channel.tenant_id, fromNumber);
+    const conversationId = await findOrCreateConversation(channel.tenant_id, channel.id, contact.id);
 
     const { error: messageError } = await supabaseAdmin.from("messages").insert({
       tenant_id: channel.tenant_id,
@@ -131,6 +132,24 @@ router.post("/", async (req, res) => {
     });
 
     if (messageError) throw new Error(messageError.message);
+
+    if (contact.isNew) {
+      await createNotification({
+        tenantId: channel.tenant_id,
+        type: "new_lead",
+        title: contact.name,
+        metadata: { source: "whatsapp" },
+        link: `/crm/contactos/${contact.id}`,
+      });
+    }
+
+    await createNotification({
+      tenantId: channel.tenant_id,
+      type: "new_message",
+      title: contact.name,
+      body, // el texto real del mensaje del cliente — no se traduce
+      link: "/crm/mensajes",
+    });
 
     return res.status(200).send();
   } catch (error) {

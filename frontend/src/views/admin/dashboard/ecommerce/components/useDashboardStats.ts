@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
@@ -36,6 +37,7 @@ const EMPTY_STATS: DashboardStats = {
 }
 
 export function useDashboardStats() {
+  const { t } = useTranslation()
   const { tenantId } = useAuth()
   const [stats, setStats] = useState<DashboardStats>(EMPTY_STATS)
   const [loading, setLoading] = useState(true)
@@ -68,7 +70,7 @@ export function useDashboardStats() {
     if (firstError) {
       // eslint-disable-next-line no-console
       console.error('Error al cargar las métricas del dashboard:', firstError.message)
-      setError('No se pudieron cargar las métricas del dashboard. Intenta de nuevo.')
+      setError(t('crm.dashboard.loadError'))
       setLoading(false)
       hasLoadedOnce.current = true
       return
@@ -113,7 +115,7 @@ export function useDashboardStats() {
     })
     setLoading(false)
     hasLoadedOnce.current = true
-  }, [tenantId])
+  }, [tenantId, t])
 
   useEffect(() => {
     load()

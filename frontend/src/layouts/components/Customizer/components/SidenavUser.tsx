@@ -1,6 +1,8 @@
 import { useLayoutContext } from '@/context/useLayoutContext'
+import { useTranslation } from 'react-i18next'
 
 const SidenavUser = () => {
+  const { t } = useTranslation()
   const { updateSettings, sidenavUser } = useLayoutContext()
 
   const handleSidenavUserChange = (value: boolean) => {
@@ -12,7 +14,7 @@ const SidenavUser = () => {
       <div className="d-flex justify-content-between align-items-center">
         <h5 className="mb-0">
           <label className="fw-bold m-0" htmlFor="sidebaruser-check">
-            Sidebar User Info
+            {t('layout.customizer.sidebarUserInfo')}
           </label>
         </h5>
         <div className="form-check form-switch fs-lg">

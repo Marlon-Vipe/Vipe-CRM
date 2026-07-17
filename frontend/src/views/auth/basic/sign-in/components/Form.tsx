@@ -2,8 +2,10 @@ import { useAuth } from '@/hooks/useAuth'
 import { Link } from 'react-router'
 import { ChangeEvent, useState } from 'react'
 import { Button, Form, FormCheck, FormControl, FormLabel } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 const LoginForm = () => {
+  const { t } = useTranslation()
   const { login, loading, error } = useAuth()
 
   const [form, setForm] = useState({
@@ -25,29 +27,29 @@ const LoginForm = () => {
     <form onSubmit={handleSubmit}>
       <div className="mb-3">
         <FormLabel>
-          Correo electrónico <span className="text-danger">*</span>
+          {t('auth.fields.email')} <span className="text-danger">*</span>
         </FormLabel>
         <FormControl type="email" name="email" placeholder="tu@agencia.com" value={form.email} required onChange={handleChange} />
       </div>
       <div className="mb-3">
         <FormLabel>
-          Contraseña <span className="text-danger">*</span>
+          {t('auth.fields.password')} <span className="text-danger">*</span>
         </FormLabel>
         <FormControl type="password" name="password" placeholder="••••••••" value={form.password} required onChange={handleChange} />
       </div>
       <div className="d-flex justify-content-between align-items-center mb-3">
         <FormCheck>
           <Form.Check.Input className="form-check-input-light fs-14" type="checkbox" id="rememberMe" />
-          <Form.Check.Label htmlFor="rememberMe">Mantener sesión iniciada</Form.Check.Label>
+          <Form.Check.Label htmlFor="rememberMe">{t('auth.signIn.rememberMe')}</Form.Check.Label>
         </FormCheck>
         <Link to="/auth/reset-pass" className="text-decoration-underline link-offset-3 text-muted">
-          ¿Olvidaste tu contraseña?
+          {t('auth.signIn.forgotPassword')}
         </Link>
       </div>
       {error && <p className="text-danger">{error}</p>}
       <div className="d-grid">
         <Button variant="primary" type="submit" className="fw-semibold py-2" disabled={loading}>
-          {loading ? 'Ingresando...' : 'Iniciar sesión'}
+          {loading ? t('auth.signIn.signingIn') : t('auth.signIn.submit')}
         </Button>
       </div>
     </form>

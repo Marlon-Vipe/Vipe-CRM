@@ -2,6 +2,7 @@ import ltr from '@/assets/images/layouts/dir-ltr.png'
 import rtl from '@/assets/images/layouts/dir-rtl.png'
 import { useLayoutContext } from '@/context/useLayoutContext'
 import { Col, Row } from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 import { CustomizationOptionType } from '../index'
 
 const directionOptions: CustomizationOptionType[] = [
@@ -10,6 +11,7 @@ const directionOptions: CustomizationOptionType[] = [
 ]
 
 const Dir = () => {
+  const { t } = useTranslation()
   const { updateSettings, dir } = useLayoutContext()
 
   const handleDirectionChange = (value: string) => {
@@ -18,7 +20,7 @@ const Dir = () => {
 
   return (
     <div id="dir" className="p-3 border-bottom border-dashed">
-      <h5 className="mb-3 fw-bold">Layout Direction</h5>
+      <h5 className="mb-3 fw-bold">{t('layout.customizer.direction')}</h5>
 
       <Row className="g-3">
         {directionOptions.map((option) => (
