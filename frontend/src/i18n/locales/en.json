@@ -309,10 +309,11 @@
         "searchPlaceholder": "Search property...",
         "type": "Type:",
         "status": "Status:",
-        "price": "Price (RD$):",
+        "price": "Price:",
         "priceRangeTo": "to",
         "sector": "Sector:",
-        "noSectors": "No sectors registered yet."
+        "noSectors": "No sectors registered yet.",
+        "noPricedProperties": "No properties priced in this currency."
       },
       "form": {
         "editTitle": "Edit property",

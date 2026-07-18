@@ -1,12 +1,13 @@
 import Icon from '@/components/wrappers/Icon'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabaseClient'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Alert, Button, Col, Row, Spinner } from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import PropertyCard from './PropertyCard'
 import ProductFilter from './ProductFilter'
+import { createDefaultFilters, filterProperties, getPriceBounds, type PropertyFiltersState } from './data'
 import { useProperties } from './useProperties'
 
 const ProductsPage = () => {
@@ -16,6 +17,21 @@ const ProductsPage = () => {
   const { tenantId } = useAuth()
   const navigate = useNavigate()
   const [errorMessage, setErrorMessage] = useState('')
+  const [filters, setFilters] = useState<PropertyFiltersState>(() => createDefaultFilters(properties))
+
+  // Los límites del rango de precio dependen de las propiedades cargadas —
+  // se recalculan cuando cambian (ej. al terminar de cargar, o tras crear
+  // una propiedad con un precio fuera del rango anterior), pero sin pisar
+  // el resto de los filtros que el usuario ya haya aplicado ni un rango que
+  // ya haya ajustado manualmente dentro de los límites vigentes.
+  useEffect(() => {
+    if (loading) return
+    const [min, max] = getPriceBounds(properties, filters.priceCurrency)
+    setFilters((prev) => (prev.priceRange[0] === min && prev.priceRange[1] === max ? prev : { ...prev, priceRange: [min, max] }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, properties, filters.priceCurrency])
+
+  const filteredProperties = filterProperties(properties, filters)
 
   const handleDelete = async (propertyId: string) => {
     if (!tenantId) return
@@ -39,7 +55,7 @@ const ProductsPage = () => {
                   <Icon icon="menu-4" className="fs-lg" />
                 </Button>
               </div>
-              <h3 className="mb-0 fs-xl flex-grow-1">{t('crm.properties.count', { count: properties.length })}</h3>
+              <h3 className="mb-0 fs-xl flex-grow-1">{t('crm.properties.count', { count: filteredProperties.length })}</h3>
               <Button variant="primary" onClick={() => navigate('/crm/propiedades/nueva')}>
                 <Icon icon="plus" className="fs-sm me-2" /> {t('crm.properties.addProperty')}
               </Button>
@@ -55,7 +71,7 @@ const ProductsPage = () => {
       )}
 
       <Row className="g-2">
-        <ProductFilter properties={properties} isOffcanvasOpen={isOffcanvasOpen} setIsOffcanvasOpen={setIsOffcanvasOpen} />
+        <ProductFilter properties={properties} filters={filters} onFiltersChange={setFilters} isOffcanvasOpen={isOffcanvasOpen} setIsOffcanvasOpen={setIsOffcanvasOpen} />
 
         <Col xl={9}>
           {loading ? (
@@ -71,9 +87,11 @@ const ProductsPage = () => {
             </div>
           ) : properties.length === 0 ? (
             <p className="text-muted text-center py-5">{t('crm.properties.noProperties')}</p>
+          ) : filteredProperties.length === 0 ? (
+            <p className="text-muted text-center py-5">{t('common.noResults')}</p>
           ) : (
             <Row className="row-cols-xxl-4 row-cols-lg-3 row-cols-sm-2 row-col-1 g-2">
-              {properties.map((property) => (
+              {filteredProperties.map((property) => (
                 <Col key={property.id}>
                   <PropertyCard product={property} onDelete={handleDelete} />
                 </Col>

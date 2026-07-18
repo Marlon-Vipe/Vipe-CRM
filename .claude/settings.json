@@ -58,7 +58,8 @@
       "Bash(xargs grep -nE '\"[A-ZÁÉÍÓÚÑ][a-záéíóúñ ]{3,}\"|>[A-ZÁÉÍÓÚÑ][a-záéíóúñ]{3,}[a-záéíóúñ .]*<')",
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:5174/)",
       "Bash(curl -s http://localhost:5174/)",
-      "Bash(node -c src/lib/email.js)"
+      "Bash(node -c src/lib/email.js)",
+      "Bash(grep -rn \"currency\\\\|moneda\\\\|price_range\\\\|priceRange\\\\|RD\\\\$\\\\|US\\\\$\" frontend/src/views/admin/apps/crm-inmobiliario/properties/ backend/migrations/)"
     ]
   }
 }

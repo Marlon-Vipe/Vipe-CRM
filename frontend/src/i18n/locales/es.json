@@ -309,10 +309,11 @@
         "searchPlaceholder": "Buscar propiedad...",
         "type": "Tipo:",
         "status": "Estatus:",
-        "price": "Precio (RD$):",
+        "price": "Precio:",
         "priceRangeTo": "a",
         "sector": "Sector:",
-        "noSectors": "Sin sectores registrados todavía."
+        "noSectors": "Sin sectores registrados todavía.",
+        "noPricedProperties": "No hay propiedades con precio en esta moneda."
       },
       "form": {
         "editTitle": "Editar propiedad",
